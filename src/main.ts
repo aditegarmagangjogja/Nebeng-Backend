@@ -32,18 +32,8 @@ async function bootstrap() {
       'Dokumentasi API Backend Platform Nebeng Transportasi & Pengiriman Paket (Escrow Wallet & Dual QR Checkpoint)',
     )
     .setVersion('1.0.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'Authorization',
-        description: 'Masukkan JWT Access Token di sini',
-        in: 'header',
-      },
-      'JWT-auth',
-    )
-    .addTag('Auth', 'Autentikasi, Profil User, Verifikasi KTP & Refresh Token')
+    .addBearerAuth()
+    .addTag('Auth', 'register, login, logout, Refresh Token')
     .addTag('Orders', 'Pemesanan Tiket Penumpang & Pengiriman Paket (Parcel)')
     .addTag('Payments', 'Gateway Pembayaran & Escrow Balance Hold')
     .addTag('Checkpoints', 'Verifikasi Dual QR Check-in Pos Asal & Pos Tujuan')
