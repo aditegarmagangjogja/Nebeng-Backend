@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from '../users/users.service';
 import { UserRepository } from '../users/repositories/user.repository';
-import { RegisterDto } from './dto/register.dto';
+import { RegisterDto, PublicRole } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { UserMapper } from '../users/mappers/user.mapper';
@@ -37,7 +37,6 @@ export class AuthService {
         '7d') as any,
     });
 
-    // Hash refresh token sebelum disimpan ke DB untuk keamanan tambahan
     const hashedRefreshToken = await bcrypt.hash(refreshToken, 10);
     await this.userRepository.updateRefreshToken(userId, hashedRefreshToken);
 
@@ -45,9 +44,12 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
+    // Casting dari PublicRole ke Prisma Role untuk kompatibilitas data
+    const assignedRole = (registerDto.role as unknown as Role) || Role.customer;
+
     return this.usersService.create({
       ...registerDto,
-      role: registerDto.role || Role.customer,
+      role: assignedRole,
     });
   }
 

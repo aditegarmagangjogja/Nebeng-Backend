@@ -11,6 +11,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserMapper } from './mappers/user.mapper';
+import { UserStatus } from '../../generated/prisma/enums';
 
 @Injectable()
 export class UsersService {
@@ -131,9 +132,36 @@ export class UsersService {
     return UserMapper.toResponse(updatedUser);
   }
 
+  // Soft Delete & Anonisasi Akun (Default untuk User Hapus Akun Mandiri)
   async remove(id: string): Promise<UserResponseDto> {
     await this.findOne(id);
-    const deleteUser = await this.userRepository.delete(id);
-    return UserMapper.toResponse(deleteUser);
+
+    const anonymousId = `deleted_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    const anonymizedUser = await this.userRepository.anonymize(id, anonymousId);
+
+    return UserMapper.toResponse(anonymizedUser);
+  }
+
+  // Hard Delete Guard (Hanya menghapus fisik jika belum ada transaksi)
+  async forceRemoveByAdmin(
+    id: string,
+  ): Promise<UserResponseDto | { message: string }> {
+    await this.findOne(id);
+
+    const { ordersCount, tripsCount, walletTransactionsCount } =
+      await this.userRepository.countUserRelations(id);
+
+    const hasFinancialHistory =
+      ordersCount > 0 || tripsCount > 0 || walletTransactionsCount > 0;
+
+    if (hasFinancialHistory) {
+      // Jika ada riwayat transaksi, alihkan ke Soft Delete Anonisasi
+      const anonymizedUser = await this.remove(id);
+      return anonymizedUser;
+    }
+
+    // Jika akun benar-benar baru dan belum pernah bertransaksi, aman untuk Hard Delete
+    const deletedUser = await this.userRepository.delete(id);
+    return UserMapper.toResponse(deletedUser);
   }
 }

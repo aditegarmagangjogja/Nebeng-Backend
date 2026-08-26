@@ -9,7 +9,12 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
-import { Role } from '../../../generated/prisma/enums';
+
+// Enum khusus pendaftaran publik (Tanpa Role Admin & Operasional)
+export enum PublicRole {
+  customer = 'customer',
+  mitra = 'mitra',
+}
 
 export class RegisterDto {
   @ApiProperty({ example: 'Jhons' })
@@ -38,8 +43,10 @@ export class RegisterDto {
   @MinLength(6)
   password!: string;
 
-  @ApiPropertyOptional({ enum: Role, default: Role.customer })
+  @ApiPropertyOptional({ enum: PublicRole, default: PublicRole.customer })
   @IsOptional()
-  @IsEnum(Role)
-  role?: Role;
+  @IsEnum(PublicRole, {
+    message: 'Role tidak valid! Hanya diizinkan customer atau mitra',
+  })
+  role?: PublicRole = PublicRole.customer;
 }

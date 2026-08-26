@@ -212,7 +212,7 @@ export type CheckpointsLogGroupByOutputType = {
   tripId: bigint
   orderId: bigint
   posId: bigint
-  scannedByUserId: bigint
+  scannedByUserId: bigint | null
   scanType: $Enums.ScanType
   createdAt: Date
   _count: CheckpointsLogCountAggregateOutputType | null
@@ -245,13 +245,13 @@ export type CheckpointsLogWhereInput = {
   tripId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
   orderId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
   posId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
-  scannedByUserId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
+  scannedByUserId?: Prisma.BigIntNullableFilter<"CheckpointsLog"> | bigint | number | null
   scanType?: Prisma.EnumScanTypeFilter<"CheckpointsLog"> | $Enums.ScanType
   createdAt?: Prisma.DateTimeFilter<"CheckpointsLog"> | Date | string
   trip?: Prisma.XOR<Prisma.TripScalarRelationFilter, Prisma.TripWhereInput>
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
   pos?: Prisma.XOR<Prisma.PickupPointScalarRelationFilter, Prisma.PickupPointWhereInput>
-  scannedByUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  scannedByUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }
 
 export type CheckpointsLogOrderByWithRelationInput = {
@@ -259,7 +259,7 @@ export type CheckpointsLogOrderByWithRelationInput = {
   tripId?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   posId?: Prisma.SortOrder
-  scannedByUserId?: Prisma.SortOrder
+  scannedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   scanType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   trip?: Prisma.TripOrderByWithRelationInput
@@ -276,13 +276,13 @@ export type CheckpointsLogWhereUniqueInput = Prisma.AtLeast<{
   tripId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
   orderId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
   posId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
-  scannedByUserId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
+  scannedByUserId?: Prisma.BigIntNullableFilter<"CheckpointsLog"> | bigint | number | null
   scanType?: Prisma.EnumScanTypeFilter<"CheckpointsLog"> | $Enums.ScanType
   createdAt?: Prisma.DateTimeFilter<"CheckpointsLog"> | Date | string
   trip?: Prisma.XOR<Prisma.TripScalarRelationFilter, Prisma.TripWhereInput>
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
   pos?: Prisma.XOR<Prisma.PickupPointScalarRelationFilter, Prisma.PickupPointWhereInput>
-  scannedByUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  scannedByUser?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
 }, "id">
 
 export type CheckpointsLogOrderByWithAggregationInput = {
@@ -290,7 +290,7 @@ export type CheckpointsLogOrderByWithAggregationInput = {
   tripId?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   posId?: Prisma.SortOrder
-  scannedByUserId?: Prisma.SortOrder
+  scannedByUserId?: Prisma.SortOrderInput | Prisma.SortOrder
   scanType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.CheckpointsLogCountOrderByAggregateInput
@@ -308,7 +308,7 @@ export type CheckpointsLogScalarWhereWithAggregatesInput = {
   tripId?: Prisma.BigIntWithAggregatesFilter<"CheckpointsLog"> | bigint | number
   orderId?: Prisma.BigIntWithAggregatesFilter<"CheckpointsLog"> | bigint | number
   posId?: Prisma.BigIntWithAggregatesFilter<"CheckpointsLog"> | bigint | number
-  scannedByUserId?: Prisma.BigIntWithAggregatesFilter<"CheckpointsLog"> | bigint | number
+  scannedByUserId?: Prisma.BigIntNullableWithAggregatesFilter<"CheckpointsLog"> | bigint | number | null
   scanType?: Prisma.EnumScanTypeWithAggregatesFilter<"CheckpointsLog"> | $Enums.ScanType
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"CheckpointsLog"> | Date | string
 }
@@ -320,7 +320,7 @@ export type CheckpointsLogCreateInput = {
   trip: Prisma.TripCreateNestedOneWithoutCheckpointsLogsInput
   order: Prisma.OrderCreateNestedOneWithoutCheckpointsLogsInput
   pos: Prisma.PickupPointCreateNestedOneWithoutCheckpointsLogsInput
-  scannedByUser: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
+  scannedByUser?: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
 }
 
 export type CheckpointsLogUncheckedCreateInput = {
@@ -328,7 +328,7 @@ export type CheckpointsLogUncheckedCreateInput = {
   tripId: bigint | number
   orderId: bigint | number
   posId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -340,7 +340,7 @@ export type CheckpointsLogUpdateInput = {
   trip?: Prisma.TripUpdateOneRequiredWithoutCheckpointsLogsNestedInput
   order?: Prisma.OrderUpdateOneRequiredWithoutCheckpointsLogsNestedInput
   pos?: Prisma.PickupPointUpdateOneRequiredWithoutCheckpointsLogsNestedInput
-  scannedByUser?: Prisma.UserUpdateOneRequiredWithoutCheckpointsScannedNestedInput
+  scannedByUser?: Prisma.UserUpdateOneWithoutCheckpointsScannedNestedInput
 }
 
 export type CheckpointsLogUncheckedUpdateInput = {
@@ -348,7 +348,7 @@ export type CheckpointsLogUncheckedUpdateInput = {
   tripId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   posId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -358,7 +358,7 @@ export type CheckpointsLogCreateManyInput = {
   tripId: bigint | number
   orderId: bigint | number
   posId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -374,7 +374,7 @@ export type CheckpointsLogUncheckedUpdateManyInput = {
   tripId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   posId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -659,7 +659,7 @@ export type CheckpointsLogScalarWhereInput = {
   tripId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
   orderId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
   posId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
-  scannedByUserId?: Prisma.BigIntFilter<"CheckpointsLog"> | bigint | number
+  scannedByUserId?: Prisma.BigIntNullableFilter<"CheckpointsLog"> | bigint | number | null
   scanType?: Prisma.EnumScanTypeFilter<"CheckpointsLog"> | $Enums.ScanType
   createdAt?: Prisma.DateTimeFilter<"CheckpointsLog"> | Date | string
 }
@@ -670,14 +670,14 @@ export type CheckpointsLogCreateWithoutPosInput = {
   createdAt?: Date | string
   trip: Prisma.TripCreateNestedOneWithoutCheckpointsLogsInput
   order: Prisma.OrderCreateNestedOneWithoutCheckpointsLogsInput
-  scannedByUser: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
+  scannedByUser?: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
 }
 
 export type CheckpointsLogUncheckedCreateWithoutPosInput = {
   id?: bigint | number
   tripId: bigint | number
   orderId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -714,14 +714,14 @@ export type CheckpointsLogCreateWithoutTripInput = {
   createdAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutCheckpointsLogsInput
   pos: Prisma.PickupPointCreateNestedOneWithoutCheckpointsLogsInput
-  scannedByUser: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
+  scannedByUser?: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
 }
 
 export type CheckpointsLogUncheckedCreateWithoutTripInput = {
   id?: bigint | number
   orderId: bigint | number
   posId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -758,14 +758,14 @@ export type CheckpointsLogCreateWithoutOrderInput = {
   createdAt?: Date | string
   trip: Prisma.TripCreateNestedOneWithoutCheckpointsLogsInput
   pos: Prisma.PickupPointCreateNestedOneWithoutCheckpointsLogsInput
-  scannedByUser: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
+  scannedByUser?: Prisma.UserCreateNestedOneWithoutCheckpointsScannedInput
 }
 
 export type CheckpointsLogUncheckedCreateWithoutOrderInput = {
   id?: bigint | number
   tripId: bigint | number
   posId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -836,7 +836,7 @@ export type CheckpointsLogCreateManyPosInput = {
   id?: bigint | number
   tripId: bigint | number
   orderId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -847,14 +847,14 @@ export type CheckpointsLogUpdateWithoutPosInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   trip?: Prisma.TripUpdateOneRequiredWithoutCheckpointsLogsNestedInput
   order?: Prisma.OrderUpdateOneRequiredWithoutCheckpointsLogsNestedInput
-  scannedByUser?: Prisma.UserUpdateOneRequiredWithoutCheckpointsScannedNestedInput
+  scannedByUser?: Prisma.UserUpdateOneWithoutCheckpointsScannedNestedInput
 }
 
 export type CheckpointsLogUncheckedUpdateWithoutPosInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   tripId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -863,7 +863,7 @@ export type CheckpointsLogUncheckedUpdateManyWithoutPosInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   tripId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -872,7 +872,7 @@ export type CheckpointsLogCreateManyTripInput = {
   id?: bigint | number
   orderId: bigint | number
   posId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -883,14 +883,14 @@ export type CheckpointsLogUpdateWithoutTripInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutCheckpointsLogsNestedInput
   pos?: Prisma.PickupPointUpdateOneRequiredWithoutCheckpointsLogsNestedInput
-  scannedByUser?: Prisma.UserUpdateOneRequiredWithoutCheckpointsScannedNestedInput
+  scannedByUser?: Prisma.UserUpdateOneWithoutCheckpointsScannedNestedInput
 }
 
 export type CheckpointsLogUncheckedUpdateWithoutTripInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   posId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -899,7 +899,7 @@ export type CheckpointsLogUncheckedUpdateManyWithoutTripInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   posId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -908,7 +908,7 @@ export type CheckpointsLogCreateManyOrderInput = {
   id?: bigint | number
   tripId: bigint | number
   posId: bigint | number
-  scannedByUserId: bigint | number
+  scannedByUserId?: bigint | number | null
   scanType: $Enums.ScanType
   createdAt?: Date | string
 }
@@ -919,14 +919,14 @@ export type CheckpointsLogUpdateWithoutOrderInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   trip?: Prisma.TripUpdateOneRequiredWithoutCheckpointsLogsNestedInput
   pos?: Prisma.PickupPointUpdateOneRequiredWithoutCheckpointsLogsNestedInput
-  scannedByUser?: Prisma.UserUpdateOneRequiredWithoutCheckpointsScannedNestedInput
+  scannedByUser?: Prisma.UserUpdateOneWithoutCheckpointsScannedNestedInput
 }
 
 export type CheckpointsLogUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   tripId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   posId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -935,7 +935,7 @@ export type CheckpointsLogUncheckedUpdateManyWithoutOrderInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   tripId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   posId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
-  scannedByUserId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  scannedByUserId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
   scanType?: Prisma.EnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -953,7 +953,7 @@ export type CheckpointsLogSelect<ExtArgs extends runtime.Types.Extensions.Intern
   trip?: boolean | Prisma.TripDefaultArgs<ExtArgs>
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   pos?: boolean | Prisma.PickupPointDefaultArgs<ExtArgs>
-  scannedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  scannedByUser?: boolean | Prisma.CheckpointsLog$scannedByUserArgs<ExtArgs>
 }, ExtArgs["result"]["checkpointsLog"]>
 
 
@@ -973,7 +973,7 @@ export type CheckpointsLogInclude<ExtArgs extends runtime.Types.Extensions.Inter
   trip?: boolean | Prisma.TripDefaultArgs<ExtArgs>
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
   pos?: boolean | Prisma.PickupPointDefaultArgs<ExtArgs>
-  scannedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  scannedByUser?: boolean | Prisma.CheckpointsLog$scannedByUserArgs<ExtArgs>
 }
 
 export type $CheckpointsLogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -982,14 +982,14 @@ export type $CheckpointsLogPayload<ExtArgs extends runtime.Types.Extensions.Inte
     trip: Prisma.$TripPayload<ExtArgs>
     order: Prisma.$OrderPayload<ExtArgs>
     pos: Prisma.$PickupPointPayload<ExtArgs>
-    scannedByUser: Prisma.$UserPayload<ExtArgs>
+    scannedByUser: Prisma.$UserPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: bigint
     tripId: bigint
     orderId: bigint
     posId: bigint
-    scannedByUserId: bigint
+    scannedByUserId: bigint | null
     scanType: $Enums.ScanType
     createdAt: Date
   }, ExtArgs["result"]["checkpointsLog"]>
@@ -1335,7 +1335,7 @@ export interface Prisma__CheckpointsLogClient<T, Null = never, ExtArgs extends r
   trip<T extends Prisma.TripDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TripDefaultArgs<ExtArgs>>): Prisma.Prisma__TripClient<runtime.Types.Result.GetResult<Prisma.$TripPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   order<T extends Prisma.OrderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.OrderDefaultArgs<ExtArgs>>): Prisma.Prisma__OrderClient<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   pos<T extends Prisma.PickupPointDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PickupPointDefaultArgs<ExtArgs>>): Prisma.Prisma__PickupPointClient<runtime.Types.Result.GetResult<Prisma.$PickupPointPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  scannedByUser<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  scannedByUser<T extends Prisma.CheckpointsLog$scannedByUserArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.CheckpointsLog$scannedByUserArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1717,6 +1717,25 @@ export type CheckpointsLogDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many CheckpointsLogs to delete.
    */
   limit?: number
+}
+
+/**
+ * CheckpointsLog.scannedByUser
+ */
+export type CheckpointsLog$scannedByUserArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

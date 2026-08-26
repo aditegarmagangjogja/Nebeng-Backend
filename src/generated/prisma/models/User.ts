@@ -883,10 +883,12 @@ export type UserCreateNestedOneWithoutCheckpointsScannedInput = {
   connect?: Prisma.UserWhereUniqueInput
 }
 
-export type UserUpdateOneRequiredWithoutCheckpointsScannedNestedInput = {
+export type UserUpdateOneWithoutCheckpointsScannedNestedInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutCheckpointsScannedInput, Prisma.UserUncheckedCreateWithoutCheckpointsScannedInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutCheckpointsScannedInput
   upsert?: Prisma.UserUpsertWithoutCheckpointsScannedInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCheckpointsScannedInput, Prisma.UserUpdateWithoutCheckpointsScannedInput>, Prisma.UserUncheckedUpdateWithoutCheckpointsScannedInput>
 }

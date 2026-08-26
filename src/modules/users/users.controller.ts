@@ -28,6 +28,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/enums';
 import { SetPinDto } from './dto/set-pin.dto';
 import { VerifyPinDto } from './dto/verify-pin.dto';
+import { UpdateUserMeDto } from './dto/update-user-me.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -64,6 +65,26 @@ export class UserController {
   })
   findAll(): Promise<UserResponseDto[]> {
     return this.userService.findAll();
+  }
+
+  @Patch('me')
+  @ApiOperation({ summary: 'Memperbarui profil akun sendiri' })
+  @ApiResponse({ status: 200, type: UserResponseDto })
+  updateMyProfile(
+    @Request() req: any,
+    @Body() updateUserMeDto: UpdateUserMeDto,
+  ): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.update(userId, updateUserMeDto);
+  }
+
+  @Delete('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Menghapus akun sendiri (Soft Delete & Anonisasi)' })
+  @ApiResponse({ status: 200, description: 'Akun berhasil dianonimkan' })
+  removeMyAccount(@Request() req: any): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.remove(userId);
   }
 
   @Get(':id')
@@ -113,7 +134,9 @@ export class UserController {
 
   @Patch(':id/status')
   @Roles(Role.superadmin, Role.admin_wilayah)
-  @ApiOperation({ summary: 'Mengubah status user (Active/Suspended/Blocked)' })
+  @ApiOperation({
+    summary: 'Mengubah status user (Active/Suspended/Blocked/Inactive)',
+  })
   @ApiResponse({ status: 200, type: UserResponseDto })
   updateStatus(
     @Param('id') id: string,
@@ -124,14 +147,15 @@ export class UserController {
 
   @Delete(':id')
   @Roles(Role.superadmin)
-  @ApiOperation({ summary: 'Menghapus pengguna berdasarkan ID' })
+  @ApiOperation({
+    summary: 'Menghapus pengguna berdasarkan ID (Hard/Soft Guard)',
+  })
   @ApiResponse({
     status: 200,
-    description: 'Pengguna berhasil dihapus',
-    type: UserResponseDto,
+    description: 'Pengguna berhasil dihapus atau dianonimkan',
   })
   @ApiResponse({ status: 404, description: 'User tidak ditemukan' })
-  remove(@Param('id') id: string): Promise<UserResponseDto> {
-    return this.userService.remove(id);
+  remove(@Param('id') id: string) {
+    return this.userService.forceRemoveByAdmin(id);
   }
 }

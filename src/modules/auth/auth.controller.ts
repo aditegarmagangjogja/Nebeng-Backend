@@ -13,6 +13,8 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiUnauthorizedResponse,
+  ApiBadRequestResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -28,11 +30,17 @@ export class AuthController {
 
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Membuat akun pengguna baru' })
+  @ApiOperation({
+    summary: 'Membuat akun pengguna baru (Public: Customer / Mitra)',
+  })
   @ApiResponse({
     status: 201,
     description: 'Register berhasil',
     type: UserResponseDto,
+  })
+  @ApiBadRequestResponse({
+    description:
+      'Data inputan tidak valid atau Email/Nomor Telepon sudah terdaftar',
   })
   register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
@@ -40,8 +48,14 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Masuk ke applikasi' })
-  @ApiResponse({ status: 200, description: 'login berhasil' })
+  @ApiOperation({ summary: 'Masuk ke aplikasi' })
+  @ApiResponse({
+    status: 200,
+    description: 'Login berhasil, mengembalikan token',
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Email/Password salah atau akun ditangguhkan',
+  })
   login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
@@ -51,6 +65,9 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Mendapatkan data pengguna yang sedang login' })
   @ApiResponse({ status: 200, description: 'Data pengguna ditemukan' })
+  @ApiUnauthorizedResponse({
+    description: 'Token tidak valid atau belum dikirimkan',
+  })
   getProfile(@Request() req: any) {
     return req.user;
   }
@@ -64,6 +81,9 @@ export class AuthController {
     status: 200,
     description: 'Access Token baru berhasil diterbitkan',
   })
+  @ApiUnauthorizedResponse({
+    description: 'Refresh token tidak valid atau kadaluwarsa',
+  })
   refresh(@Body() refreshTokenDto: RefreshTokenDto) {
     return this.authService.refreshToken(refreshTokenDto);
   }
@@ -74,7 +94,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Keluar dari aplikasi (Menghapus Refresh Token)' })
   @ApiResponse({ status: 200, description: 'Logout berhasil' })
+  @ApiUnauthorizedResponse({ description: 'Token tidak valid' })
   logout(@Request() req: any) {
-    return this.authService.logout(req.user.id);
+    return this.authService.logout(req.user.id || req.user.sub);
   }
 }

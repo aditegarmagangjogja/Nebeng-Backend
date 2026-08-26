@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider     = "prisma-client"
   output       = "../src/generated/prisma"
@@ -29,6 +27,8 @@ enum UserStatus {
   active
   suspended
   blocked
+  inactive   // Soft Delete / Akun dinonaktifkan
+  deleted    // Soft Delete / Akun dianonimkan (GDPR Compliant)
 }
 
 enum VerificationStatus {
@@ -126,8 +126,8 @@ enum RewardType {
 
 model Region {
   id        BigInt   @id @default(autoincrement())
-  name      String // Contoh: Region Yogyakarta, Region Banyumas
-  code      String   @unique // Contoh: REG-DIY, REG-BMS
+  name      String
+  code      String   @unique
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -157,7 +157,7 @@ model City {
 model User {
   id                 BigInt             @id @default(autoincrement())
   regionId           BigInt?            @map("region_id")
-  region             Region?            @relation(fields: [regionId], references: [id])
+  region             Region?            @relation(fields: [regionId], references: [id], onDelete: SetNull)
   name               String
   email              String             @unique
   phone              String             @unique
@@ -212,9 +212,9 @@ model UserProfile {
 model Verification {
   id               BigInt             @id @default(autoincrement())
   userId           BigInt             @map("user_id")
-  user             User               @relation("UserVerifications", fields: [userId], references: [id])
+  user             User               @relation("UserVerifications", fields: [userId], references: [id], onDelete: Cascade)
   approvedByUserId BigInt?            @map("approved_by_user_id")
-  approvedByUser   User?              @relation("AdminApprovals", fields: [approvedByUserId], references: [id])
+  approvedByUser   User?              @relation("AdminApprovals", fields: [approvedByUserId], references: [id], onDelete: SetNull)
   type             VerificationType
   status           VerificationStatus @default(pending)
   rejectionReason  String?            @map("rejection_reason") @db.Text
@@ -249,7 +249,7 @@ model PickupPoint {
   cityId     BigInt   @map("city_id")
   city       City     @relation(fields: [cityId], references: [id])
   operatorId BigInt?  @map("operator_id")
-  operator   User?    @relation("OperatorAssigned", fields: [operatorId], references: [id])
+  operator   User?    @relation("OperatorAssigned", fields: [operatorId], references: [id], onDelete: SetNull)
   name       String
   address    String   @db.Text
   latitude   Decimal  @db.Decimal(10, 8)
@@ -377,8 +377,8 @@ model CheckpointsLog {
   order           Order       @relation(fields: [orderId], references: [id])
   posId           BigInt      @map("pos_id")
   pos             PickupPoint @relation(fields: [posId], references: [id])
-  scannedByUserId BigInt      @map("scanned_by_user_id")
-  scannedByUser   User        @relation("OperatorCheckpoints", fields: [scannedByUserId], references: [id])
+  scannedByUserId BigInt?     @map("scanned_by_user_id")
+  scannedByUser   User?       @relation("OperatorCheckpoints", fields: [scannedByUserId], references: [id], onDelete: SetNull)
   scanType        ScanType    @map("scan_type")
   createdAt       DateTime    @default(now()) @map("created_at")
 
@@ -470,7 +470,7 @@ model WalletTransaction {
 model RewardTransaction {
   id          BigInt     @id @default(autoincrement())
   userId      BigInt     @map("user_id")
-  user        User       @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   points      Int
   type        RewardType
   description String?    @db.Text
