@@ -1,8 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { UserRepository } from '../../users/repositories/user.repository';
+import { UserStatus } from '../../../generated/prisma/enums';
 
 export interface JwtPayload {
   sub: string;
@@ -27,10 +32,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload) {
     const user = await this.userRepository.findById(payload.sub);
-    if (!user || user.status !== 'active') {
+    if (!user) {
       throw new UnauthorizedException(
-        'Akses ditolak. Pengguna tidak aktif atau tidak ditemukan',
+        'Sesi tidak valid. Pengguna tidak ditemukan',
       );
+    }
+
+    if (user.status === UserStatus.suspended) {
+      throw new ForbiddenException('Akun anda sedang ditanguhkan (Suspended)');
+    }
+
+    if (user.status === UserStatus.blocked) {
+      throw new ForbiddenException('Akun anda telah diblokir (Blocked)');
+    }
+
+    if (user.status !== UserStatus.active) {
+      throw new UnauthorizedException('Akun anda tidak aktif');
     }
 
     return {
@@ -38,6 +55,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       role: user.role,
       name: user.name,
+      regionId: user.regionId ? user.regionId.toString() : null,
     };
   }
 }

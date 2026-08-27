@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -13,31 +14,59 @@ import { VerificationStatus } from '../../generated/prisma/enums';
 export class VerificationService {
   constructor(private readonly verificationRepo: VerificationRepository) {}
 
+  private safeParseBigInt(id: string): bigint {
+    try {
+      return BigInt(id);
+    } catch {
+      throw new BadRequestException('Format id tidak valid');
+    }
+  }
+
   async sumbitVerification(userId: string, dto: SumbitVerificationDto) {
-    const userBigIntId = BigInt(userId);
+    const userBigIntId = this.safeParseBigInt(userId);
+
+    if (!dto.files || dto.files.length === 0) {
+      throw new BadRequestException('File dokumen verifikasi wajib diungah');
+    }
+
+    const exsistingActiveVerification =
+      await this.verificationRepo.findPendingOrApprovedByUserId(
+        userBigIntId,
+        dto.type,
+      );
+
+    if (exsistingActiveVerification) {
+      if (exsistingActiveVerification.status === VerificationStatus.pending) {
+        throw new ConflictException(
+          `Pengajuan verifikasi ${dto.type.toUpperCase()} anda masih dalam antrean peninjauan`,
+        );
+      }
+
+      if (exsistingActiveVerification.status == VerificationStatus.approved) {
+        throw new ConflictException(
+          `Dokumen verifikasi ${dto.type.toUpperCase()} Anda telah disetujui sebelumnya`,
+        );
+      }
+    }
+
     const verification = await this.verificationRepo.createVerification({
       userId: userBigIntId,
       type: dto.type,
       files: dto.files,
     });
 
-    await this.verificationRepo.updateUserVerificationStatus(
-      userBigIntId,
-      VerificationStatus.pending,
-    );
-
     return VerificationMapper.toResponse(verification);
   }
 
-  async getAllVerifications(status?: VerificationStatus) {
-    const list = await this.verificationRepo.findAll(status);
+  async getAllVerifications(status?: VerificationStatus, regionId?: string) {
+    const list = await this.verificationRepo.findAll(status, regionId);
     return list.map(VerificationMapper.toResponse);
   }
 
   async getVerificationById(id: string) {
-    const verification = await this.verificationRepo.findById(BigInt(id));
+    const verification = await this.verificationRepo.findById(id);
     if (!verification) {
-      throw new NotFoundException('verifikasi tidak ditemukan');
+      throw new NotFoundException('Verifikasi tidak ditemukan');
     }
 
     return VerificationMapper.toResponse(verification);
@@ -48,18 +77,33 @@ export class VerificationService {
     adminId: string,
     dto: ReviewVerificationDto,
   ) {
-    const verification = await this.verificationRepo.findById(BigInt(id));
+    if (!adminId || adminId === 'undefined' || adminId === 'null') {
+      throw new BadRequestException('ID admin pengulas tidak teridentifikasi');
+    }
+
+    const verification = await this.verificationRepo.findById(id);
     if (!verification) {
       throw new NotFoundException('Verifikasi tidak ditemukan');
     }
 
+    if (
+      dto.status !== VerificationStatus.approved &&
+      dto.status !== VerificationStatus.rejected
+    ) {
+      throw new BadRequestException(
+        'Status review hanya boleh approved atau rejected',
+      );
+    }
+
     if (dto.status === VerificationStatus.rejected && !dto.rejectionReason) {
-      throw new BadRequestException('Wajib diisi saat menolak verifikasi');
+      throw new BadRequestException(
+        'Alasan penolakan wajib diisi saat menolak verifikasi',
+      );
     }
 
     const updated = await this.verificationRepo.updateReviewStatus(
-      BigInt(id),
-      BigInt(adminId),
+      id,
+      adminId,
       dto.status,
       dto.rejectionReason,
     );

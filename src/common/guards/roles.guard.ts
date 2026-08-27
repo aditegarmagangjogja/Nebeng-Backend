@@ -18,11 +18,12 @@ export class RolesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (!requiredRoles) {
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
 
-    const { user } = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
 
     if (!user || !user.role) {
       throw new ForbiddenException(
@@ -30,7 +31,7 @@ export class RolesGuard implements CanActivate {
       );
     }
 
-    const hasRole = requiredRoles.includes(user.role);
+    const hasRole = requiredRoles.some((role) => role === user.role);
     if (!hasRole) {
       throw new ForbiddenException(
         `Akses ditolak. Hak akses khusus untuk role: [${requiredRoles.join(', ')}]`,

@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PickupPointRepository } from './repository/pickup-point.repository';
 import { CreatePickupPointDto } from './dto/create-pickup-point.dto';
 import { UpdatePickupPointDto } from './dto/update-pickup-point.dto';
 import { PickupPointMapper } from './mappers/pickup-point.mapper';
 import { randomBytes } from 'crypto';
+import { Role } from '../../generated/prisma/enums';
 
 @Injectable()
 export class PickupPointService {
@@ -13,7 +18,26 @@ export class PickupPointService {
     return `POS-${randomBytes(4).toString('hex').toUpperCase()}`;
   }
 
+  private async validateOperatorUser(operatorIdStr: string) {
+    const operatorId = BigInt(operatorIdStr);
+    const user = await this.pickupPointRepo.findUserById(operatorId);
+
+    if (!user) {
+      throw new NotFoundException('User operator tidak ditemukan');
+    }
+
+    if (user.role !== Role.operator_pos) {
+      throw new BadRequestException(
+        'User yang dipilih harus mempunyai role operator pos',
+      );
+    }
+  }
+
   async create(dto: CreatePickupPointDto) {
+    if (dto.operatorId) {
+      await this.validateOperatorUser(dto.operatorId);
+    }
+
     const qrCodePos = this.generateQrCodePos();
 
     const created = await this.pickupPointRepo.create({
@@ -51,6 +75,10 @@ export class PickupPointService {
     const pos = await this.pickupPointRepo.findById(BigInt(id));
     if (!pos) {
       throw new NotFoundException('Pickup Point/Pos tidak ditemukan');
+    }
+
+    if (dto.operatorId) {
+      await this.validateOperatorUser(dto.operatorId);
     }
 
     const updated = await this.pickupPointRepo.update(BigInt(id), {

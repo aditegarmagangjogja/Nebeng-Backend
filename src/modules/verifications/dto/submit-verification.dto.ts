@@ -4,6 +4,7 @@ import { Type } from 'class-transformer';
 import {
   IsArray,
   IsEnum,
+  IsIn,
   IsNotEmpty,
   IsString,
   ValidateNested,
@@ -15,9 +16,18 @@ export class VerifiactionFileDto {
   @IsNotEmpty()
   filePath!: string;
 
-  @ApiProperty({ example: 'image/jpeg' })
+  @ApiProperty({
+    example: 'image/jpeg',
+    description: 'Format MIME type file hanya .jpg, .png, .pdf',
+  })
   @IsString()
   @IsNotEmpty()
+  @IsIn(
+    ['image/jpg', 'image/png', 'application/pdf', 'image/jpg', 'image/jpeg'],
+    {
+      message: 'Tipe file tidak valid. hanya diperbolehkan jpep, jpg, png, pdf',
+    },
+  )
   fileType!: string;
 }
 

@@ -3,7 +3,7 @@ export class VehicleMapper {
     if (!vehicle) return null;
 
     return {
-      id: vehicle.id.toString(),
+      id: vehicle.id ? vehicle.id.toString() : null,
       userId: vehicle.userId ? vehicle.userId.toString() : null,
       type: vehicle.type,
       model: vehicle.model,

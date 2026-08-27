@@ -37,6 +37,42 @@ import { UpdateUserMeDto } from './dto/update-user-me.dto';
 export class UserController {
   constructor(private readonly userService: UsersService) {}
 
+  @Patch('me')
+  @ApiOperation({ summary: 'Memperbarui profil akun sendiri' })
+  @ApiResponse({ status: 200, type: UserResponseDto })
+  updateMyProfile(
+    @Request() req: any,
+    @Body() updateUserMeDto: UpdateUserMeDto,
+  ): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.update(userId, updateUserMeDto);
+  }
+
+  @Delete('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Menghapus akun sendiri (Soft Delete & Anonisasi)' })
+  @ApiResponse({ status: 200, description: 'Akun berhasil dianonimkan' })
+  removeMyAccount(@Request() req: any): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.remove(userId);
+  }
+
+  @Post('me/pin')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Membuat atau memperbarui PIN keamanan (6 digit)' })
+  setPin(@Request() req: any, @Body() setPinDto: SetPinDto) {
+    return this.userService.setPin(req.user.id, setPinDto.pin);
+  }
+
+  @Post('me/pin/verify')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Memverifikasi PIN keamanan untuk transaksi' })
+  verifyPin(@Request() req: any, @Body() verifyPinDto: VerifyPinDto) {
+    return this.userService.verifyPin(req.user.id, verifyPinDto.pin);
+  }
+
   @Post()
   @Roles(Role.superadmin, Role.admin_wilayah)
   @HttpCode(HttpStatus.CREATED)
@@ -67,26 +103,6 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Patch('me')
-  @ApiOperation({ summary: 'Memperbarui profil akun sendiri' })
-  @ApiResponse({ status: 200, type: UserResponseDto })
-  updateMyProfile(
-    @Request() req: any,
-    @Body() updateUserMeDto: UpdateUserMeDto,
-  ): Promise<UserResponseDto> {
-    const userId = req.user.id || req.user.sub;
-    return this.userService.update(userId, updateUserMeDto);
-  }
-
-  @Delete('me')
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Menghapus akun sendiri (Soft Delete & Anonisasi)' })
-  @ApiResponse({ status: 200, description: 'Akun berhasil dianonimkan' })
-  removeMyAccount(@Request() req: any): Promise<UserResponseDto> {
-    const userId = req.user.id || req.user.sub;
-    return this.userService.remove(userId);
-  }
-
   @Get(':id')
   @Roles(Role.superadmin, Role.admin_wilayah, Role.operator_pos)
   @ApiOperation({ summary: 'Mendapatkan detail pengguna berdasarkan ID' })
@@ -114,22 +130,6 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
     return this.userService.update(id, updateUserDto);
-  }
-
-  @Post('me/pin')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Membuat atau memperbarui PIN keamanan (6 digit)' })
-  setPin(@Request() req: any, @Body() setPinDto: SetPinDto) {
-    return this.userService.setPin(req.user.id, setPinDto.pin);
-  }
-
-  @Post('me/pin/verify')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Memverifikasi PIN keamanan untuk transaksi' })
-  verifyPin(@Request() req: any, @Body() verifyPinDto: VerifyPinDto) {
-    return this.userService.verifyPin(req.user.id, verifyPinDto.pin);
   }
 
   @Patch(':id/status')

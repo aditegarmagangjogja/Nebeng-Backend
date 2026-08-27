@@ -32,6 +32,13 @@ export class VehiclesRepository {
     });
   }
 
+  async findUserVerificationStatus(userId: bigint) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { statusVerification: true },
+    });
+  }
+
   async findByPlateNumber(plateNumber: string) {
     return this.prisma.vehicle.findFirst({
       where: { plateNumber },

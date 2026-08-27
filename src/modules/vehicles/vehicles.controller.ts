@@ -27,11 +27,7 @@ export class VehiclesController {
   @Roles('mitra')
   @ApiOperation({ summary: 'Tambah kendaraan baru (Mitra Only)' })
   async createVehicle(@GetUser() user: any, @Body() dto: CreateVehicleDto) {
-    return this.vehiclesService.createVehicle(
-      user.id,
-      user.statusVerification,
-      dto,
-    );
+    return this.vehiclesService.createVehicle(user.id, dto);
   }
 
   @Get('me')
@@ -44,7 +40,7 @@ export class VehiclesController {
   @Get(':id')
   @ApiOperation({ summary: 'Detail kendaraan berdasarkan ID' })
   async getVehicleById(@Param('id') id: string) {
-    return this.vehiclesService.getMyVehicles(id);
+    return this.vehiclesService.getVehicleById(id);
   }
 
   @Patch(':id')

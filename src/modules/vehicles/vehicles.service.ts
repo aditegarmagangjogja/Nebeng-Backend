@@ -14,12 +14,11 @@ import { VehicleType, VerificationStatus } from '../../generated/prisma/enums';
 export class VehicleService {
   constructor(private readonly vehiclesRepository: VehiclesRepository) {}
 
-  async createVehicle(
-    userIdStr: string,
-    userStatusVerification: string,
-    dto: CreateVehicleDto,
-  ) {
-    if (userStatusVerification !== VerificationStatus.approved) {
+  async createVehicle(userIdStr: string, dto: CreateVehicleDto) {
+    const userBigIntId = BigInt(userIdStr);
+    const user =
+      await this.vehiclesRepository.findUserVerificationStatus(userBigIntId);
+    if (!user || user.statusVerification !== VerificationStatus.approved) {
       throw new ForbiddenException(
         'Akun anda belum disetujui. Selesaikan verifikasi identitas terlebih dahulu.',
       );
@@ -29,9 +28,7 @@ export class VehicleService {
       dto.plateNumber,
     );
     if (existingPlate) {
-      throw new BadRequestException(
-        'Nomor plat kendaraan sudah terdaftar disistem.',
-      );
+      throw new BadRequestException('Nomor plat sudah terdaftar di sistem');
     }
 
     let finalSeats = dto.capacitySeats;
@@ -44,7 +41,7 @@ export class VehicleService {
       }
     }
 
-    const vehicle = await this.vehiclesRepository.create(BigInt(userIdStr), {
+    const vehicle = await this.vehiclesRepository.create(userBigIntId, {
       ...dto,
       capacitySeats: finalSeats,
       maxWeightCapacityKg: finalWeight,
@@ -57,8 +54,16 @@ export class VehicleService {
     const vehicle = await this.vehiclesRepository.findByUserId(
       BigInt(userIdStr),
     );
-    if (!vehicle) {
+    if (!vehicle || vehicle.length === 0) {
       throw new NotFoundException('Data kendaraan tidak ditemukan.');
+    }
+    return vehicle.map(VehicleMapper.toResponse);
+  }
+
+  async getVehicleById(idStr: string) {
+    const vehicle = await this.vehiclesRepository.findById(BigInt(idStr));
+    if (!vehicle) {
+      throw new NotFoundException('Data kendaraan tidak ditemukan');
     }
     return VehicleMapper.toResponse(vehicle);
   }

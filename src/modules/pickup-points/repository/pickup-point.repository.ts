@@ -45,6 +45,13 @@ export class PickupPointRepository {
     });
   }
 
+  async findUserById(userId: bigint) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true, status: true },
+    });
+  }
+
   async findAll(regionId?: bigint, cityId?: bigint, onlyActive = false) {
     return this.prisma.pickupPoint.findMany({
       where: {
