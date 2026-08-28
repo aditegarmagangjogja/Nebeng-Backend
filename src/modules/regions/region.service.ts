@@ -2,6 +2,7 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { RegionRepository } from './repositories/region.repository';
 import { CreateRegionDto } from './dto/create-region.dto';
@@ -31,7 +32,7 @@ export class RegionService {
   }
 
   async getRegionById(id: string) {
-    const region = await this.regionRepo.findRegionById(BigInt(id));
+    const region = await this.regionRepo.findRegionById(id);
     if (!region) {
       throw new NotFoundException('Region tidak ditemukan');
     }
@@ -39,7 +40,7 @@ export class RegionService {
   }
 
   async updateRegion(id: string, dto: UpdateRegionDto) {
-    const region = await this.regionRepo.findRegionById(BigInt(id));
+    const region = await this.regionRepo.findRegionById(id);
     if (!region) {
       throw new NotFoundException('Region tidak ditemukan');
     }
@@ -53,11 +54,22 @@ export class RegionService {
       }
     }
 
-    const updated = await this.regionRepo.updateRegion(BigInt(id), dto);
+    const updated = await this.regionRepo.updateRegion(id, dto);
     return RegionMapper.toRegionResponse(updated);
   }
 
   async createCity(dto: CreateCityDto) {
+    const existingCity = await this.regionRepo.findCityByNameAndProvince(
+      dto.name,
+      dto.province,
+    );
+
+    if (existingCity) {
+      throw new ConflictException(
+        `Kota ${dto.name} di Provinsi ${dto.province} sudah terdaftar`,
+      );
+    }
+
     const city = await this.regionRepo.createCity(dto);
     return RegionMapper.toCityResponse(city);
   }

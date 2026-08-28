@@ -11,6 +11,7 @@ import {
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiResponse,
   ApiQuery,
   ApiTags,
 } from '@nestjs/swagger';
@@ -44,12 +45,14 @@ export class RegionController {
   })
   @ApiQuery({ name: 'onlyActive', type: Boolean, required: false })
   async findAllRegions(@Query('onlyActive') onlyActive?: string) {
-    const isActive = onlyActive === 'true';
+    const isActive = onlyActive === 'true' || onlyActive === '1';
     return this.regionService.getAllRegions(isActive);
   }
 
   @Get('regions/:id')
   @ApiOperation({ summary: 'Melihat detail Region berdasarkan ID' })
+  @ApiResponse({ status: 200, description: 'Region ditemukan' })
+  @ApiResponse({ status: 404, description: 'Region tidak ditemukan' })
   async findOneRegion(@Param('id') id: string) {
     return this.regionService.getRegionById(id);
   }
@@ -59,6 +62,8 @@ export class RegionController {
   @Roles(Role.superadmin)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update/Deaktivasi Region (Superadmin Only)' })
+  @ApiResponse({ status: 200, description: 'Region berhasil diperbarui' })
+  @ApiResponse({ status: 404, description: 'Region tidak ditemukan' })
   async updateRegion(@Param('id') id: string, @Body() dto: UpdateRegionDto) {
     return this.regionService.updateRegion(id, dto);
   }
@@ -69,6 +74,8 @@ export class RegionController {
   @Roles(Role.superadmin, Role.admin_wilayah)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Tambah Kota Baru (Superadmin & Admin Wilayah)' })
+  @ApiResponse({ status: 200, description: 'Kota berhasil dibuat' })
+  @ApiResponse({ status: 409, description: 'Kota sudah terdaftar' })
   async createCity(@Body() dto: CreateCityDto) {
     return this.regionService.createCity(dto);
   }

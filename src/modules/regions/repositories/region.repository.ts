@@ -1,28 +1,39 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 
 @Injectable()
 export class RegionRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
   async createRegion(data: { name: string; code: string }) {
     return this.prisma.region.create({
       data: {
-        name: data.name,
-        code: data.code.toUpperCase(),
+        name: data.name.trim(),
+        code: data.code.toUpperCase().trim(),
       },
     });
   }
 
-  async findRegionById(id: bigint) {
+  async findRegionById(id: string) {
+    const parseId = this.safeParseBigInt(id);
+    if (!parseId) return null;
+
     return this.prisma.region.findUnique({
-      where: { id },
+      where: { id: parseId },
     });
   }
 
   async findRegionByCode(code: string) {
     return this.prisma.region.findUnique({
-      where: { code: code.toUpperCase() },
+      where: { code: code.toUpperCase().trim() },
     });
   }
 
@@ -34,14 +45,19 @@ export class RegionRepository {
   }
 
   async updateRegion(
-    id: bigint,
+    id: string,
     data: { name?: string; code?: string; isActive?: boolean },
   ) {
+    const parseId = this.safeParseBigInt(id);
+    if (!parseId) {
+      throw new BadRequestException('Format ID region tidak valid');
+    }
+
     return this.prisma.region.update({
-      where: { id },
+      where: { id: parseId },
       data: {
-        ...(data.name && { name: data.name }),
-        ...(data.code && { code: data.code.toUpperCase() }),
+        ...(data.name && { name: data.name.trim() }),
+        ...(data.code && { code: data.code.toUpperCase().trim() }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
     });
@@ -49,7 +65,19 @@ export class RegionRepository {
 
   async createCity(data: { name: string; province: string }) {
     return this.prisma.city.create({
-      data,
+      data: {
+        name: data.name.trim(),
+        province: data.province.trim(),
+      },
+    });
+  }
+
+  async findCityByNameAndProvince(name: string, province: string) {
+    return this.prisma.city.findFirst({
+      where: {
+        name: { equals: name.trim() },
+        province: { equals: province.trim() },
+      },
     });
   }
 
@@ -59,9 +87,11 @@ export class RegionRepository {
     });
   }
 
-  async findCityById(id: bigint) {
+  async findCityById(id: string) {
+    const parseId = this.safeParseBigInt(id);
+    if (!parseId) return null;
     return this.prisma.city.findUnique({
-      where: { id },
+      where: { id: parseId },
     });
   }
 }
