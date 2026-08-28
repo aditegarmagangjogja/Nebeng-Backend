@@ -17,9 +17,20 @@ export class OrdersService {
     private readonly tripsRepository: TripsRepository,
   ) {}
 
-  private generateTicketQr(): string {
-    const hex = randomBytes(4).toString('hex').toUpperCase();
-    return `TKT-${hex}`;
+  private async generateUniqueTicketQr(): Promise<string> {
+    let qrCodeTiket = '';
+    let isUnique = false;
+
+    while (!isUnique) {
+      const hex = randomBytes(4).toString('hex').toUpperCase();
+      qrCodeTiket = `TKT-${hex}`;
+      const existing = await this.ordersRepository.findByTicketQr(qrCodeTiket);
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
+    return qrCodeTiket;
   }
 
   private generateOtp(): string {
@@ -27,13 +38,17 @@ export class OrdersService {
   }
 
   async createOrder(customerIdStr: string, dto: CreateOrderDto) {
-    // 1. Fetch Trip & Validasi Eksistensi
-    const trip = await this.tripsRepository.findById(BigInt(dto.tripId));
+    const trip = await this.tripsRepository.findById(dto.tripId);
     if (!trip) {
       throw new NotFoundException('Jadwal Trip tidak ditemukan.');
     }
 
-    // 2. Validasi Status Trip (Must be scheduled)
+    if (trip.mitraId.toString() === customerIdStr) {
+      throw new BadRequestException(
+        'Anda tidak dapat memesan tiket pada jadwal trip milik anda sendiri',
+      );
+    }
+
     if (trip.status !== TripStatus.scheduled) {
       throw new BadRequestException(
         'Trip ini sudah tidak menerima pemesanan baru.',
@@ -47,7 +62,6 @@ export class OrdersService {
     let otpClaim: string | null = null;
     const itemsDataProcessed: any[] = [];
 
-    // 3. Logika Bisnis Penumpang (Passenger)
     if (dto.type === OrderType.passenger) {
       seatsBooked = dto.seatsBooked ?? 1;
 
@@ -57,11 +71,9 @@ export class OrdersService {
         );
       }
 
-      // Hitung Total Harga Tiket Penumpang
       totalPrice = Number(trip.price) * seatsBooked;
     }
 
-    // 4. Logika Bisnis Pengiriman Barang (Parcel)
     if (dto.type === OrderType.parcel) {
       if (!dto.items || dto.items.length === 0) {
         throw new BadRequestException(
@@ -71,7 +83,6 @@ export class OrdersService {
 
       totalItemsCount = dto.items.length;
 
-      // Hitung akumulasi berat dan susun payload item
       for (const item of dto.items) {
         const itemTotalWeight = item.weightPerItemKg * item.quantity;
         totalWeightKg += itemTotalWeight;
@@ -89,15 +100,11 @@ export class OrdersService {
         );
       }
 
-      // Hitung Harga Pengiriman Paket (misal: Menggunakan kalkulasi per KG atau minimum base fare)
-      // Disini menggunakan kalkulasi akumulasi berat x tarif per kg trip
       totalPrice = Number(trip.price) * totalWeightKg;
-
-      // Generate OTP 6-Digit untuk klaim penerima barang
       otpClaim = this.generateOtp();
     }
 
-    const qrCodeTicket = this.generateTicketQr();
+    const qrCodeTicket = await this.generateUniqueTicketQr();
 
     const orderPayload = {
       type: dto.type,
@@ -109,10 +116,9 @@ export class OrdersService {
       otpClaim,
     };
 
-    // 5. Eksekusi Transaksi Atomik
     const order = await this.ordersRepository.createOrderWithTransaction(
-      BigInt(dto.tripId),
-      BigInt(customerIdStr),
+      dto.tripId,
+      customerIdStr,
       orderPayload,
       itemsDataProcessed,
       seatsBooked,
@@ -123,14 +129,12 @@ export class OrdersService {
   }
 
   async getMyOrders(customerIdStr: string) {
-    const orders = await this.ordersRepository.findByCustomerId(
-      BigInt(customerIdStr),
-    );
+    const orders = await this.ordersRepository.findByCustomerId(customerIdStr);
     return OrderMapper.toResponseList(orders);
   }
 
   async getOrderById(idStr: string) {
-    const order = await this.ordersRepository.findById(BigInt(idStr));
+    const order = await this.ordersRepository.findById(idStr);
     if (!order) {
       throw new NotFoundException('Order tidak ditemukan.');
     }

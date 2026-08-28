@@ -19,7 +19,8 @@ export class PaymentsService {
   ) {}
 
   async checkoutPayment(userIdStr: string, dto: CheckoutPaymentDto) {
-    const order = await this.ordersRepository.findById(BigInt(dto.orderId));
+    // 1. Fetch Order menggunakan string ID (Fixes TS2345 error)
+    const order = await this.ordersRepository.findById(dto.orderId);
 
     if (!order) {
       throw new NotFoundException('Order tidak ditemukan');
@@ -31,7 +32,7 @@ export class PaymentsService {
 
     if (order.status !== OrderStatus.pending_payment) {
       throw new BadRequestException(
-        'order ini tidak dalam status menungu pembayaran',
+        'Order ini tidak dalam status menunggu pembayaran',
       );
     }
 
@@ -40,7 +41,7 @@ export class PaymentsService {
 
     const { payment, order: updatedOrder } =
       await this.paymentsRepository.createPaymentAndUpdateOrder(
-        BigInt(dto.orderId),
+        dto.orderId,
         dto.paymentGateway,
         transactionId,
         amount,

@@ -1,24 +1,38 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 
 @Injectable()
 export class OrdersRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
   async createOrderWithTransaction(
-    tripId: bigint,
-    customerId: bigint,
+    tripId: string,
+    customerId: string,
     orderData: any,
     itemsData: any[],
     seatsToDeduct: number,
     weightToDeduct: number,
   ) {
+    const parseTripId = this.safeParseBigInt(tripId);
+    const parseCustomerId = this.safeParseBigInt(customerId);
+
+    if (!parseTripId || !parseCustomerId) {
+      throw new BadRequestException('Format id trip atau customer tidak valid');
+    }
+
     return this.prisma.$transaction(async (tx) => {
-      // 1. Buat Order
       const createdOrder = await tx.order.create({
         data: {
-          tripId,
-          customerId,
+          tripId: parseTripId,
+          customerId: parseCustomerId,
           type: orderData.type,
           seatsBooked: orderData.seatsBooked,
           totalItemsCount: orderData.totalItemsCount,
@@ -31,7 +45,6 @@ export class OrdersRepository {
         },
       });
 
-      // 2. Jika tipe parcel, catat detail item
       if (itemsData && itemsData.length > 0) {
         await tx.itemOrder.createMany({
           data: itemsData.map((item) => ({
@@ -49,16 +62,14 @@ export class OrdersRepository {
         });
       }
 
-      // 3. Update Sisa Kapasitas Trip
       await tx.trip.update({
-        where: { id: tripId },
+        where: { id: parseTripId },
         data: {
           seatAvailable: { decrement: seatsToDeduct },
           remainingWeightCapacityKg: { decrement: weightToDeduct },
         },
       });
 
-      // 4. Return Order Lengkap beserta Relasi
       return tx.order.findUnique({
         where: { id: createdOrder.id },
         include: {
@@ -76,9 +87,12 @@ export class OrdersRepository {
     });
   }
 
-  async findByCustomerId(customerId: bigint) {
+  async findByCustomerId(customerId: string) {
+    const parseCustomerId = this.safeParseBigInt(customerId);
+    if (!parseCustomerId) return [];
+
     return this.prisma.order.findMany({
-      where: { customerId },
+      where: { customerId: parseCustomerId },
       include: {
         trip: {
           include: {
@@ -92,9 +106,12 @@ export class OrdersRepository {
     });
   }
 
-  async findById(id: bigint) {
+  async findById(id: string) {
+    const parseId = this.safeParseBigInt(id);
+    if (!parseId) return null;
+
     return this.prisma.order.findUnique({
-      where: { id },
+      where: { id: parseId },
       include: {
         trip: {
           include: {
@@ -109,9 +126,20 @@ export class OrdersRepository {
     });
   }
 
-  async updateStatus(id: bigint, status: any, escrowStatus?: any) {
+  async findByTicketQr(qrCodeTicket: string) {
+    return this.prisma.order.findUnique({
+      where: { qrCodeTicket },
+    });
+  }
+
+  async updateStatus(id: string, status: any, escrowStatus?: any) {
+    const parseId = this.safeParseBigInt(id);
+    if (!parseId) {
+      throw new BadRequestException('Format Id order tidak valid');
+    }
+
     return this.prisma.order.update({
-      where: { id },
+      where: { id: parseId },
       data: {
         status,
         ...(escrowStatus && { escrowStatus }),

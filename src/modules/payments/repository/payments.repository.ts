@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import {
   EscrowStatus,
@@ -10,16 +10,29 @@ import {
 export class PaymentsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
   async createPaymentAndUpdateOrder(
-    orderId: bigint,
+    orderIdStr: string,
     paymentGateway: string,
     transactionId: string,
     amount: number,
   ) {
+    const parsedOrderId = this.safeParseBigInt(orderIdStr);
+    if (!parsedOrderId) {
+      throw new BadRequestException('Format ID Order tidak valid');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const payment = await tx.payment.create({
         data: {
-          orderId,
+          orderId: parsedOrderId,
           paymentGateway,
           transactionId,
           amount,
@@ -28,7 +41,7 @@ export class PaymentsRepository {
       });
 
       const order = await tx.order.update({
-        where: { id: orderId },
+        where: { id: parsedOrderId },
         data: {
           status: OrderStatus.paid,
           escrowStatus: EscrowStatus.held,

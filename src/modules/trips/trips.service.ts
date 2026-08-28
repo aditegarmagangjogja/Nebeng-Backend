@@ -10,11 +10,7 @@ import { CreateTripDto } from './dto/create-trip.dto';
 import { QueryTripDto } from './dto/query-trip.dto';
 import { UpdateTripDto } from './dto/update-trip.dto';
 import { TripMapper } from './mappers/trip.mapper';
-import {
-  TripStatus,
-  VehicleType,
-  VerificationStatus,
-} from '../../generated/prisma/enums';
+import { TripStatus, VehicleType } from '../../generated/prisma/enums';
 import { randomBytes } from 'crypto';
 
 @Injectable()
@@ -24,9 +20,28 @@ export class TripsService {
     private readonly vehiclesRepository: VehiclesRepository,
   ) {}
 
-  private generateTripQr(): string {
-    const hex = randomBytes(4).toString('hex').toUpperCase();
-    return `TRIP-${hex}`;
+  private async generateUniqueTripQr(): Promise<string> {
+    let qrCodeTrip = '';
+    let isUnique = false;
+
+    while (!isUnique) {
+      const hex = randomBytes(4).toString('hex').toUpperCase();
+      qrCodeTrip = `TRIP-${hex}`;
+      const existing = await this.tripsRepository.findByQrCode(qrCodeTrip);
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
+    return qrCodeTrip;
+  }
+
+  private safeParseBigInt(id: string): bigint {
+    try {
+      return BigInt(id);
+    } catch {
+      throw new BadRequestException('Format ID tidak valid');
+    }
   }
 
   async createTrip(
@@ -34,22 +49,40 @@ export class TripsService {
     userStatusVerification: string,
     dto: CreateTripDto,
   ) {
-    // 1. Check status verifikasi Mitra
-    if (userStatusVerification !== VerificationStatus.approved) {
+    // eslint-disable-next-line prefer-const
+    let parsedUserId: string = userIdStr;
+    if (!parsedUserId || parsedUserId === 'undefined') {
+      throw new ForbiddenException(
+        'Sesi user tidak valid. Silakan login kembali.',
+      );
+    }
+
+    // 1. Fetch status verifikasi Mitra langsung dari DB
+    const user =
+      await this.vehiclesRepository.findUserVerificationStatus(parsedUserId);
+
+    if (!user) {
+      throw new NotFoundException(
+        `User dengan ID ${parsedUserId} tidak ditemukan di database.`,
+      );
+    }
+
+    if (
+      !userStatusVerification ||
+      userStatusVerification.toLowerCase() !== 'approved'
+    ) {
       throw new ForbiddenException(
         'Hanya Mitra terverifikasi (approved) yang dapat membuat jadwal trip.',
       );
     }
 
     // 2. Fetch & Check kepemilikan kendaraan
-    const vehicle = await this.vehiclesRepository.findById(
-      BigInt(dto.vehicleId),
-    );
+    const vehicle = await this.vehiclesRepository.findById(dto.vehicleId);
     if (!vehicle) {
       throw new NotFoundException('Kendaraan tidak ditemukan.');
     }
 
-    if (vehicle.userId.toString() !== userIdStr) {
+    if (vehicle.userId.toString() !== parsedUserId) {
       throw new ForbiddenException('Kendaraan ini bukan milik Anda.');
     }
 
@@ -72,21 +105,21 @@ export class TripsService {
       }
     }
 
-    const qrCodeTrip = this.generateTripQr();
+    const qrCodeTrip = await this.generateUniqueTripQr();
 
     const tripData = {
-      mitraId: BigInt(userIdStr),
-      vehicleId: BigInt(dto.vehicleId),
-      originPointId: BigInt(dto.originPointId),
-      destinationPointId: BigInt(dto.destinationPointId),
+      mitraId: this.safeParseBigInt(parsedUserId),
+      vehicleId: this.safeParseBigInt(dto.vehicleId),
+      originPointId: this.safeParseBigInt(dto.originPointId),
+      destinationPointId: this.safeParseBigInt(dto.destinationPointId),
       vehicleType: vehicle.type,
       departureDate: new Date(dto.departureDate),
       departureTime: new Date(dto.departureTime),
       price: dto.price,
       seatTotal,
-      seatAvailable: seatTotal, // Inisialisasi awal
+      seatAvailable: seatTotal,
       maxWeightCapacityKg: maxWeightKg,
-      remainingWeightCapacityKg: maxWeightKg, // Inisialisasi awal
+      remainingWeightCapacityKg: maxWeightKg,
       qrCodeTrip,
       status: TripStatus.scheduled,
     };
@@ -99,10 +132,12 @@ export class TripsService {
     const filters: any = {};
 
     if (query.originPointId) {
-      filters.originPointId = BigInt(query.originPointId);
+      filters.originPointId = this.safeParseBigInt(query.originPointId);
     }
     if (query.destinationPointId) {
-      filters.destinationPointId = BigInt(query.destinationPointId);
+      filters.destinationPointId = this.safeParseBigInt(
+        query.destinationPointId,
+      );
     }
     if (query.status) {
       filters.status = query.status;
@@ -119,7 +154,7 @@ export class TripsService {
   }
 
   async getTripById(idStr: string) {
-    const trip = await this.tripsRepository.findById(BigInt(idStr));
+    const trip = await this.tripsRepository.findById(idStr);
     if (!trip) {
       throw new NotFoundException('Trip tidak ditemukan.');
     }
@@ -127,7 +162,7 @@ export class TripsService {
   }
 
   async updateTrip(idStr: string, userIdStr: string, dto: UpdateTripDto) {
-    const trip = await this.tripsRepository.findById(BigInt(idStr));
+    const trip = await this.tripsRepository.findById(idStr);
     if (!trip) {
       throw new NotFoundException('Trip tidak ditemukan.');
     }
@@ -138,7 +173,11 @@ export class TripsService {
       );
     }
 
-    const updateData: any = { ...dto };
+    const updateData: any = {};
+
+    if (dto.status) {
+      updateData.status = dto.status;
+    }
     if (dto.departureDate) {
       updateData.departureDate = new Date(dto.departureDate);
     }
@@ -146,10 +185,7 @@ export class TripsService {
       updateData.departureTime = new Date(dto.departureTime);
     }
 
-    const updated = await this.tripsRepository.update(
-      BigInt(idStr),
-      updateData,
-    );
+    const updated = await this.tripsRepository.update(idStr, updateData);
     return TripMapper.toResponse(updated);
   }
 }
