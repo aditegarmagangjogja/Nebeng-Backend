@@ -1,18 +1,18 @@
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+import { RewardsService } from './rewards.service';
+import { EarnRewardDto } from './dto/earn-reward.dto';
+import { RedeemRewardDto } from './dto/redeem-reward.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { EarnRewardDto } from './dto/earn-reward.dto';
-import { RedeemRewardDto } from './dto/redeem-reward.dto';
-import { RewardsService } from './rewards.service';
+import { Role } from '../../generated/prisma/enums';
+import { GetUser } from '../../common/decorators/get-user.decorators';
 
 @ApiTags('Rewards')
 @ApiBearerAuth()
@@ -21,24 +21,32 @@ import { RewardsService } from './rewards.service';
 export class RewardsController {
   constructor(private readonly rewardsService: RewardsService) {}
 
+  @Get('me')
   @ApiOperation({
-    summary: 'Tambah point reward ke user (Superadmin / Admin wilayah)',
+    summary: 'Melihat ringkasan saldo poin dan riwayat reward saya',
   })
-  @Roles('superadmin', 'admin_wilayah')
+  @ApiResponse({ status: 200, description: 'Ringkasan poin ditemukan' })
+  async getMyRewardSummary(@GetUser('id') userId: string) {
+    return this.rewardsService.getUserRewardSummary(String(userId));
+  }
+
   @Post('earn')
+  @Roles(Role.superadmin, Role.admin_wilayah)
+  @ApiOperation({ summary: 'Menambahkan poin reward ke user (Admin Only)' })
+  @ApiResponse({ status: 201, description: 'Poin berhasil ditambahkan' })
+  @ApiResponse({ status: 404, description: 'User tidak ditemukan' })
   async earnPoints(@Body() dto: EarnRewardDto) {
     return this.rewardsService.earnPoints(dto);
   }
 
-  @ApiOperation({ summary: 'Tukarkan poin reward (Customer / Mitra)' })
   @Post('redeem')
-  async redeemPoints(@Request() req: any, @Body() dto: RedeemRewardDto) {
-    return this.rewardsService.reedemPoints(req.user.id, dto);
-  }
-
-  @ApiOperation({ summary: 'cek saldo poin dan riwayat transaksi poin user' })
-  @Get('me')
-  async getMyRewardSummary(@Request() req: any) {
-    return this.rewardsService.getUserRewardSummary(req.user.id);
+  @ApiOperation({ summary: 'Menukarkan poin reward milik pengguna' })
+  @ApiResponse({ status: 201, description: 'Poin berhasil ditukarkan' })
+  @ApiResponse({ status: 400, description: 'Saldo poin tidak mencukupi' })
+  async redeemPoints(
+    @GetUser('id') userId: string,
+    @Body() dto: RedeemRewardDto,
+  ) {
+    return this.rewardsService.redeemPoints(String(userId), dto);
   }
 }

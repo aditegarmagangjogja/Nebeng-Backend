@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { RewardType } from '../../../generated/prisma/enums';
 
@@ -6,20 +6,36 @@ import { RewardType } from '../../../generated/prisma/enums';
 export class RewardsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findUserById(userId: bigint) {
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
+  async findUserById(userIdStr: string) {
+    const parsedUserId = this.safeParseBigInt(userIdStr);
+    if (!parsedUserId) return null;
+
     return this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: parsedUserId },
     });
   }
 
   async addRewardPoints(data: {
-    userId: bigint;
+    userIdStr: string;
     points: number;
     description?: string;
   }) {
+    const parsedUserId = this.safeParseBigInt(data.userIdStr);
+    if (!parsedUserId) {
+      throw new BadRequestException('Format ID User tidak valid');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
-        where: { id: data.userId },
+        where: { id: parsedUserId },
         data: {
           rewardPoints: { increment: data.points },
         },
@@ -27,7 +43,7 @@ export class RewardsRepository {
 
       const transaction = await tx.rewardTransaction.create({
         data: {
-          userId: data.userId,
+          userId: parsedUserId,
           points: data.points,
           type: RewardType.earn,
           description: data.description,
@@ -40,13 +56,18 @@ export class RewardsRepository {
   }
 
   async deductRewardPoints(data: {
-    userId: bigint;
+    userIdStr: string;
     points: number;
     description?: string;
   }) {
+    const parsedUserId = this.safeParseBigInt(data.userIdStr);
+    if (!parsedUserId) {
+      throw new BadRequestException('Format ID User tidak valid');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
-        where: { id: data.userId },
+        where: { id: parsedUserId },
         data: {
           rewardPoints: { decrement: data.points },
         },
@@ -54,20 +75,24 @@ export class RewardsRepository {
 
       const transaction = await tx.rewardTransaction.create({
         data: {
-          userId: data.userId,
+          userId: parsedUserId,
           points: data.points,
           type: RewardType.redeem,
           description: data.description,
         },
         include: { user: true },
       });
+
       return { user: updatedUser, transaction };
     });
   }
 
-  async getRewardHistoryByUserId(userId: bigint) {
+  async getRewardHistoryByUserId(userIdStr: string) {
+    const parsedUserId = this.safeParseBigInt(userIdStr);
+    if (!parsedUserId) return [];
+
     return this.prisma.rewardTransaction.findMany({
-      where: { userId },
+      where: { userId: parsedUserId },
       orderBy: { createdAt: 'desc' },
     });
   }

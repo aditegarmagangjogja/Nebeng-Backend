@@ -1,59 +1,65 @@
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import {
-  Controller,
-  Post,
-  Get,
-  Body,
-  Param,
-  UseGuards,
-  Request,
-} from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ChatService } from './chat.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { GetUser } from '../../common/decorators/get-user.decorators';
 
 @ApiTags('Chats')
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @Controller('chat')
-export class ChatController {
+export class ChatsController {
   constructor(private readonly chatService: ChatService) {}
 
-  @ApiOperation({
-    summary: 'Mulai atau ambil percakapan antara customer dan mitra.',
-  })
   @Post('conversation')
-  async createConversation(
-    @Request() req: any,
+  @ApiOperation({
+    summary: 'Mendapatkan atau membuat percakapan baru per trip',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Percakapan berhasil ditemukan/dibuat',
+  })
+  async getOrCreateConversation(
+    @GetUser('id') userId: string,
     @Body() dto: CreateConversationDto,
   ) {
-    return this.chatService.getOrCreateConversation(req.user.id, dto);
+    return this.chatService.getOrCreateConversation(String(userId), dto);
   }
 
-  @ApiOperation({
-    summary: 'Daftar semua percakapan milik user yang sedang login',
-  })
   @Get('conversation')
-  async getUserConversations(@Request() req: any) {
-    return this.chatService.getUserConversation(req.user.id);
+  @ApiOperation({ summary: 'Daftar semua percakapan milik pengguna' })
+  @ApiResponse({ status: 200, description: 'Daftar percakapan ditemukan' })
+  async getUserConversation(@GetUser('id') userId: string) {
+    return this.chatService.getUserConversation(String(userId));
   }
 
-  @ApiOperation({ summary: 'Kirim pesan ke dalam percakapan' })
   @Post('conversation/:id/messages')
+  @ApiOperation({
+    summary: 'Kirim pesan ke dalam percakapan (HTTP + Realtime Broadcast)',
+  })
+  @ApiResponse({ status: 201, description: 'Pesan berhasil terkirim' })
   async sendMessage(
-    @Request() req: any,
+    @GetUser('id') userId: string,
     @Param('id') conversationId: string,
     @Body() dto: SendMessageDto,
   ) {
-    return this.chatService.sendMessage(req.user.id, conversationId, dto);
+    return this.chatService.sendMessage(String(userId), conversationId, dto);
   }
 
-  @ApiOperation({
-    summary: 'Ambil semua pesan dalam percakapan',
-  })
-  @Get('conversations/:id/messages')
-  async getMessages(@Request() req: any, @Param('id') conversationId: string) {
-    return this.chatService.getMessages(req.user.id, conversationId);
+  @Get('conversation/:id/messages')
+  @ApiOperation({ summary: 'Mengambil riwayat pesan dalam percakapan' })
+  @ApiResponse({ status: 200, description: 'Riwayat pesan ditemukan' })
+  async getMessages(
+    @GetUser('id') userId: string,
+    @Param('id') conversationId: string,
+  ) {
+    return this.chatService.getMessages(String(userId), conversationId);
   }
 }

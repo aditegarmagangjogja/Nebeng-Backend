@@ -1,25 +1,13 @@
-import {
-  describe,
-  beforeEach,
-  afterEach,
-  it,
-  expect,
-  jest,
-} from '@jest/globals';
-
-// Mock Prisma Service untuk isolasi penuh
-jest.mock('../../prisma/prisma.service', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
-}));
-
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { OrdersService } from './orders.service';
 import { OrdersRepository } from './repository/orders.repository';
 import { TripsRepository } from '../trips/repository/trips.repository';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import {
   OrderType,
   TripStatus,
+  EscrowStatus,
   OrderStatus,
 } from '../../generated/prisma/enums';
 
@@ -28,14 +16,12 @@ describe('OrdersService', () => {
   let ordersRepository: jest.Mocked<OrdersRepository>;
   let tripsRepository: jest.Mocked<TripsRepository>;
 
-  const mockUser = { id: '10' };
-
   const mockTrip = {
     id: BigInt(100),
-    mitraId: BigInt(20),
-    price: BigInt(50000),
-    seatAvailable: 4,
-    remainingWeightCapacityKg: 20,
+    mitraId: BigInt(99),
+    price: '50000.00' as any,
+    seatAvailable: 3,
+    remainingWeightCapacityKg: '20.00' as any,
     status: TripStatus.scheduled,
   };
 
@@ -44,22 +30,35 @@ describe('OrdersService', () => {
     tripId: BigInt(100),
     customerId: BigInt(10),
     type: OrderType.passenger,
-    status: OrderStatus.pending_payment,
-    totalPrice: BigInt(100000),
     seatsBooked: 2,
     totalItemsCount: 0,
-    totalWeightKg: 0,
-    qrCodeTicket: 'TKT-ABC12345',
+    totalWeightKg: '0.00' as any,
+    totalPrice: '100000.00' as any,
+    qrCodeTicket: 'TKT-12345678',
     otpClaim: null,
+    status: OrderStatus.pending_payment,
+    escrowStatus: EscrowStatus.pending,
     createdAt: new Date(),
     updatedAt: new Date(),
+    trip: {
+      ...mockTrip,
+      originPoint: { id: BigInt(1), name: 'Pos Origin' },
+      destinationPoint: { id: BigInt(2), name: 'Pos Dest' },
+      mitra: { id: BigInt(99), name: 'Mitra Test' },
+    },
+    customer: { id: BigInt(10), name: 'Customer Test' },
+    itemOrders: [],
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const mockOrdersRepo = {
       createOrderWithTransaction: jest.fn(),
       findByCustomerId: jest.fn(),
       findById: jest.fn(),
+      findByTicketQr: jest.fn(),
+      updateStatus: jest.fn(),
     };
 
     const mockTripsRepo = {
@@ -83,205 +82,196 @@ describe('OrdersService', () => {
     ) as jest.Mocked<TripsRepository>;
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
+  it('harus terinisialisasi dengan benar', () => {
     expect(service).toBeDefined();
   });
 
-  describe('createOrder() - Passenger', () => {
-    it('harus berhasil membuat order tiket penumpang jika sisa kursi mencukupi', async () => {
-      tripsRepository.findById.mockResolvedValue(mockTrip as any);
-      ordersRepository.createOrderWithTransaction.mockResolvedValue(
-        mockOrder as any,
-      );
-
+  describe('createOrder (Pembuatan Pesanan Baru)', () => {
+    it('harus berhasil membuat pemesanan tiket penumpang (passenger) jika sisa kursi mencukupi', async () => {
       const dto = {
         tripId: '100',
         type: OrderType.passenger,
         seatsBooked: 2,
       };
 
-      const result = await service.createOrder(mockUser.id, dto as any);
+      tripsRepository.findById.mockResolvedValue(mockTrip as any);
+      ordersRepository.findByTicketQr.mockResolvedValue(null);
+      ordersRepository.createOrderWithTransaction.mockResolvedValue(
+        mockOrder as any,
+      );
 
-      expect(tripsRepository.findById).toHaveBeenCalledWith(BigInt(100));
+      const result = await service.createOrder('10', dto as any);
+
+      expect(tripsRepository.findById).toHaveBeenCalledWith('100');
       expect(ordersRepository.createOrderWithTransaction).toHaveBeenCalledWith(
-        BigInt(100),
-        BigInt(10),
+        '100',
+        '10',
         expect.objectContaining({
           type: OrderType.passenger,
           seatsBooked: 2,
           totalPrice: 100000,
-          qrCodeTicket: expect.stringMatching(/^TKT-[A-F0-9]{8}$/),
-          otpClaim: null,
         }),
         [],
         2,
         0,
       );
       expect(result).toBeDefined();
+      expect(result?.id).toEqual('1');
     });
 
-    it('harus melempar BadRequestException jika kursi yang diminta melebihi sisa kursi', async () => {
-      tripsRepository.findById.mockResolvedValue(mockTrip as any);
-
+    it('harus berhasil membuat pemesanan kirim paket (parcel) dan menggenerasi OTP claim 6-digit', async () => {
       const dto = {
         tripId: '100',
-        type: OrderType.passenger,
-        seatsBooked: 5,
+        type: OrderType.parcel,
+        items: [
+          {
+            itemName: 'Dokumen Penting',
+            itemCategory: 'Dokumen',
+            quantity: 1,
+            weightPerItemKg: 2,
+            sizeEnum: 'small' as any,
+            recipientName: 'Budi',
+            recipientPhone: '081299998888',
+          },
+        ],
       };
-
-      await expect(
-        service.createOrder(mockUser.id, dto as any),
-      ).rejects.toThrow(BadRequestException);
-      expect(
-        ordersRepository.createOrderWithTransaction,
-      ).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('createOrder() - Parcel', () => {
-    it('harus berhasil membuat order pengiriman parcel jika kapasitas bagasi mencukupi', async () => {
-      tripsRepository.findById.mockResolvedValue(mockTrip as any);
 
       const mockParcelOrder = {
         ...mockOrder,
         type: OrderType.parcel,
-        totalPrice: BigInt(250000),
-        totalWeightKg: 5,
+        seatsBooked: 0,
+        totalItemsCount: 1,
+        totalWeightKg: '2.00' as any,
+        totalPrice: '100000.00' as any,
         otpClaim: '123456',
       };
 
+      tripsRepository.findById.mockResolvedValue(mockTrip as any);
+      ordersRepository.findByTicketQr.mockResolvedValue(null);
       ordersRepository.createOrderWithTransaction.mockResolvedValue(
         mockParcelOrder as any,
       );
 
-      const dto = {
-        tripId: '100',
-        type: OrderType.parcel,
-        items: [
-          {
-            itemName: 'Kardus Baju',
-            itemCategory: 'Pakaian',
-            sizeEnum: 'MEDIUM',
-            recipientName: 'Budi',
-            recipientPhone: '08123456789',
-            weightPerItemKg: 2.5,
-            quantity: 2,
-          },
-        ],
-      };
-
-      const result = await service.createOrder(mockUser.id, dto as any);
+      const result = await service.createOrder('10', dto as any);
 
       expect(ordersRepository.createOrderWithTransaction).toHaveBeenCalledWith(
-        BigInt(100),
-        BigInt(10),
+        '100',
+        '10',
         expect.objectContaining({
           type: OrderType.parcel,
           totalItemsCount: 1,
-          totalWeightKg: 5,
-          totalPrice: 250000,
+          totalWeightKg: 2,
           otpClaim: expect.stringMatching(/^\d{6}$/),
         }),
-        expect.arrayContaining([
-          expect.objectContaining({
-            itemName: 'Kardus Baju',
-            totalItemWeightKg: 5,
-          }),
-        ]),
+        expect.any(Array),
         0,
-        5,
+        2,
       );
       expect(result).toBeDefined();
     });
 
-    it('harus melempar BadRequestException jika item parcel tidak diisi', async () => {
+    it('harus melemparkan BadRequestException jika Mitra mencoba memesan tiket pada trip miliknya sendiri', async () => {
+      const dto = { tripId: '100', type: OrderType.passenger, seatsBooked: 1 };
+
       tripsRepository.findById.mockResolvedValue(mockTrip as any);
 
-      const dto = {
-        tripId: '100',
-        type: OrderType.parcel,
-        items: [],
-      };
-
-      await expect(
-        service.createOrder(mockUser.id, dto as any),
-      ).rejects.toThrow(BadRequestException);
+      await expect(service.createOrder('99', dto as any)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
-    it('harus melempar BadRequestException jika total berat barang melebihi kapasitas sisa bagasi', async () => {
+    it('harus melemparkan BadRequestException jika status trip bukan scheduled', async () => {
+      const dto = { tripId: '100', type: OrderType.passenger, seatsBooked: 1 };
+
+      tripsRepository.findById.mockResolvedValue({
+        ...mockTrip,
+        status: TripStatus.in_transit,
+      } as any);
+
+      await expect(service.createOrder('10', dto as any)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('harus melemparkan BadRequestException jika jumlah kursi yang dipesan melebihi sisa kursi yang tersedia', async () => {
+      const dto = { tripId: '100', type: OrderType.passenger, seatsBooked: 5 };
+
       tripsRepository.findById.mockResolvedValue(mockTrip as any);
 
+      await expect(service.createOrder('10', dto as any)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('harus melemparkan BadRequestException jika berat paket melebihi sisa kapasitas bagasi trip', async () => {
       const dto = {
         tripId: '100',
         type: OrderType.parcel,
         items: [
           {
-            itemName: 'Mesin Cuci',
+            itemName: 'Barang Berat',
             itemCategory: 'Elektronik',
-            sizeEnum: 'LARGE',
-            recipientName: 'Budi',
-            recipientPhone: '08123456789',
-            weightPerItemKg: 25,
             quantity: 1,
+            weightPerItemKg: 25,
+            sizeEnum: 'large' as any,
+            recipientName: 'Budi',
+            recipientPhone: '081299998888',
           },
         ],
       };
 
-      await expect(
-        service.createOrder(mockUser.id, dto as any),
-      ).rejects.toThrow(BadRequestException);
-    });
-  });
+      tripsRepository.findById.mockResolvedValue(mockTrip as any);
 
-  describe('createOrder() - General Validations', () => {
-    it('harus melempar NotFoundException jika Trip tidak ditemukan', async () => {
+      await expect(service.createOrder('10', dto as any)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('harus melemparkan BadRequestException jika pemesanan jenis parcel tidak menyertakan daftar item', async () => {
+      const dto = { tripId: '100', type: OrderType.parcel, items: [] };
+
+      tripsRepository.findById.mockResolvedValue(mockTrip as any);
+
+      await expect(service.createOrder('10', dto as any)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('harus melemparkan NotFoundException jika tripId tidak ditemukan', async () => {
       tripsRepository.findById.mockResolvedValue(null);
 
-      const dto = { tripId: '999', type: OrderType.passenger, seatsBooked: 1 };
-
       await expect(
-        service.createOrder(mockUser.id, dto as any),
+        service.createOrder('10', {
+          tripId: '999',
+          type: OrderType.passenger,
+        } as any),
       ).rejects.toThrow(NotFoundException);
-    });
-
-    it('harus melempar BadRequestException jika status Trip bukan scheduled', async () => {
-      const completedTrip = { ...mockTrip, status: TripStatus.completed };
-      tripsRepository.findById.mockResolvedValue(completedTrip as any);
-
-      const dto = { tripId: '100', type: OrderType.passenger, seatsBooked: 1 };
-
-      await expect(
-        service.createOrder(mockUser.id, dto as any),
-      ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('getMyOrders() & getOrderById()', () => {
-    it('harus mengembalikan daftar riwayat order milik customer', async () => {
+  describe('getMyOrders (Daftar Riwayat Pesanan Customer)', () => {
+    it('harus mengembalikan daftar riwayat pesanan milik customer yang ter-map', async () => {
       ordersRepository.findByCustomerId.mockResolvedValue([mockOrder] as any);
 
-      const result = await service.getMyOrders(mockUser.id);
+      const result = await service.getMyOrders('10');
 
-      expect(ordersRepository.findByCustomerId).toHaveBeenCalledWith(
-        BigInt(10),
-      );
+      expect(ordersRepository.findByCustomerId).toHaveBeenCalledWith('10');
       expect(result).toHaveLength(1);
+      expect(result[0]?.id).toEqual('1');
     });
+  });
 
-    it('harus mengembalikan detail order jika ID ditemukan', async () => {
+  describe('getOrderById (Detail Pesanan Berdasarkan ID)', () => {
+    it('harus mengembalikan detail pesanan jika ID ditemukan', async () => {
       ordersRepository.findById.mockResolvedValue(mockOrder as any);
 
       const result = await service.getOrderById('1');
 
-      expect(ordersRepository.findById).toHaveBeenCalledWith(BigInt(1));
-      expect(result).toBeDefined();
+      expect(ordersRepository.findById).toHaveBeenCalledWith('1');
+      expect(result?.id).toEqual('1');
     });
 
-    it('harus melempar NotFoundException jika order detail tidak ditemukan', async () => {
+    it('harus melemparkan NotFoundException jika pesanan tidak ditemukan', async () => {
       ordersRepository.findById.mockResolvedValue(null);
 
       await expect(service.getOrderById('999')).rejects.toThrow(

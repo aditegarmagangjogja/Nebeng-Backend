@@ -13,7 +13,7 @@ export class CheckpointsService {
   constructor(private readonly checkpointsRepository: CheckpointsRepository) {}
 
   async scanCheckpoint(operatorUserIdStr: string, dto: ScanCheckpointDto) {
-    // 1. Fetch Trip & Order
+    // 1. Fetch Trip & Order berdasarkan QR Code
     const trip = await this.checkpointsRepository.findTripByQr(dto.qrCodeTrip);
     if (!trip) {
       throw new NotFoundException(
@@ -36,12 +36,9 @@ export class CheckpointsService {
       );
     }
 
-    const posIdBigInt = BigInt(dto.posId);
-    const operatorUserIdBigInt = BigInt(operatorUserIdStr);
-
     // 2. Skenario SCAN 1: CHECKIN ORIGIN (Pos Asal)
     if (dto.scanType === ScanType.checkin_origin) {
-      if (trip.originPointId !== posIdBigInt) {
+      if (trip.originPointId.toString() !== dto.posId) {
         throw new BadRequestException(
           'Proses Check-in Origin harus dilakukan di Pos Asal yang sesuai.',
         );
@@ -50,27 +47,27 @@ export class CheckpointsService {
       const log = await this.checkpointsRepository.processCheckinOrigin(
         trip.id,
         order.id,
-        posIdBigInt,
-        operatorUserIdBigInt,
+        dto.posId,
+        operatorUserIdStr,
         dto.securitySealQr,
       );
 
       return {
         message:
-          'Check-in Pos Asal berhasil. Trip dan Order dalam status IN_TRANSIT.',
+          'Check-in Pos Asal berhasil. Status Trip dan Order kini IN_TRANSIT.',
         checkpoint: CheckpointMapper.toResponse(log),
       };
     }
 
     // 3. Skenario SCAN 2: CHECKIN DESTINATION (Pos Tujuan)
     if (dto.scanType === ScanType.checkin_destination) {
-      if (trip.destinationPointId !== posIdBigInt) {
+      if (trip.destinationPointId.toString() !== dto.posId) {
         throw new BadRequestException(
           'Proses Check-in Destination harus dilakukan di Pos Tujuan yang sesuai.',
         );
       }
 
-      // Validasi OTP Claim untuk pengiriman Parcel
+      // Validasi OTP Claim khusus pengiriman Paket (Parcel)
       if (order.type === OrderType.parcel) {
         if (!dto.otpClaim) {
           throw new BadRequestException(
@@ -90,8 +87,8 @@ export class CheckpointsService {
         await this.checkpointsRepository.processCheckinDestinationAndReleaseEscrow(
           trip.id,
           order.id,
-          posIdBigInt,
-          operatorUserIdBigInt,
+          dto.posId,
+          operatorUserIdStr,
           trip.mitraId,
           totalPriceNum,
         );
@@ -103,6 +100,6 @@ export class CheckpointsService {
       };
     }
 
-    throw new BadRequestException('Scan type tidak valid.');
+    throw new BadRequestException('Jenis Scan Type tidak valid.');
   }
 }

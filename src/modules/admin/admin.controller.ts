@@ -1,24 +1,26 @@
 import {
+  Body,
   Controller,
   Get,
-  Patch,
   Param,
+  Patch,
   Query,
-  Body,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import {
-  ApiTags,
   ApiBearerAuth,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
+import { AdminService } from './admin.service';
+import { UpdateUserGovernanceDto } from './dto/update-user-governance.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
-import { AdminService } from './admin.service';
-import { UpdateUserGovernanceDto } from './dto/update-user-governance.dto';
+import { Role } from '../../generated/prisma/enums';
+import { GetUser } from '../../common/decorators/get-user.decorators';
 
 @ApiTags('Admin Governance')
 @ApiBearerAuth()
@@ -27,51 +29,63 @@ import { UpdateUserGovernanceDto } from './dto/update-user-governance.dto';
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
-  @ApiOperation({ summary: 'Dashboard Analytics Global (Superadmin)' })
-  @Roles('superadmin')
   @Get('dashboard/global')
+  @Roles(Role.admin_wilayah, Role.superadmin)
+  @ApiOperation({
+    summary: 'Melihat dashboard analitik global (Admin & Superadmin)',
+  })
+  @ApiResponse({ status: 200, description: 'Analitik global ditemukan' })
   async getGlobalDashboard() {
     return this.adminService.getGlobalDashboard();
   }
 
-  @ApiOperation({
-    summary: 'Dashboard Analytics Wilayah (Admin Wilayah / Superadmin)',
-  })
-  @Roles('superadmin', 'admin_wilayah')
+  @Get('dashboard/regional')
+  @Roles(Role.admin_wilayah, Role.superadmin)
+  @ApiOperation({ summary: 'Melihat dashboard analitik wilayah' })
   @ApiQuery({
     name: 'regionId',
     required: false,
-    description: 'Diperlukan jika diakses oleh superadmin',
+    description: 'Wajib diisi jika dikirim oleh Superadmin',
   })
-  @Get('dashboard/regional')
+  @ApiResponse({ status: 200, description: 'Analitik wilayah ditemukan' })
   async getRegionalDashboard(
-    @Request() req: any,
-    @Query('regionId') regionId?: string,
+    @GetUser() user: any,
+    @Query('regionId') targetRegionId?: string,
   ) {
-    return this.adminService.getRegionalDashboard(req.user, regionId);
+    return this.adminService.getRegionalDashboard(user, targetRegionId);
   }
 
+  @Get('escrow/ledger')
+  @Roles(Role.admin_wilayah, Role.superadmin)
   @ApiOperation({
-    summary: 'Laporan Audit Ledger & Escrow System (Superadmin)',
+    summary: 'Melihat buku besar audit Escrow (Helds & Releases)',
   })
-  @Roles('superadmin')
-  @Get('reports/escrow-ledger')
+  @ApiResponse({ status: 200, description: 'Buku besar Escrow ditemukan' })
   async getEscrowLedger() {
     return this.adminService.getEscrowLedger();
   }
 
+  @Patch('users/:id/governance')
+  @Roles(Role.admin_wilayah, Role.superadmin)
   @ApiOperation({
-    summary: 'Super-Override Status Pengguna (Block/Suspend/Unblock)',
+    summary: 'Mengubah status akun user (Suspended / Active / Banned)',
   })
-  @Roles('superadmin')
-  @Patch('users/:userId/status')
+  @ApiResponse({
+    status: 200,
+    description: 'Status tata kelola user berhasil diperbarui',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Tidak dapat mengubah status sendiri',
+  })
+  @ApiResponse({ status: 404, description: 'User sasaran tidak ditemukan' })
   async updateUserGovernance(
-    @Request() req: any,
-    @Param('userId') targetUserId: string,
+    @GetUser('id') adminId: string,
+    @Param('id') targetUserId: string,
     @Body() dto: UpdateUserGovernanceDto,
   ) {
     return this.adminService.updateUserGovernance(
-      req.user.id,
+      String(adminId),
       targetUserId,
       dto,
     );

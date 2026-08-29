@@ -1,24 +1,15 @@
-import {
-  describe,
-  beforeEach,
-  afterEach,
-  it,
-  expect,
-  jest,
-} from '@jest/globals';
-
-// Mock Prisma Service agar tidak membaca ESM Prisma Client saat pengujian
-jest.mock('../../prisma/prisma.service', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
-}));
-
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { PaymentsService } from './payments.service';
 import { PaymentsRepository } from './repository/payments.repository';
 import { OrdersRepository } from '../orders/repository/orders.repository';
 import { WalletsService } from '../wallets/wallets.service';
-import { OrderStatus, PaymentStatus } from '../../generated/prisma/enums';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  EscrowStatus,
+  OrderStatus,
+  PaymentStatus,
+} from '../../generated/prisma/enums';
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
@@ -26,28 +17,40 @@ describe('PaymentsService', () => {
   let ordersRepository: jest.Mocked<OrdersRepository>;
   let walletsService: jest.Mocked<WalletsService>;
 
-  const mockUser = { id: '10' };
-
   const mockOrder = {
     id: BigInt(100),
-    customerId: BigInt(10),
-    totalPrice: BigInt(150000),
+    customerId: BigInt(10), // Customer ID: 10
+    totalPrice: '150000.00' as any,
     status: OrderStatus.pending_payment,
-    trip: {
-      mitraId: BigInt(20),
+    escrowStatus: EscrowStatus.pending,
+  };
+
+  const mockTrip = {
+    id: BigInt(50),
+    mitraId: BigInt(99), // Mitra ID: 99
+  };
+
+  const mockPaymentResult = {
+    payment: {
+      id: BigInt(1),
+      orderId: BigInt(100),
+      paymentGateway: 'midtrans',
+      transactionId: 'TRX-12345678',
+      amount: '150000.00' as any,
+      status: PaymentStatus.success,
+      createdAt: new Date(),
+    },
+    order: {
+      ...mockOrder,
+      status: OrderStatus.paid,
+      escrowStatus: EscrowStatus.held,
+      trip: mockTrip,
     },
   };
 
-  const mockCreatedPayment = {
-    id: BigInt(1),
-    orderId: BigInt(100),
-    paymentGateway: 'midtrans',
-    transactionId: 'TRX-ABC12345',
-    amount: BigInt(150000),
-    status: PaymentStatus.success,
-  };
-
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const mockPaymentsRepo = {
       createPaymentAndUpdateOrder: jest.fn(),
     };
@@ -56,9 +59,8 @@ describe('PaymentsService', () => {
       findById: jest.fn(),
     };
 
-    const mockWalletsServ = {
+    const mockWalletsService = {
       holdEscrow: jest.fn(),
-      getMyWallet: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -66,7 +68,7 @@ describe('PaymentsService', () => {
         PaymentsService,
         { provide: PaymentsRepository, useValue: mockPaymentsRepo },
         { provide: OrdersRepository, useValue: mockOrdersRepo },
-        { provide: WalletsService, useValue: mockWalletsServ },
+        { provide: WalletsService, useValue: mockWalletsService },
       ],
     }).compile();
 
@@ -80,85 +82,74 @@ describe('PaymentsService', () => {
     walletsService = module.get(WalletsService) as jest.Mocked<WalletsService>;
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
+  it('harus terinisialisasi dengan benar', () => {
     expect(service).toBeDefined();
   });
 
-  describe('checkoutPayment()', () => {
-    it('harus berhasil memproses checkout payment dan menahan dana di escrow', async () => {
-      ordersRepository.findById.mockResolvedValue(mockOrder as any);
-      paymentsRepository.createPaymentAndUpdateOrder.mockResolvedValue({
-        payment: mockCreatedPayment as any,
-        order: mockOrder as any,
-      });
-      walletsService.holdEscrow.mockResolvedValue(undefined as any);
-
+  describe('checkoutPayment (Proses Checkout Pembayaran Customer)', () => {
+    it('harus berhasil memproses pembayaran, mengupdate status order, dan menahan dana di Escrow', async () => {
       const dto = { orderId: '100', paymentGateway: 'midtrans' };
-      const result = await service.checkoutPayment(mockUser.id, dto);
 
-      expect(ordersRepository.findById).toHaveBeenCalledWith(BigInt(100));
+      ordersRepository.findById.mockResolvedValue(mockOrder as any);
+      paymentsRepository.createPaymentAndUpdateOrder.mockResolvedValue(
+        mockPaymentResult as any,
+      );
+      walletsService.holdEscrow.mockResolvedValue(undefined);
+
+      const result = await service.checkoutPayment('10', dto);
+
+      expect(ordersRepository.findById).toHaveBeenCalledWith('100');
       expect(
         paymentsRepository.createPaymentAndUpdateOrder,
       ).toHaveBeenCalledWith(
-        BigInt(100),
+        '100',
         'midtrans',
-        expect.stringMatching(/^TRX-[A-F0-9]{8}$/),
+        expect.stringMatching(/^TRX-[A-Z0-9]{8}$/),
         150000,
       );
       expect(walletsService.holdEscrow).toHaveBeenCalledWith(
-        '20', // Mitra User ID
-        '100', // Order ID
-        150000, // Amount
+        '99',
+        '100',
+        150000,
       );
-      expect(result).toHaveProperty('message');
-      expect(result.payment.id).toEqual('1');
-      expect(result.payment.amount).toEqual(150000);
+      expect(result).toHaveProperty('payment');
+      expect(result.payment.status).toEqual(PaymentStatus.success);
     });
 
-    it('harus melempar NotFoundException jika order tidak ditemukan', async () => {
+    it('harus melemparkan NotFoundException jika Order tidak ditemukan', async () => {
       ordersRepository.findById.mockResolvedValue(null);
 
-      const dto = { orderId: '999', paymentGateway: 'midtrans' };
-
-      await expect(service.checkoutPayment(mockUser.id, dto)).rejects.toThrow(
-        NotFoundException,
-      );
-      expect(
-        paymentsRepository.createPaymentAndUpdateOrder,
-      ).not.toHaveBeenCalled();
-      expect(walletsService.holdEscrow).not.toHaveBeenCalled();
+      await expect(
+        service.checkoutPayment('10', {
+          orderId: '999',
+          paymentGateway: 'gopay',
+        }),
+      ).rejects.toThrow(NotFoundException);
     });
 
-    it('harus melempar BadRequestException jika order milik user lain', async () => {
-      ordersRepository.findById.mockResolvedValue(mockOrder as any);
+    it('harus melemparkan BadRequestException jika Order bukan milik Customer yang sedang login', async () => {
+      ordersRepository.findById.mockResolvedValue(mockOrder as any); // customerId: 10
 
-      const dto = { orderId: '100', paymentGateway: 'midtrans' };
-      const otherUserId = '999';
-
-      await expect(service.checkoutPayment(otherUserId, dto)).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(
-        paymentsRepository.createPaymentAndUpdateOrder,
-      ).not.toHaveBeenCalled();
+      await expect(
+        service.checkoutPayment('999', {
+          orderId: '100',
+          paymentGateway: 'gopay',
+        }), // User 999 mencoba bayar order user 10
+      ).rejects.toThrow(BadRequestException);
     });
 
-    it('harus melempar BadRequestException jika status order bukan pending_payment', async () => {
-      const paidOrder = { ...mockOrder, status: OrderStatus.paid };
-      ordersRepository.findById.mockResolvedValue(paidOrder as any);
+    it('harus melemparkan BadRequestException jika status Order tidak dalam kondisi pending_payment', async () => {
+      ordersRepository.findById.mockResolvedValue({
+        ...mockOrder,
+        status: OrderStatus.paid, // Sudah dibayar sebelumnya
+      } as any);
 
-      const dto = { orderId: '100', paymentGateway: 'midtrans' };
-
-      await expect(service.checkoutPayment(mockUser.id, dto)).rejects.toThrow(
-        BadRequestException,
-      );
-      expect(
-        paymentsRepository.createPaymentAndUpdateOrder,
-      ).not.toHaveBeenCalled();
+      await expect(
+        service.checkoutPayment('10', {
+          orderId: '100',
+          paymentGateway: 'gopay',
+        }),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 });

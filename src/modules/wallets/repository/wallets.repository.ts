@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { TransactionType } from '../../../generated/prisma/enums';
 
@@ -6,9 +6,20 @@ import { TransactionType } from '../../../generated/prisma/enums';
 export class WalletsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByUserId(userId: bigint) {
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
+  async findByUserId(userId: string) {
+    const parsedId = this.safeParseBigInt(userId);
+    if (!parsedId) return null;
+
     return this.prisma.wallet.findUnique({
-      where: { userId },
+      where: { userId: parsedId },
       include: {
         transactions: {
           orderBy: { createdAt: 'desc' },
@@ -18,10 +29,15 @@ export class WalletsRepository {
     });
   }
 
-  async createWallets(userId: bigint) {
+  async createWallets(userId: string) {
+    const parsedId = this.safeParseBigInt(userId);
+    if (!parsedId) {
+      throw new BadRequestException('Format ID user tidak valid');
+    }
+
     return this.prisma.wallet.create({
       data: {
-        userId,
+        userId: parsedId,
         balance: 0.0,
         heldEscrowBalance: 0.0,
       },
@@ -34,7 +50,16 @@ export class WalletsRepository {
     });
   }
 
-  async processEscrowHold(walletId: bigint, orderId: bigint, amount: number) {
+  async processEscrowHold(
+    walletId: bigint,
+    orderIdStr: string,
+    amount: number,
+  ) {
+    const parseOrderId = this.safeParseBigInt(orderIdStr);
+    if (!parseOrderId) {
+      throw new BadRequestException('Format ID Order tidak valid');
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const wallet = await tx.wallet.update({
         where: { id: walletId },
@@ -46,10 +71,43 @@ export class WalletsRepository {
       await tx.walletTransaction.create({
         data: {
           walletId,
-          orderId,
+          orderId: parseOrderId,
           amount,
           type: TransactionType.escrow_hold,
-          description: `Escrow hold untuk order ${orderId}`,
+          description: `Escrow hold untuk order ${orderIdStr}`,
+        },
+      });
+
+      return wallet;
+    });
+  }
+
+  async processEscrowRelease(
+    walletId: bigint,
+    orderIdStr: string,
+    amount: number,
+  ) {
+    const parseOrderId = this.safeParseBigInt(orderIdStr);
+    if (!parseOrderId) {
+      throw new BadRequestException('Format ID order tidak valid');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      const wallet = await tx.wallet.update({
+        where: { id: walletId },
+        data: {
+          heldEscrowBalance: { decrement: amount },
+          balance: { increment: amount },
+        },
+      });
+
+      await tx.walletTransaction.create({
+        data: {
+          walletId,
+          orderId: parseOrderId,
+          amount,
+          type: TransactionType.escrow_release,
+          description: `Pencairan dana Escrow untuk order #${orderIdStr}`,
         },
       });
 

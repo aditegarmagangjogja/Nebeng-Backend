@@ -1,72 +1,51 @@
-import {
-  describe,
-  beforeEach,
-  afterEach,
-  it,
-  expect,
-  jest,
-} from '@jest/globals';
-
-// 1. MOCK SEBELUM IMPORT DEPENDENCY LAIN
-jest.mock('../../prisma/prisma.service', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
-}));
-jest.mock('../users/repositories/user.repository');
-jest.mock('../users/users.service');
-
-// 2. MOCK BCRYPT LENGKAP
-jest.mock('bcrypt', () => ({
-  compare: jest.fn(),
-  hash: jest.fn(),
-}));
-
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
+import { AuthService } from './auth.service';
+import { UsersService } from '../users/users.service';
+import { UserRepository } from '../users/repositories/user.repository';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from './auth.service';
-import { UsersService } from '../users/users.service';
-import { UserRepository } from '../users/repositories/user.repository';
-import { Role } from '../../generated/prisma/enums';
+import {
+  Role,
+  UserStatus,
+  VerificationStatus,
+} from '../../generated/prisma/enums';
+
+// Mock modul bcrypt secara global untuk mengisolasi pengujian autentikasi
+jest.mock('bcrypt', () => ({
+  hash: jest.fn(),
+  compare: jest.fn(),
+}));
 
 describe('AuthService', () => {
-  let authService: AuthService;
+  let service: AuthService;
   let usersService: jest.Mocked<UsersService>;
   let userRepository: jest.Mocked<UserRepository>;
   let jwtService: jest.Mocked<JwtService>;
 
   const mockUser = {
     id: BigInt(1),
-    name: 'Budi Santoso',
-    email: 'budi@example.com',
-    phone: '08123456789',
-    password: '$2b$10$e8.G7wQ.1gK9aX2sB1y3u.1A2B3C4D5E6F7G8H9I0J',
-    pinHash: '$2b$10$e8.G7wQ.1gK9aX2sB1y3u.1A2B3C4D5E6F7G8H9I0J',
+    regionId: null,
+    name: 'Test Customer',
+    email: 'customer@nebeng.com',
+    phone: '081234567890',
+    password: '$2b$10$hashedpassword',
     role: Role.customer,
-    status: 'active',
-    statusVerification: 'unverified',
-    regionId: BigInt(1),
-    refreshToken: '$2b$10$e8.G7wQ.1gK9aX2sB1y3u.1A2B3C4D5E6F7G8H9I0J',
+    status: UserStatus.active,
+    statusVerification: VerificationStatus.unverified,
+    pinHash: null,
+    refreshToken: '$2b$10$hashedrefreshtoken',
     avatar: null,
     rewardPoints: 0,
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
-  const mockUserResponseDto = {
-    id: '1',
-    name: 'Budi Santoso',
-    email: 'budi@example.com',
-    phone: '08123456789',
-    role: Role.customer,
-    status: 'active',
-    statusVerification: 'unverified',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const mockUsersService = {
       create: jest.fn(),
     };
@@ -84,7 +63,7 @@ describe('AuthService', () => {
 
     const mockConfigService = {
       get: jest.fn((key: string) => {
-        if (key === 'JWT_SECRET') return 'test-secret';
+        if (key === 'JWT_SECRET') return 'nebeng_secret_key';
         if (key === 'JWT_EXPIRES_IN') return '15m';
         if (key === 'JWT_REFRESH_EXPIRES_IN') return '7d';
         return null;
@@ -101,137 +80,158 @@ describe('AuthService', () => {
       ],
     }).compile();
 
-    authService = module.get<AuthService>(AuthService);
+    service = module.get<AuthService>(AuthService);
     usersService = module.get(UsersService) as jest.Mocked<UsersService>;
     userRepository = module.get(UserRepository) as jest.Mocked<UserRepository>;
     jwtService = module.get(JwtService) as jest.Mocked<JwtService>;
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
+  it('harus terinisialisasi dengan benar', () => {
+    expect(service).toBeDefined();
   });
 
-  it('should be defined', () => {
-    expect(authService).toBeDefined();
-  });
-
-  describe('register()', () => {
-    it('harus memanggil usersService.create dan mengembalikan UserResponseDto', async () => {
-      usersService.create.mockResolvedValue(mockUserResponseDto as any);
-
+  describe('register (Pendaftaran Akun Baru)', () => {
+    it('harus memanggil UsersService.create dengan role default customer jika DTO valid', async () => {
       const registerDto = {
-        name: 'Budi Santoso',
-        email: 'budi@example.com',
-        phone: '08123456789',
-        password: 'password123',
-        role: Role.customer,
+        name: 'Test Customer',
+        email: 'customer@nebeng.com',
+        phone: '081234567890',
+        password: 'Password123!',
       };
 
-      const result = await authService.register(registerDto);
+      const expectedResponse = {
+        id: '1',
+        name: registerDto.name,
+        email: registerDto.email,
+        phone: registerDto.phone,
+        role: Role.customer,
+        status: UserStatus.active,
+        statusVerification: VerificationStatus.unverified,
+        rewardPoints: 0,
+        createdAt: mockUser.createdAt,
+        updatedAt: mockUser.updatedAt,
+      };
 
-      expect(usersService.create).toHaveBeenCalledWith(registerDto);
-      expect(result).toEqual(mockUserResponseDto);
+      usersService.create.mockResolvedValue(expectedResponse as any);
+
+      const result = await service.register(registerDto as any);
+
+      expect(usersService.create).toHaveBeenCalledWith({
+        ...registerDto,
+        role: Role.customer,
+      });
+      expect(result).toEqual(expectedResponse);
     });
   });
 
-  describe('login()', () => {
-    it('harus berhasil mengembalikan Access Token, Refresh Token, dan User jika kredensial valid', async () => {
+  describe('login (Autentikasi Pengguna)', () => {
+    it('harus berhasil mengembalikan Access Token, Refresh Token, dan UserResponseDto jika kredensial benar', async () => {
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true as never);
-      (bcrypt.hash as jest.Mock).mockResolvedValue(
-        'hashed-refresh-token' as never,
+      (bcrypt.compare as jest.Mock).mockImplementation(async () => true);
+      (bcrypt.hash as jest.Mock).mockImplementation(
+        async () => '$2b$10$hashedrefreshtoken',
       );
-      jwtService.sign
-        .mockReturnValueOnce('mock-access-token' as never)
-        .mockReturnValueOnce('mock-refresh-token' as never);
 
-      const result = await authService.login({
-        email: 'budi@example.com',
-        password: 'password123',
+      jwtService.sign
+        .mockReturnValueOnce('mock_access_token' as never)
+        .mockReturnValueOnce('mock_refresh_token' as never);
+
+      const result = await service.login({
+        email: 'customer@nebeng.com',
+        password: 'Password123!',
       });
 
       expect(userRepository.findByEmail).toHaveBeenCalledWith(
-        'budi@example.com',
+        'customer@nebeng.com',
       );
-      expect(result).toHaveProperty('accessToken', 'mock-access-token');
-      expect(result).toHaveProperty('refreshToken', 'mock-refresh-token');
-      expect(result.user.email).toEqual('budi@example.com');
       expect(userRepository.updateRefreshToken).toHaveBeenCalledWith(
         '1',
-        'hashed-refresh-token',
+        '$2b$10$hashedrefreshtoken',
       );
+      expect(result).toHaveProperty('accessToken', 'mock_access_token');
+      expect(result).toHaveProperty('refreshToken', 'mock_refresh_token');
+      expect(result.user.email).toEqual('customer@nebeng.com');
     });
 
-    it('harus melempar UnauthorizedException jika email tidak ditemukan', async () => {
+    it('harus melemparkan UnauthorizedException jika email tidak terdaftar', async () => {
       userRepository.findByEmail.mockResolvedValue(null);
 
       await expect(
-        authService.login({
-          email: 'unknown@example.com',
-          password: 'password123',
-        }),
+        service.login({ email: 'salah@nebeng.com', password: 'Password123!' }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it('harus melempar UnauthorizedException jika password tidak cocok', async () => {
+    it('harus melemparkan UnauthorizedException jika password tidak cocok', async () => {
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(false as never);
+      (bcrypt.compare as jest.Mock).mockImplementation(async () => false);
 
       await expect(
-        authService.login({
-          email: 'budi@example.com',
-          password: 'wrongpassword',
+        service.login({
+          email: 'customer@nebeng.com',
+          password: 'PasswordSalah',
         }),
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it('harus melempar UnauthorizedException jika status akun bukan active', async () => {
-      const suspendedUser = { ...mockUser, status: 'suspended' };
-      userRepository.findByEmail.mockResolvedValue(suspendedUser as any);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true as never);
+    it('harus melemparkan UnauthorizedException jika status pengguna bukan active (ditangguhkan/diblokir)', async () => {
+      userRepository.findByEmail.mockResolvedValue({
+        ...mockUser,
+        status: UserStatus.suspended,
+      } as any);
+      (bcrypt.compare as jest.Mock).mockImplementation(async () => true);
 
       await expect(
-        authService.login({
-          email: 'budi@example.com',
-          password: 'password123',
+        service.login({
+          email: 'customer@nebeng.com',
+          password: 'Password123!',
         }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
 
-  describe('refreshToken()', () => {
-    it('harus berhasil memperbarui pasangan token jika refresh token valid', async () => {
+  describe('refreshToken (Pembaruan Token)', () => {
+    it('harus mengembalikan pasangan token baru saat Refresh Token valid dan cocok', async () => {
+      jwtService.verify.mockReturnValue({
+        sub: '1',
+        email: mockUser.email,
+        role: mockUser.role,
+      } as never);
+      userRepository.findById.mockResolvedValue(mockUser as any);
+      (bcrypt.compare as jest.Mock).mockImplementation(async () => true);
+      (bcrypt.hash as jest.Mock).mockImplementation(
+        async () => '$2b$10$newhashedrefreshtoken',
+      );
+
+      jwtService.sign
+        .mockReturnValueOnce('new_access_token' as never)
+        .mockReturnValueOnce('new_refresh_token' as never);
+
+      const result = await service.refreshToken({
+        refreshToken: 'valid_refresh_token',
+      });
+
+      expect(result).toEqual({
+        accessToken: 'new_access_token',
+        refreshToken: 'new_refresh_token',
+      });
+    });
+
+    it('harus melemparkan UnauthorizedException jika token tidak cocok dengan hash di database', async () => {
       jwtService.verify.mockReturnValue({ sub: '1' } as never);
       userRepository.findById.mockResolvedValue(mockUser as any);
-      (bcrypt.compare as jest.Mock).mockResolvedValue(true as never);
-      jwtService.sign
-        .mockReturnValueOnce('new-access-token' as never)
-        .mockReturnValueOnce('new-refresh-token' as never);
-
-      const result = await authService.refreshToken({
-        refreshToken: 'valid-refresh-token',
-      });
-
-      expect(result).toHaveProperty('accessToken', 'new-access-token');
-      expect(result).toHaveProperty('refreshToken', 'new-refresh-token');
-    });
-
-    it('harus melempar UnauthorizedException jika token expired', async () => {
-      jwtService.verify.mockImplementation(() => {
-        throw new Error('Jwt expired');
-      });
+      (bcrypt.compare as jest.Mock).mockImplementation(async () => false);
 
       await expect(
-        authService.refreshToken({ refreshToken: 'invalid-token' }),
+        service.refreshToken({ refreshToken: 'invalid_token' }),
       ).rejects.toThrow(UnauthorizedException);
     });
   });
 
-  describe('logout()', () => {
-    it('harus menghapus refresh token di DB dan mengembalikan pesan sukses', async () => {
-      userRepository.updateRefreshToken.mockResolvedValue({} as any);
+  describe('logout (Keluar dari Aplikasi)', () => {
+    it('harus menghapus refresh token di database (diatur menjadi null) dan mengembalikan pesan sukses', async () => {
+      userRepository.updateRefreshToken.mockResolvedValue(mockUser as any);
 
-      const result = await authService.logout('1');
+      const result = await service.logout('1');
 
       expect(userRepository.updateRefreshToken).toHaveBeenCalledWith('1', null);
       expect(result).toEqual({ message: 'Berhasil keluar dari aplikasi' });

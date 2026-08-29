@@ -1,66 +1,67 @@
-import {
-  describe,
-  beforeEach,
-  afterEach,
-  it,
-  expect,
-  jest,
-} from '@jest/globals';
-
-// Mock Prisma Service agar terisolasi penuh
-jest.mock('../../prisma/prisma.service', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
-}));
-
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { CheckpointsService } from './checkpoints.service';
 import { CheckpointsRepository } from './repository/checkpoints.repository';
-import { OrderType, ScanType } from '../../generated/prisma/enums';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  OrderType,
+  ScanType,
+  TripStatus,
+  OrderStatus,
+  EscrowStatus,
+} from '../../generated/prisma/enums';
 
 describe('CheckpointsService', () => {
   let service: CheckpointsService;
-  let checkpointsRepository: jest.Mocked<CheckpointsRepository>;
-
-  const mockOperatorUserId = '10';
+  let repository: jest.Mocked<CheckpointsRepository>;
 
   const mockTrip = {
     id: BigInt(100),
-    mitraId: BigInt(20),
-    originPointId: BigInt(1),
-    destinationPointId: BigInt(2),
-    qrCodeTrip: 'TRIP-QR-100',
+    mitraId: BigInt(99),
+    originPointId: BigInt(5),
+    destinationPointId: BigInt(10),
+    qrCodeTrip: 'TRIP-12345678',
+    status: TripStatus.scheduled,
+    originPoint: { id: BigInt(5), name: 'Pos Asal' },
+    destinationPoint: { id: BigInt(10), name: 'Pos Tujuan' },
   };
 
-  const mockPassengerOrder = {
-    id: BigInt(500),
-    tripId: BigInt(100),
+  const mockOrderPassenger = {
+    id: BigInt(1),
+    tripId: BigInt(100), // Terhubung ke trip 100
+    customerId: BigInt(20),
     type: OrderType.passenger,
-    qrCodeTicket: 'TKT-QR-500',
-    totalPrice: BigInt(150000),
+    qrCodeTicket: 'TKT-12345678',
+    totalPrice: '50000.00' as any,
     otpClaim: null,
+    status: OrderStatus.paid,
+    escrowStatus: EscrowStatus.held,
+    itemOrders: [],
   };
 
-  const mockParcelOrder = {
-    id: BigInt(501),
-    tripId: BigInt(100),
+  const mockOrderParcel = {
+    ...mockOrderPassenger,
+    id: BigInt(2),
     type: OrderType.parcel,
-    qrCodeTicket: 'TKT-QR-501',
-    totalPrice: BigInt(200000),
-    otpClaim: '123456',
+    otpClaim: '654321', // Membutuhkan OTP Klaim 6-digit
   };
 
   const mockCheckpointLog = {
-    id: BigInt(1),
+    id: BigInt(1000),
     tripId: BigInt(100),
-    orderId: BigInt(500),
-    posId: BigInt(1),
-    operatorUserId: BigInt(10),
+    orderId: BigInt(1),
+    posId: BigInt(5),
+    scannedByUserId: BigInt(88),
     scanType: ScanType.checkin_origin,
     createdAt: new Date(),
+    trip: mockTrip,
+    order: mockOrderPassenger,
+    pos: { id: BigInt(5), name: 'Pos Asal' },
   };
 
   beforeEach(async () => {
+    jest.clearAllMocks();
+
     const mockRepo = {
       findTripByQr: jest.fn(),
       findOrderByQr: jest.fn(),
@@ -76,227 +77,183 @@ describe('CheckpointsService', () => {
     }).compile();
 
     service = module.get<CheckpointsService>(CheckpointsService);
-    checkpointsRepository = module.get(
+    repository = module.get(
       CheckpointsRepository,
     ) as jest.Mocked<CheckpointsRepository>;
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
+  it('harus terinisialisasi dengan benar', () => {
     expect(service).toBeDefined();
   });
 
-  describe('scanCheckpoint() - Checkin Origin', () => {
+  describe('scanCheckpoint (Proses Scan QR Checkpoint Pos)', () => {
     it('harus berhasil memproses Check-in Origin di Pos Asal yang sesuai', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-      checkpointsRepository.findOrderByQr.mockResolvedValue(
-        mockPassengerOrder as any,
-      );
-      checkpointsRepository.processCheckinOrigin.mockResolvedValue(
-        mockCheckpointLog as any,
-      );
-
       const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'TKT-QR-500',
-        posId: '1', // Sesuai originPointId (1)
+        qrCodeTrip: 'TRIP-12345678',
+        qrCodeTicket: 'TKT-12345678',
+        posId: '5', // Pos ID cocok dengan originPointId (5)
         scanType: ScanType.checkin_origin,
         securitySealQr: 'SEAL-999',
       };
 
-      const result = await service.scanCheckpoint(mockOperatorUserId, dto);
+      repository.findTripByQr.mockResolvedValue(mockTrip as any);
+      repository.findOrderByQr.mockResolvedValue(mockOrderPassenger as any);
+      repository.processCheckinOrigin.mockResolvedValue(
+        mockCheckpointLog as any,
+      );
 
-      expect(checkpointsRepository.findTripByQr).toHaveBeenCalledWith(
-        'TRIP-QR-100',
-      );
-      expect(checkpointsRepository.findOrderByQr).toHaveBeenCalledWith(
-        'TKT-QR-500',
-      );
-      expect(checkpointsRepository.processCheckinOrigin).toHaveBeenCalledWith(
+      const result = await service.scanCheckpoint('88', dto as any);
+
+      expect(repository.findTripByQr).toHaveBeenCalledWith('TRIP-12345678');
+      expect(repository.findOrderByQr).toHaveBeenCalledWith('TKT-12345678');
+      expect(repository.processCheckinOrigin).toHaveBeenCalledWith(
         BigInt(100),
-        BigInt(500),
         BigInt(1),
-        BigInt(10),
+        '5',
+        '88',
         'SEAL-999',
       );
+      expect(result).toHaveProperty('checkpoint');
       expect(result.message).toContain('Check-in Pos Asal berhasil');
     });
 
-    it('harus melempar BadRequestException jika Check-in Origin dilakukan di luar Pos Asal', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-      checkpointsRepository.findOrderByQr.mockResolvedValue(
-        mockPassengerOrder as any,
-      );
-
+    it('harus berhasil memproses Check-in Destination dan mencairkan dana Escrow jika OTP parcel benar', async () => {
       const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'TKT-QR-500',
-        posId: '99', // Beda dengan originPointId (1)
-        scanType: ScanType.checkin_origin,
-      };
-
-      await expect(
-        service.scanCheckpoint(mockOperatorUserId, dto),
-      ).rejects.toThrow(BadRequestException);
-      expect(checkpointsRepository.processCheckinOrigin).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('scanCheckpoint() - Checkin Destination & Escrow Release', () => {
-    it('harus berhasil Check-in Destination dan mencairkan Escrow untuk Tiket Penumpang', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-      checkpointsRepository.findOrderByQr.mockResolvedValue(
-        mockPassengerOrder as any,
-      );
-      checkpointsRepository.processCheckinDestinationAndReleaseEscrow.mockResolvedValue(
-        { ...mockCheckpointLog, scanType: ScanType.checkin_destination } as any,
-      );
-
-      const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'TKT-QR-500',
-        posId: '2', // Sesuai destinationPointId (2)
+        qrCodeTrip: 'TRIP-12345678',
+        qrCodeTicket: 'TKT-12345678',
+        posId: '10', // Pos ID cocok dengan destinationPointId (10)
         scanType: ScanType.checkin_destination,
+        otpClaim: '654321', // OTP cocok
       };
 
-      const result = await service.scanCheckpoint(mockOperatorUserId, dto);
+      const destLog = {
+        ...mockCheckpointLog,
+        scanType: ScanType.checkin_destination,
+        posId: BigInt(10),
+      };
+
+      repository.findTripByQr.mockResolvedValue(mockTrip as any);
+      repository.findOrderByQr.mockResolvedValue(mockOrderParcel as any);
+      repository.processCheckinDestinationAndReleaseEscrow.mockResolvedValue(
+        destLog as any,
+      );
+
+      const result = await service.scanCheckpoint('88', dto as any);
 
       expect(
-        checkpointsRepository.processCheckinDestinationAndReleaseEscrow,
+        repository.processCheckinDestinationAndReleaseEscrow,
       ).toHaveBeenCalledWith(
         BigInt(100),
-        BigInt(500),
         BigInt(2),
-        BigInt(10),
-        BigInt(20), // Mitra ID
-        150000, // Total Price Escrow Release
+        '10',
+        '88',
+        BigInt(99),
+        50000,
       );
-      expect(result.message).toContain('Dana Escrow telah dicairkan');
+      expect(result.message).toContain(
+        'Check-in Pos Tujuan & Penyerahan berhasil',
+      );
     });
 
-    it('harus berhasil Check-in Destination untuk Parcel jika OTP Klaim valid', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-      checkpointsRepository.findOrderByQr.mockResolvedValue(
-        mockParcelOrder as any,
-      );
-      checkpointsRepository.processCheckinDestinationAndReleaseEscrow.mockResolvedValue(
-        { ...mockCheckpointLog, scanType: ScanType.checkin_destination } as any,
-      );
-
-      const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'TKT-QR-501',
-        posId: '2',
-        scanType: ScanType.checkin_destination,
-        otpClaim: '123456', // OTP Cocok
-      };
-
-      const result = await service.scanCheckpoint(mockOperatorUserId, dto);
-
-      expect(
-        checkpointsRepository.processCheckinDestinationAndReleaseEscrow,
-      ).toHaveBeenCalledWith(
-        BigInt(100),
-        BigInt(501),
-        BigInt(2),
-        BigInt(10),
-        BigInt(20),
-        200000,
-      );
-      expect(result).toBeDefined();
-    });
-
-    it('harus melempar BadRequestException jika OTP Klaim Parcel tidak diisi', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-      checkpointsRepository.findOrderByQr.mockResolvedValue(
-        mockParcelOrder as any,
-      );
-
-      const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'TKT-QR-501',
-        posId: '2',
-        scanType: ScanType.checkin_destination,
-        // otpClaim kosong
-      };
+    it('harus melemparkan NotFoundException jika QR Code Trip tidak ditemukan', async () => {
+      repository.findTripByQr.mockResolvedValue(null);
 
       await expect(
-        service.scanCheckpoint(mockOperatorUserId, dto),
-      ).rejects.toThrow(BadRequestException);
-    });
-
-    it('harus melempar BadRequestException jika OTP Klaim Parcel salah', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-      checkpointsRepository.findOrderByQr.mockResolvedValue(
-        mockParcelOrder as any,
-      );
-
-      const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'TKT-QR-501',
-        posId: '2',
-        scanType: ScanType.checkin_destination,
-        otpClaim: '999999', // OTP Salah (seharusnya 123456)
-      };
-
-      await expect(
-        service.scanCheckpoint(mockOperatorUserId, dto),
-      ).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('scanCheckpoint() - General Validation Exceptions', () => {
-    it('harus melempar NotFoundException jika QR Trip tidak ditemukan', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(null);
-
-      const dto = {
-        qrCodeTrip: 'INVALID-TRIP',
-        qrCodeTicket: 'TKT-QR-500',
-        posId: '1',
-        scanType: ScanType.checkin_origin,
-      };
-
-      await expect(
-        service.scanCheckpoint(mockOperatorUserId, dto),
+        service.scanCheckpoint('88', {
+          qrCodeTrip: 'SALAH',
+          qrCodeTicket: 'TKT-12345678',
+          posId: '5',
+          scanType: ScanType.checkin_origin,
+        } as any),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('harus melempar NotFoundException jika QR Tiket tidak ditemukan', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-      checkpointsRepository.findOrderByQr.mockResolvedValue(null);
-
-      const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'INVALID-TKT',
-        posId: '1',
-        scanType: ScanType.checkin_origin,
-      };
+    it('harus melemparkan NotFoundException jika QR Code Tiket/Order tidak ditemukan', async () => {
+      repository.findTripByQr.mockResolvedValue(mockTrip as any);
+      repository.findOrderByQr.mockResolvedValue(null);
 
       await expect(
-        service.scanCheckpoint(mockOperatorUserId, dto),
+        service.scanCheckpoint('88', {
+          qrCodeTrip: 'TRIP-12345678',
+          qrCodeTicket: 'SALAH',
+          posId: '5',
+          scanType: ScanType.checkin_origin,
+        } as any),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('harus melempar BadRequestException jika Tiket terdaftar di Trip yang berbeda', async () => {
-      checkpointsRepository.findTripByQr.mockResolvedValue(mockTrip as any);
-
-      const otherTripOrder = { ...mockPassengerOrder, tripId: BigInt(999) }; // Mismatch
-      checkpointsRepository.findOrderByQr.mockResolvedValue(
-        otherTripOrder as any,
-      );
-
-      const dto = {
-        qrCodeTrip: 'TRIP-QR-100',
-        qrCodeTicket: 'TKT-QR-500',
-        posId: '1',
-        scanType: ScanType.checkin_origin,
-      };
+    it('harus melemparkan BadRequestException jika Tiket/Order tidak terdaftar pada Trip tersebut', async () => {
+      repository.findTripByQr.mockResolvedValue(mockTrip as any);
+      repository.findOrderByQr.mockResolvedValue({
+        ...mockOrderPassenger,
+        tripId: BigInt(999), // Terhubung ke Trip ID lain
+      } as any);
 
       await expect(
-        service.scanCheckpoint(mockOperatorUserId, dto),
+        service.scanCheckpoint('88', {
+          qrCodeTrip: 'TRIP-12345678',
+          qrCodeTicket: 'TKT-12345678',
+          posId: '5',
+          scanType: ScanType.checkin_origin,
+        } as any),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('harus melemparkan BadRequestException jika Check-in Origin dilakukan bukan di Pos Asal yang sesuai', async () => {
+      repository.findTripByQr.mockResolvedValue(mockTrip as any); // originPointId: 5
+      repository.findOrderByQr.mockResolvedValue(mockOrderPassenger as any);
+
+      await expect(
+        service.scanCheckpoint('88', {
+          qrCodeTrip: 'TRIP-12345678',
+          qrCodeTicket: 'TKT-12345678',
+          posId: '99', // Pos 99 bukan Pos Asal (5)
+          scanType: ScanType.checkin_origin,
+        } as any),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('harus melemparkan BadRequestException jika Check-in Destination dilakukan bukan di Pos Tujuan yang sesuai', async () => {
+      repository.findTripByQr.mockResolvedValue(mockTrip as any); // destinationPointId: 10
+      repository.findOrderByQr.mockResolvedValue(mockOrderPassenger as any);
+
+      await expect(
+        service.scanCheckpoint('88', {
+          qrCodeTrip: 'TRIP-12345678',
+          qrCodeTicket: 'TKT-12345678',
+          posId: '5', // Pos 5 bukan Pos Tujuan (10)
+          scanType: ScanType.checkin_destination,
+        } as any),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('harus melemparkan BadRequestException jika klaim paket (parcel) tidak menyertakan kode OTP', async () => {
+      repository.findTripByQr.mockResolvedValue(mockTrip as any);
+      repository.findOrderByQr.mockResolvedValue(mockOrderParcel as any);
+
+      await expect(
+        service.scanCheckpoint('88', {
+          qrCodeTrip: 'TRIP-12345678',
+          qrCodeTicket: 'TKT-12345678',
+          posId: '10',
+          scanType: ScanType.checkin_destination,
+          otpClaim: '', // OTP kosong
+        } as any),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('harus melemparkan BadRequestException jika kode OTP klaim paket tidak cocok', async () => {
+      repository.findTripByQr.mockResolvedValue(mockTrip as any);
+      repository.findOrderByQr.mockResolvedValue(mockOrderParcel as any); // OTP Asli: 654321
+
+      await expect(
+        service.scanCheckpoint('88', {
+          qrCodeTrip: 'TRIP-12345678',
+          qrCodeTicket: 'TKT-12345678',
+          posId: '10',
+          scanType: ScanType.checkin_destination,
+          otpClaim: '000000', // OTP Salah
+        } as any),
       ).rejects.toThrow(BadRequestException);
     });
   });

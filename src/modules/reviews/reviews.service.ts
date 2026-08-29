@@ -7,34 +7,31 @@ import {
 import { ReviewsRepository } from './repository/reviews.repository';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ReviewMapper } from './mappers/review.mapper';
+import { TripStatus } from '../../generated/prisma/enums';
 
 @Injectable()
 export class ReviewsService {
   constructor(private readonly reviewsRepository: ReviewsRepository) {}
 
   async createReview(currentUserId: string, dto: CreateReviewDto) {
-    const reviewerBigIntId = BigInt(currentUserId);
-    const revieweeBigIntId = BigInt(dto.revieweeId);
-    const tripBigIntId = BigInt(dto.tripId);
-
-    if (reviewerBigIntId === revieweeBigIntId) {
+    if (currentUserId === dto.revieweeId) {
       throw new BadRequestException('Anda tidak dapat mengulas diri sendiri');
     }
 
-    const trip = await this.reviewsRepository.findTripById(tripBigIntId);
+    const trip = await this.reviewsRepository.findTripById(dto.tripId);
     if (!trip) {
       throw new NotFoundException('Trip tidak ditemukan');
     }
 
-    if (trip.status !== 'completed') {
+    if (trip.status !== TripStatus.completed) {
       throw new BadRequestException(
-        'Ulasan hanya dapat diberikan setelah trip berstatus selesai',
+        'Ulasan hanya dapat diberikan setelah trip berstatus selesai (completed)',
       );
     }
 
-    const isMitra = trip.mitraId === reviewerBigIntId;
+    const isMitra = trip.mitraId.toString() === currentUserId;
     const isCustomer = trip.orders.some(
-      (order) => order.customerId === reviewerBigIntId,
+      (order) => order.customerId.toString() === currentUserId,
     );
 
     if (!isMitra && !isCustomer) {
@@ -45,8 +42,8 @@ export class ReviewsService {
 
     const existingReview =
       await this.reviewsRepository.findReviewByTripAndReviewer(
-        tripBigIntId,
-        reviewerBigIntId,
+        dto.tripId,
+        currentUserId,
       );
 
     if (existingReview) {
@@ -56,9 +53,9 @@ export class ReviewsService {
     }
 
     const review = await this.reviewsRepository.createReview({
-      tripId: tripBigIntId,
-      reviewerId: reviewerBigIntId,
-      revieweeId: revieweeBigIntId,
+      tripId: dto.tripId,
+      reviewerId: currentUserId,
+      revieweeId: dto.revieweeId,
       rating: dto.rating,
       comment: dto.comment,
     });
@@ -67,12 +64,9 @@ export class ReviewsService {
   }
 
   async getUserRatingSummary(userId: string) {
-    const userBigIntId = BigInt(userId);
-
-    const reviews =
-      await this.reviewsRepository.getReviewsByReviewee(userBigIntId);
+    const reviews = await this.reviewsRepository.getReviewsByReviewee(userId);
     const aggregate =
-      await this.reviewsRepository.getAverageRatingAndCount(userBigIntId);
+      await this.reviewsRepository.getAverageRatingAndCount(userId);
 
     return ReviewMapper.toRatingSummaryResponse({
       averageRating: aggregate.averageRating,

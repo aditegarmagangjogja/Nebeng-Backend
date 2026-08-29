@@ -7,6 +7,7 @@ import {
 import { AdminRepository } from './admin.repository';
 import { AdminMapper } from './mappers/admin.mapper';
 import { UpdateUserGovernanceDto } from './dto/update-user-governance.dto';
+import { Role } from '../../generated/prisma/enums';
 
 @Injectable()
 export class AdminService {
@@ -18,22 +19,28 @@ export class AdminService {
   }
 
   async getRegionalDashboard(currentUser: any, targetRegionId?: string) {
-    let regionId: bigint;
+    let regionId: string;
 
-    if (currentUser.role === 'admin_wilayah') {
+    if (
+      currentUser.role === Role.admin_wilayah ||
+      currentUser.role === 'admin_wilayah'
+    ) {
       if (!currentUser.regionId) {
         throw new ForbiddenException(
           'Admin Wilayah tidak memiliki penugasan wilayah.',
         );
       }
-      regionId = BigInt(currentUser.regionId);
-    } else if (currentUser.role === 'superadmin') {
+      regionId = currentUser.regionId.toString();
+    } else if (
+      currentUser.role === Role.superadmin ||
+      currentUser.role === 'superadmin'
+    ) {
       if (!targetRegionId) {
         throw new BadRequestException(
           'Parameter targetRegionId diperlukan untuk superadmin.',
         );
       }
-      regionId = BigInt(targetRegionId);
+      regionId = targetRegionId;
     } else {
       throw new ForbiddenException('Akses ditolak.');
     }
@@ -52,22 +59,19 @@ export class AdminService {
     targetUserId: string,
     dto: UpdateUserGovernanceDto,
   ) {
-    const adminBigIntId = BigInt(currentAdminId);
-    const targetBigIntId = BigInt(targetUserId);
-
-    if (adminBigIntId === targetBigIntId) {
+    if (currentAdminId === targetUserId) {
       throw new BadRequestException(
         'Anda tidak dapat mengubah status akun sendiri.',
       );
     }
 
-    const targetUser = await this.adminRepository.findUserById(targetBigIntId);
+    const targetUser = await this.adminRepository.findUserById(targetUserId);
     if (!targetUser) {
       throw new NotFoundException('User sasaran tidak ditemukan.');
     }
 
     const updatedUser = await this.adminRepository.updateUserStatus(
-      targetBigIntId,
+      targetUserId,
       dto.status,
     );
 

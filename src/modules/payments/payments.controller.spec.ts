@@ -1,67 +1,52 @@
-import {
-  describe,
-  beforeEach,
-  afterEach,
-  it,
-  expect,
-  jest,
-} from '@jest/globals';
-
-jest.mock('../../prisma/prisma.service', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
-}));
-
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 
 describe('PaymentsController', () => {
   let controller: PaymentsController;
-  let service: jest.Mocked<PaymentsService>;
-
-  const mockUser = { id: '10', role: 'customer' };
+  let paymentsService: jest.Mocked<PaymentsService>;
 
   beforeEach(async () => {
-    const mockPaymentsService = {
+    const mockService = {
       checkoutPayment: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [PaymentsController],
-      providers: [{ provide: PaymentsService, useValue: mockPaymentsService }],
+      providers: [{ provide: PaymentsService, useValue: mockService }],
     }).compile();
 
     controller = module.get<PaymentsController>(PaymentsController);
-    service = module.get(PaymentsService) as jest.Mocked<PaymentsService>;
+    paymentsService = module.get(
+      PaymentsService,
+    ) as jest.Mocked<PaymentsService>;
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
+  it('harus terinisialisasi dengan benar', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('checkoutPayment()', () => {
-    it('harus meneruskan req.user.id dan DTO ke paymentsService.checkoutPayment', async () => {
+  describe('POST /payments/checkout (Endpoint Checkout Pembayaran)', () => {
+    it('harus memanggil paymentsService.checkoutPayment dengan userId Customer dan DTO', async () => {
       const dto = { orderId: '100', paymentGateway: 'midtrans' };
-      const mockResponse = {
-        message: 'Pembayaran berhasil dikonfirmasi...',
+      const expectedResponse = {
+        message:
+          'Pembayaran berhasil dikonfirmasi dan dana telah ditahan oleh Escrow System.',
         payment: {
           id: '1',
           transactionId: 'TRX-12345678',
           amount: 150000,
-          status: 'success' as any,
+          status: 'success',
         },
-      };
+      } as any;
 
-      service.checkoutPayment.mockResolvedValue(mockResponse);
+      paymentsService.checkoutPayment.mockResolvedValue(expectedResponse);
 
-      const result = await controller.checkoutPayment(mockUser, dto);
+      const result = await controller.checkoutPayment('10', dto);
 
-      expect(service.checkoutPayment).toHaveBeenCalledWith('10', dto);
-      expect(result).toEqual(mockResponse);
+      expect(paymentsService.checkoutPayment).toHaveBeenCalledWith('10', dto);
+      expect(result).toEqual(expectedResponse);
     });
   });
 });

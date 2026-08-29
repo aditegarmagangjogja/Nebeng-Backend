@@ -9,31 +9,46 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { SendMessageDto } from './dto/send-message.dto';
 import { ChatMapper } from './mappers/chat.mapper';
+import { ChatGateway } from './chat.gateway';
+import { TripStatus } from '../../generated/prisma/enums';
 
 @Injectable()
 export class ChatService {
   constructor(
     private readonly chatRepository: ChatRepository,
     private readonly prisma: PrismaService,
+    private readonly chatGateway: ChatGateway, // Inject Gateway WebSocket
   ) {}
+
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
 
   async getOrCreateConversation(
     currentUserId: string,
     dto: CreateConversationDto,
   ) {
-    const userBigIntId = BigInt(currentUserId);
-    const tripBigIntId = BigInt(dto.tripId);
-    const customerBigIntId = BigInt(dto.customerId);
+    const parsedTripId = this.safeParseBigInt(dto.tripId);
+    if (!parsedTripId) {
+      throw new BadRequestException('Format ID Trip tidak valid.');
+    }
 
     const trip = await this.prisma.trip.findUnique({
-      where: { id: tripBigIntId },
+      where: { id: parsedTripId },
     });
 
     if (!trip) {
       throw new NotFoundException('Trip tidak ditemukan');
     }
 
-    if (userBigIntId !== customerBigIntId && userBigIntId !== trip.mitraId) {
+    if (
+      currentUserId !== dto.customerId &&
+      currentUserId !== trip.mitraId.toString()
+    ) {
       throw new ForbiddenException(
         'Akses ditolak. Anda bukan partisipan dalam trip ini.',
       );
@@ -41,15 +56,15 @@ export class ChatService {
 
     let conversation =
       await this.chatRepository.findConversationByTripAndCustomer(
-        tripBigIntId,
-        customerBigIntId,
+        dto.tripId,
+        dto.customerId,
       );
 
     if (!conversation) {
       conversation = await this.chatRepository.createConversation({
-        tripId: tripBigIntId,
-        customerId: customerBigIntId,
-        mitraId: trip.mitraId,
+        tripIdStr: dto.tripId,
+        customerIdStr: dto.customerId,
+        mitraIdStr: trip.mitraId.toString(),
       });
     }
 
@@ -58,8 +73,8 @@ export class ChatService {
     }
 
     const unreadCount = await this.chatRepository.countUnreadMessages(
-      conversation.id,
-      userBigIntId,
+      conversation.id.toString(),
+      currentUserId,
     );
 
     return ChatMapper.toConversationResponse({
@@ -69,19 +84,18 @@ export class ChatService {
   }
 
   async getUserConversation(currentUserId: string) {
-    const userBigIntId = BigInt(currentUserId);
-    const conversation =
-      await this.chatRepository.getUserConversations(userBigIntId);
+    const conversations =
+      await this.chatRepository.getUserConversations(currentUserId);
 
     const mappedConversations = await Promise.all(
-      conversation.map(async (conv) => {
-        const undreadCount = await this.chatRepository.countUnreadMessages(
-          conv.id,
-          userBigIntId,
+      conversations.map(async (conv) => {
+        const unreadCount = await this.chatRepository.countUnreadMessages(
+          conv.id.toString(),
+          currentUserId,
         );
         return ChatMapper.toConversationResponse({
           ...conv,
-          undreadCount,
+          unreadCount,
         });
       }),
     );
@@ -94,19 +108,16 @@ export class ChatService {
     conversationId: string,
     dto: SendMessageDto,
   ) {
-    const userBigIntId = BigInt(currentUserId);
-    const convBigIntId = BigInt(conversationId);
-
     const conversation =
-      await this.chatRepository.findConversationById(convBigIntId);
+      await this.chatRepository.findConversationById(conversationId);
 
     if (!conversation) {
       throw new NotFoundException('Percakapan tidak ditemukan');
     }
 
     if (
-      conversation.customerId !== userBigIntId &&
-      conversation.mitraId !== userBigIntId
+      conversation.customerId.toString() !== currentUserId &&
+      conversation.mitraId.toString() !== currentUserId
     ) {
       throw new ForbiddenException(
         'Akses ditolak. Anda bukan anggota percakapan ini.',
@@ -115,49 +126,52 @@ export class ChatService {
 
     if (
       conversation.isLocked ||
-      conversation.trip.status === 'completed' ||
-      conversation.trip.status === 'cancelled'
+      conversation.trip.status === TripStatus.completed ||
+      conversation.trip.status === TripStatus.cancelled
     ) {
       if (!conversation.isLocked) {
-        await this.chatRepository.lockConversation(convBigIntId);
+        await this.chatRepository.lockConversation(conversationId);
       }
       throw new BadRequestException(
         'Percakapan telah dikunci karena trip telah selesai atau dibatalkan',
       );
     }
 
+    // 1. Simpan pesan ke database MySQL
     const message = await this.chatRepository.createMessage({
-      conversationId: convBigIntId,
-      senderId: userBigIntId,
+      conversationIdStr: conversationId,
+      senderIdStr: currentUserId,
       messageText: dto.messageText,
     });
 
-    return ChatMapper.toMessageResponse(message);
+    const responsePayload = ChatMapper.toMessageResponse(message);
+
+    // 2. Pancarkan pesan ke WebSocket secara Real-Time ke Room terkait
+    this.chatGateway.emitNewMessage(conversationId, responsePayload);
+
+    return responsePayload;
   }
 
   async getMessages(currentUserId: string, conversationId: string) {
-    const userBigIntId = BigInt(currentUserId);
-    const convBigIntId = BigInt(conversationId);
-
     const conversation =
-      await this.chatRepository.findConversationById(convBigIntId);
+      await this.chatRepository.findConversationById(conversationId);
 
     if (!conversation) {
       throw new NotFoundException('Percakapan tidak ditemukan.');
     }
 
     if (
-      conversation.customerId !== userBigIntId &&
-      conversation.mitraId !== userBigIntId
+      conversation.customerId.toString() !== currentUserId &&
+      conversation.mitraId.toString() !== currentUserId
     ) {
       throw new ForbiddenException(
         'Akses ditolak. Anda bukan anggota percakapan ini',
       );
     }
 
-    await this.chatRepository.markMessagesAsRead(convBigIntId, userBigIntId);
+    await this.chatRepository.markMessagesAsRead(conversationId, currentUserId);
     const messages =
-      await this.chatRepository.getMessagesByConversation(convBigIntId);
+      await this.chatRepository.getMessagesByConversation(conversationId);
     return messages.map((msg) => ChatMapper.toMessageResponse(msg));
   }
 }

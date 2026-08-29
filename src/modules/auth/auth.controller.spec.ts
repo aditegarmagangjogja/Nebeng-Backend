@@ -1,46 +1,11 @@
-import {
-  describe,
-  beforeEach,
-  afterEach,
-  it,
-  expect,
-  jest,
-} from '@jest/globals';
-
-// MOCK DEPENDENSI AGAR JEST TIDAK PARSE GENERATED PRISMA CLIENT
-jest.mock('../../prisma/prisma.service', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
-}));
-jest.mock('../users/repositories/user.repository');
-jest.mock('../users/users.service');
-jest.mock('./auth.service');
-
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { Role } from '../../generated/prisma/enums';
 
 describe('AuthController', () => {
   let controller: AuthController;
   let authService: jest.Mocked<AuthService>;
-
-  const mockUserResponseDto = {
-    id: '1',
-    name: 'Budi Santoso',
-    email: 'budi@example.com',
-    phone: '08123456789',
-    role: Role.customer,
-    status: 'active',
-    statusVerification: 'unverified',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  const mockLoginResponse = {
-    accessToken: 'mock-access-token',
-    refreshToken: 'mock-refresh-token',
-    user: mockUserResponseDto as any,
-  };
 
   beforeEach(async () => {
     const mockAuthService = {
@@ -59,87 +24,90 @@ describe('AuthController', () => {
     authService = module.get(AuthService) as jest.Mocked<AuthService>;
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
+  it('harus terinisialisasi dengan benar', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('POST /auth/register', () => {
-    it('harus memanggil authService.register dan mengembalikan UserResponseDto', async () => {
+  describe('register (Endpoint Pendaftaran Akun)', () => {
+    it('harus memanggil authService.register dan mengembalikan data pengguna baru', async () => {
       const registerDto = {
-        name: 'Budi Santoso',
-        email: 'budi@example.com',
-        phone: '08123456789',
-        password: 'password123',
-        role: Role.customer,
+        name: 'Test Customer',
+        email: 'customer@nebeng.com',
+        phone: '081234567890',
+        password: 'Password123!',
       };
 
-      authService.register.mockResolvedValue(mockUserResponseDto as any);
+      const expectedResult = { id: '1', email: registerDto.email } as any;
+      authService.register.mockResolvedValue(expectedResult);
 
-      const result = await controller.register(registerDto);
+      const result = await controller.register(registerDto as any);
 
       expect(authService.register).toHaveBeenCalledWith(registerDto);
-      expect(result).toEqual(mockUserResponseDto);
+      expect(result).toEqual(expectedResult);
     });
   });
 
-  describe('POST /auth/login', () => {
-    it('harus memanggil authService.login dan mengembalikan token serta data user', async () => {
+  describe('login (Endpoint Otentikasi Masuk)', () => {
+    it('harus memanggil authService.login dan mengembalikan akses token beserta profil', async () => {
       const loginDto = {
-        email: 'budi@example.com',
-        password: 'password123',
+        email: 'customer@nebeng.com',
+        password: 'Password123!',
+      };
+      const expectedResult = {
+        accessToken: 'mock_access_token',
+        refreshToken: 'mock_refresh_token',
+        user: { id: '1', email: loginDto.email } as any,
       };
 
-      authService.login.mockResolvedValue(mockLoginResponse);
+      authService.login.mockResolvedValue(expectedResult);
 
       const result = await controller.login(loginDto);
 
       expect(authService.login).toHaveBeenCalledWith(loginDto);
-      expect(result).toEqual(mockLoginResponse);
+      expect(result).toEqual(expectedResult);
     });
   });
 
-  describe('GET /auth/me', () => {
-    it('harus mengembalikan data pengguna dari req.user', () => {
-      const req = { user: mockUserResponseDto };
+  describe('getProfile (Endpoint Profil Pengguna Aktif)', () => {
+    it('harus mengembalikan data req.user dari JwtAuthGuard', () => {
+      const req = {
+        user: { id: '1', email: 'customer@nebeng.com', role: 'customer' },
+      };
 
       const result = controller.getProfile(req);
 
-      expect(result).toEqual(mockUserResponseDto);
+      expect(result).toEqual(req.user);
     });
   });
 
-  describe('POST /auth/refresh', () => {
-    it('harus memanggil authService.refreshToken dengan RefreshTokenDto', async () => {
-      const refreshTokenDto = { refreshToken: 'mock-refresh-token' };
-      const tokens = {
-        accessToken: 'new-access-token',
-        refreshToken: 'new-refresh-token',
+  describe('refresh (Endpoint Pembaruan Access Token)', () => {
+    it('harus memanggil authService.refreshToken dan mengembalikan token baru', async () => {
+      const refreshTokenDto = { refreshToken: 'valid_refresh_token' };
+      const expectedResult = {
+        accessToken: 'new_access_token',
+        refreshToken: 'new_refresh_token',
       };
 
-      authService.refreshToken.mockResolvedValue(tokens);
+      authService.refreshToken.mockResolvedValue(expectedResult);
 
       const result = await controller.refresh(refreshTokenDto);
 
       expect(authService.refreshToken).toHaveBeenCalledWith(refreshTokenDto);
-      expect(result).toEqual(tokens);
+      expect(result).toEqual(expectedResult);
     });
   });
 
-  describe('POST /auth/logout', () => {
-    it('harus memanggil authService.logout dengan ID user dari req.user.id', async () => {
-      const req = { user: { id: '1' } };
-      const logoutResponse = { message: 'Berhasil keluar dari aplikasi' };
+  describe('logout (Endpoint Keluar Akun)', () => {
+    it('harus memanggil authService.logout dengan userId yang didapat dari req.user.id atau req.user.sub', async () => {
+      const req = { user: { id: '1', sub: '1' } };
+      const expectedResult = { message: 'Berhasil keluar dari aplikasi' };
 
-      authService.logout.mockResolvedValue(logoutResponse);
+      authService.logout.mockResolvedValue(expectedResult);
 
       const result = await controller.logout(req);
 
       expect(authService.logout).toHaveBeenCalledWith('1');
-      expect(result).toEqual(logoutResponse);
+      expect(result).toEqual(expectedResult);
     });
   });
 });

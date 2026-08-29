@@ -1,10 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserStatus, TransactionType } from '../../generated/prisma/enums';
+import {
+  UserStatus,
+  TransactionType,
+  OrderStatus,
+  TripStatus,
+  VerificationStatus,
+} from '../../generated/prisma/enums';
 
 @Injectable()
 export class AdminRepository {
   constructor(private readonly prisma: PrismaService) {}
+
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
 
   async getGlobalAnalytics() {
     const [
@@ -16,13 +30,21 @@ export class AdminRepository {
       this.prisma.order.aggregate({
         where: {
           status: {
-            in: ['paid', 'completed', 'in_transit', 'arrived_destination'],
+            in: [
+              OrderStatus.paid,
+              OrderStatus.completed,
+              OrderStatus.in_transit,
+            ],
           },
         },
         _sum: { totalPrice: true },
       }),
       this.prisma.trip.count({
-        where: { status: { in: ['scheduled', 'in_origin_pos', 'in_transit'] } },
+        where: {
+          status: {
+            in: [TripStatus.scheduled, TripStatus.in_transit],
+          },
+        },
       }),
       this.prisma.order.count(),
       this.prisma.region.findMany({
@@ -39,7 +61,7 @@ export class AdminRepository {
     ]);
 
     const totalRevenue = Number(totalPaidOrders._sum.totalPrice || 0);
-    const platformCommission = totalRevenue * 0.1;
+    const platformCommission = totalRevenue * 0.1; // Komisi 10% platform
 
     return {
       totalRevenue,
@@ -50,9 +72,16 @@ export class AdminRepository {
     };
   }
 
-  async getRegionalAnalytics(regionId: bigint) {
+  async getRegionalAnalytics(regionIdStr: string) {
+    const parsedRegionId = this.safeParseBigInt(regionIdStr);
+    if (!parsedRegionId) {
+      throw new BadRequestException(
+        'Format ID Wilayah (Region ID) tidak valid',
+      );
+    }
+
     const region = await this.prisma.region.findUnique({
-      where: { id: regionId },
+      where: { id: parsedRegionId },
     });
 
     const [
@@ -62,24 +91,26 @@ export class AdminRepository {
       pendingVerificationsCount,
     ] = await Promise.all([
       this.prisma.pickupPoint.count({
-        where: { regionId, isActive: true },
+        where: { regionId: parsedRegionId, isActive: true },
       }),
       this.prisma.trip.count({
         where: {
-          originPoint: { regionId },
-          status: { in: ['in_transit', 'arrived_dest_pos', 'completed'] },
+          originPoint: { regionId: parsedRegionId },
+          status: {
+            in: [TripStatus.in_transit, TripStatus.completed],
+          },
         },
       }),
       this.prisma.trip.count({
         where: {
-          destinationPoint: { regionId },
-          status: { in: ['arrived_dest_pos', 'completed'] },
+          destinationPoint: { regionId: parsedRegionId },
+          status: { in: [TripStatus.completed] },
         },
       }),
       this.prisma.verification.count({
         where: {
-          user: { regionId },
-          status: 'pending',
+          user: { regionId: parsedRegionId },
+          status: VerificationStatus.pending,
         },
       }),
     ]);
@@ -121,16 +152,24 @@ export class AdminRepository {
     };
   }
 
-  async updateUserStatus(userId: bigint, status: UserStatus) {
+  async updateUserStatus(userIdStr: string, status: UserStatus) {
+    const parsedUserId = this.safeParseBigInt(userIdStr);
+    if (!parsedUserId) {
+      throw new BadRequestException('Format ID User tidak valid');
+    }
+
     return this.prisma.user.update({
-      where: { id: userId },
+      where: { id: parsedUserId },
       data: { status },
     });
   }
 
-  async findUserById(userId: bigint) {
+  async findUserById(userIdStr: string) {
+    const parsedUserId = this.safeParseBigInt(userIdStr);
+    if (!parsedUserId) return null;
+
     return this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: parsedUserId },
     });
   }
 }

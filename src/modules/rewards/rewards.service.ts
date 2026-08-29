@@ -13,39 +13,35 @@ export class RewardsService {
   constructor(private readonly rewardsRepository: RewardsRepository) {}
 
   async earnPoints(dto: EarnRewardDto) {
-    const userBigIntId = BigInt(dto.userId);
-
-    const user = await this.rewardsRepository.findUserById(userBigIntId);
+    const user = await this.rewardsRepository.findUserById(dto.userId);
     if (!user) {
-      throw new NotFoundException('user tidak ditemukan');
+      throw new NotFoundException('User tidak ditemukan');
     }
 
     const { transaction } = await this.rewardsRepository.addRewardPoints({
-      userId: userBigIntId,
+      userIdStr: dto.userId,
       points: dto.points,
-      description: dto.description || 'Penambahan point reward',
+      description: dto.description || 'Penambahan poin reward',
     });
 
     return RewardMapper.toTransactionResponse(transaction);
   }
 
-  async reedemPoints(currentUserId: string, dto: RedeemRewardDto) {
-    const userBigintId = BigInt(currentUserId);
-
-    const user = await this.rewardsRepository.findUserById(userBigintId);
+  async redeemPoints(currentUserId: string, dto: RedeemRewardDto) {
+    const user = await this.rewardsRepository.findUserById(currentUserId);
 
     if (!user) {
-      throw new NotFoundException('user tidak ditemukan');
+      throw new NotFoundException('User tidak ditemukan');
     }
 
     if (user.rewardPoints < dto.points) {
       throw new BadRequestException(
-        `Saldo poin anda tidka mencukupi. Poin anda saat ini ${user.rewardPoints}`,
+        `Saldo poin Anda tidak mencukupi. Poin Anda saat ini ${user.rewardPoints}`,
       );
     }
 
     const { transaction } = await this.rewardsRepository.deductRewardPoints({
-      userId: userBigintId,
+      userIdStr: currentUserId,
       points: dto.points,
       description: dto.description || 'Penukaran poin reward',
     });
@@ -54,15 +50,13 @@ export class RewardsService {
   }
 
   async getUserRewardSummary(currentUserId: string) {
-    const userBigIntId = BigInt(currentUserId);
-
-    const user = await this.rewardsRepository.findUserById(userBigIntId);
+    const user = await this.rewardsRepository.findUserById(currentUserId);
     if (!user) {
-      throw new NotFoundException('user tidak ditemukan');
+      throw new NotFoundException('User tidak ditemukan');
     }
 
     const history =
-      await this.rewardsRepository.getRewardHistoryByUserId(userBigIntId);
+      await this.rewardsRepository.getRewardHistoryByUserId(currentUserId);
 
     return RewardMapper.toBalanceResponse(user, history);
   }

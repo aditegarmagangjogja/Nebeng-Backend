@@ -1,29 +1,15 @@
-import {
-  describe,
-  beforeEach,
-  afterEach,
-  it,
-  expect,
-  jest,
-} from '@jest/globals';
-
-jest.mock('../../prisma/prisma.service', () => ({
-  PrismaService: jest.fn().mockImplementation(() => ({})),
-}));
-
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, beforeEach, it, expect, jest } from '@jest/globals';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
 import { OrderType } from '../../generated/prisma/enums';
 
 describe('OrdersController', () => {
   let controller: OrdersController;
-  let service: jest.Mocked<OrdersService>;
-
-  const mockUser = { id: '10', role: 'customer' };
+  let ordersService: jest.Mocked<OrdersService>;
 
   beforeEach(async () => {
-    const mockOrdersService = {
+    const mockService = {
       createOrder: jest.fn(),
       getMyOrders: jest.fn(),
       getOrderById: jest.fn(),
@@ -31,55 +17,51 @@ describe('OrdersController', () => {
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [OrdersController],
-      providers: [{ provide: OrdersService, useValue: mockOrdersService }],
+      providers: [{ provide: OrdersService, useValue: mockService }],
     }).compile();
 
     controller = module.get<OrdersController>(OrdersController);
-    service = module.get(OrdersService) as jest.Mocked<OrdersService>;
+    ordersService = module.get(OrdersService) as jest.Mocked<OrdersService>;
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it('should be defined', () => {
+  it('harus terinisialisasi dengan benar', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('createOrder()', () => {
-    it('harus meneruskan customer ID dan DTO ke ordersService.createOrder', async () => {
-      const dto = { tripId: '100', type: OrderType.passenger, seatsBooked: 1 };
-      const mockResponse = { id: '1', totalPrice: 50000 };
+  describe('POST /orders (Endpoint Buat Pesanan Baru)', () => {
+    it('harus memanggil ordersService.createOrder dengan ID customer dan DTO', async () => {
+      const dto = { tripId: '100', type: OrderType.passenger, seatsBooked: 2 };
+      const expectedResponse = { id: '1', ...dto } as any;
 
-      service.createOrder.mockResolvedValue(mockResponse as any);
+      ordersService.createOrder.mockResolvedValue(expectedResponse);
 
-      const result = await controller.createOrder(mockUser, dto);
+      const result = await controller.createOrder('10', dto as any);
 
-      expect(service.createOrder).toHaveBeenCalledWith('10', dto);
-      expect(result).toEqual(mockResponse);
+      expect(ordersService.createOrder).toHaveBeenCalledWith('10', dto);
+      expect(result).toEqual(expectedResponse);
     });
   });
 
-  describe('getMyOrders()', () => {
-    it('harus memanggil ordersService.getMyOrders dengan ID user aktif', async () => {
-      service.getMyOrders.mockResolvedValue([] as any);
+  describe('GET /orders/me (Endpoint Riwayat Pesanan Saya)', () => {
+    it('harus memanggil ordersService.getMyOrders dengan ID customer', async () => {
+      ordersService.getMyOrders.mockResolvedValue([]);
 
-      const result = await controller.getMyOrders(mockUser);
+      const result = await controller.getMyOrders('10');
 
-      expect(service.getMyOrders).toHaveBeenCalledWith('10');
+      expect(ordersService.getMyOrders).toHaveBeenCalledWith('10');
       expect(result).toEqual([]);
     });
   });
 
-  describe('getOrderById()', () => {
-    it('harus memanggil ordersService.getOrderById dengan ID parameter', async () => {
-      const mockResponse = { id: '1', totalPrice: 50000 };
-      service.getOrderById.mockResolvedValue(mockResponse as any);
+  describe('GET /orders/:id (Endpoint Detail Pesanan)', () => {
+    it('harus memanggil ordersService.getOrderById dengan ID pesanan', async () => {
+      const expectedResponse = { id: '1', totalPrice: 100000 } as any;
+      ordersService.getOrderById.mockResolvedValue(expectedResponse);
 
       const result = await controller.getOrderById('1');
 
-      expect(service.getOrderById).toHaveBeenCalledWith('1');
-      expect(result).toEqual(mockResponse);
+      expect(ordersService.getOrderById).toHaveBeenCalledWith('1');
+      expect(result).toEqual(expectedResponse);
     });
   });
 });

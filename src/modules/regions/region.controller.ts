@@ -24,7 +24,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/enums';
 
-@ApiTags('Regions & Cities')
+@ApiTags('Wilayah & Kota')
 @Controller()
 export class RegionController {
   constructor(private readonly regionService: RegionService) {}
