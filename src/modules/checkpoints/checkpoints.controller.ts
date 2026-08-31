@@ -21,9 +21,9 @@ export class CheckpointsController {
   constructor(private readonly checkpointsService: CheckpointsService) {}
 
   @Post('scan')
-  @Roles(Role.mitra, Role.operator_pos)
+  @Roles(Role.mitra, Role.operator_pos, Role.admin_wilayah, Role.superadmin)
   @ApiOperation({
-    summary: 'Scan QR Checkpoint di Pos Asal/Tujuan (Mitra & Admin Operator)',
+    summary: 'Scan QR Checkpoint di Pos Asal/Tujuan (Operator Pos & Admin)',
   })
   @ApiResponse({ status: 201, description: 'Scan checkpoint berhasil' })
   @ApiResponse({
@@ -35,10 +35,28 @@ export class CheckpointsController {
     status: 404,
     description: 'Data Trip atau Tiket tidak ditemukan',
   })
-  async scanCheckpoint(
-    @GetUser('id') operatorUserId: string,
-    @Body() dto: ScanCheckpointDto,
+  async scanCheckpoint(@GetUser() user: any, @Body() dto: ScanCheckpointDto) {
+    return this.checkpointsService.scanCheckpoint(user, dto);
+  }
+
+  @Post('manual-force-release')
+  @Roles(Role.operator_pos, Role.admin_wilayah, Role.superadmin)
+  @ApiOperation({
+    summary:
+      'Intervensi Darurat: Force Complete & Release Escrow manual oleh Operator Pos (HP Mitra Rusak)',
+  })
+  @ApiResponse({ status: 201, description: 'Pencairan manual berhasil' })
+  async manualForceRelease(
+    @GetUser() user: any,
+    @Body('qrCodeTicket') qrCodeTicket: string,
+    @Body('posId') posId: string,
+    @Body('otpClaim') otpClaim?: string,
   ) {
-    return this.checkpointsService.scanCheckpoint(String(operatorUserId), dto);
+    return this.checkpointsService.manualForceReleaseByOperator(
+      user,
+      qrCodeTicket,
+      posId,
+      otpClaim,
+    );
   }
 }

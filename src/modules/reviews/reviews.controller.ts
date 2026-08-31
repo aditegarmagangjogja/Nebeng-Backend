@@ -21,11 +21,11 @@ export class ReviewsController {
   @ApiOperation({
     summary: 'Memberikan ulasan/rating untuk trip yang sudah selesai',
   })
-  @ApiResponse({ status: 201, description: 'Ulasan berhasil dibut' })
+  @ApiResponse({ status: 201, description: 'Ulasan berhasil dibuat' })
   @ApiResponse({
     status: 400,
     description:
-      'Mengulas diri sendiri, trip belum selesai, atau sudah memberi ulasan',
+      'Mengulas diri sendiri, trip belum selesai, rating di luar range 1-5, atau salah target reviewee',
   })
   @ApiResponse({
     status: 403,

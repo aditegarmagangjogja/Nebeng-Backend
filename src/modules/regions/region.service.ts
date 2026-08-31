@@ -2,7 +2,6 @@ import {
   ConflictException,
   Injectable,
   NotFoundException,
-  BadRequestException,
 } from '@nestjs/common';
 import { RegionRepository } from './repositories/region.repository';
 import { CreateRegionDto } from './dto/create-region.dto';

@@ -8,12 +8,15 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, UseGuards } from '@nestjs/common';
+import { WsJwtAuthGuard } from '../auth/guards/ws-jwt.guard';
+import { ChatRepository } from './repository/chat.repository';
 
 @Injectable()
+@UseGuards(WsJwtAuthGuard)
 @WebSocketGateway({
   cors: {
-    origin: '*', // Sesuaikan dengan domain frontend/mobile app Anda
+    origin: '*',
   },
   namespace: 'chats',
 })
@@ -23,6 +26,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private readonly logger = new Logger(ChatGateway.name);
 
+  constructor(private readonly chatRepository: ChatRepository) {}
+
   handleConnection(client: Socket) {
     this.logger.log(`Client connected: ${client.id}`);
   }
@@ -31,32 +36,57 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  // Client bergabung ke Room Percakapan tertentu (misal: "conversation_1")
   @SubscribeMessage('join_conversation')
-  handleJoinRoom(
-    @ConnectedSocket() client: Socket,
+  async handleJoinRoom(
+    @ConnectedSocket() client: any,
     @MessageBody() data: { conversationId: string },
   ) {
+    if (!data?.conversationId) {
+      return {
+        status: 'error',
+        message: 'Parameter conversationId wajib diisi.',
+      };
+    }
+
+    const currentUserId = String(client.user?.id || client.user?.sub);
+    const conversation = await this.chatRepository.findConversationById(
+      data.conversationId,
+    );
+
+    if (!conversation) {
+      return { status: 'error', message: 'Percakapan tidak ditemukan.' };
+    }
+
+    if (
+      conversation.customerId.toString() !== currentUserId &&
+      conversation.mitraId.toString() !== currentUserId
+    ) {
+      return { status: 'error', message: 'Anda bukan anggota percakapan ini.' };
+    }
+
     const roomName = `conversation_${data.conversationId}`;
     client.join(roomName);
-    this.logger.log(`Client ${client.id} joined room: ${roomName}`);
+    this.logger.log(
+      `Client ${client.id} (User: ${currentUserId}) joined room: ${roomName}`,
+    );
     return { event: 'joined_room', room: roomName };
   }
 
-  // Client meninggalkan Room Percakapan
   @SubscribeMessage('leave_conversation')
   handleLeaveRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { conversationId: string },
   ) {
+    if (!data?.conversationId) return;
     const roomName = `conversation_${data.conversationId}`;
     client.leave(roomName);
     this.logger.log(`Client ${client.id} left room: ${roomName}`);
   }
 
-  // Method penyiaran pesan baru ke room secara Real-Time
   emitNewMessage(conversationId: string, messagePayload: any) {
-    const roomName = `conversation_${conversationId}`;
-    this.server.to(roomName).emit('new_message', messagePayload);
+    if (this.server) {
+      const roomName = `conversation_${conversationId}`;
+      this.server.to(roomName).emit('new_message', messagePayload);
+    }
   }
 }

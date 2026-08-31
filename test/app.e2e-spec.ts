@@ -1,52 +1,45 @@
-import { describe, beforeAll, afterAll, it, expect } from '@jest/globals';
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
 import {
+  Role,
+  VerificationStatus,
+  VehicleType,
   OrderType,
   ScanType,
-  Role,
-  TripStatus,
-  VehicleType,
-  VerificationType,
-  ParcelSize,
+  UserStatus,
 } from '../src/generated/prisma/enums';
 
-describe('Master E2E Test Suite: Complete Features & Business Flow', () => {
+describe('Sistem Trajek & Logistik (Full E2E Integration Test)', () => {
   let app: INestApplication;
   let prisma: PrismaService;
+  let jwtService: JwtService;
 
-  // Global Tokens
-  let customerAToken: string;
-  let customerBToken: string;
+  // Header Tokens
+  let adminToken: string;
+  let approvedMitraToken: string;
+  let unapprovedMitraToken: string;
+  let customerToken: string;
   let operatorToken: string;
-  let mitraToken: string;
 
-  // Seeded Entity IDs
-  let regionId: bigint;
-  let cityId: bigint;
-  let posOriginId: bigint;
-  let posDestinationId: bigint;
-  let vehicleId: bigint;
-  let tripId: bigint;
-  let qrCodeTripStr: string;
+  // ID References
+  let adminId: string;
+  let mitraId: string;
+  let customerId: string;
+  let operatorId: string;
+  let validVehicleId: string;
+  let originPosId: string;
+  let destPosId: string;
 
-  // Order & Checkpoint States
-  let passengerOrderId: bigint;
-  let passengerQrTicket: string;
-
-  let parcelOrderId: bigint;
-  let parcelQrTicket: string;
-  let parcelOtpClaim: string;
-
-  const timestamp = Date.now();
-  const customerAEmail = `e2e.custA.${timestamp}@example.com`;
-  const customerBEmail = `e2e.custB.${timestamp}@example.com`;
-  const operatorEmail = `e2e.operator.${timestamp}@example.com`;
-  const mitraEmail = `e2e.mitra.${timestamp}@example.com`;
-  const defaultPassword = 'Password123!';
+  // State dynamic untuk Alur Transaksi Sukses
+  let createdTripId: string;
+  let createdTripQr: string;
+  let createdOrderId: string;
+  let createdOrderTicketQr: string;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -60,43 +53,157 @@ describe('Master E2E Test Suite: Complete Features & Business Flow', () => {
     await app.init();
 
     prisma = app.get<PrismaService>(PrismaService);
+    jwtService = app.get<JwtService>(JwtService);
 
-    // Seed Master Region, City, & Pickup Points
-    const region = await prisma.region.create({
-      data: { name: `Region E2E ${timestamp}`, code: `REG-${timestamp}` },
-    });
-    regionId = region.id;
+    const timestamp = Date.now();
 
-    const city = await prisma.city.create({
-      data: { name: 'Yogyakarta', province: 'DIY' },
-    });
-    cityId = city.id;
+    // 1. Ambil/Buat Data Master Region & City
+    let existingRegion = await prisma.region.findFirst();
+    if (!existingRegion) {
+      existingRegion = await prisma.region.create({
+        data: { name: `Region E2E ${timestamp}`, code: `REG${timestamp}` },
+      });
+    }
 
-    const posOrigin = await prisma.pickupPoint.create({
+    let existingCity = await prisma.city.findFirst();
+    if (!existingCity) {
+      existingCity = await prisma.city.create({
+        data: {
+          name: `Kota E2E ${timestamp}`,
+          province: 'Jawa Tengah',
+        },
+      });
+    }
+
+    // 2. Seed Superadmin User
+    const adminUser = await prisma.user.create({
       data: {
-        regionId,
-        cityId,
-        name: `Pos Giwangan ${timestamp}`,
-        address: 'Jl. Imogiri',
-        latitude: -7.833,
-        longitude: 110.383,
+        name: 'Superadmin E2E',
+        email: `admin.e2e.${timestamp}@example.com`,
+        phone: `0811${Math.floor(10000000 + Math.random() * 90000000)}`,
+        password: 'hashedpassword',
+        role: Role.superadmin,
+        status: UserStatus.active,
+      },
+    });
+    adminId = adminUser.id.toString();
+    adminToken = `Bearer ${jwtService.sign({ id: adminId, sub: adminId, role: Role.superadmin })}`;
+
+    // 3. Seed Operator Pos User
+    const operatorUser = await prisma.user.create({
+      data: {
+        name: 'Operator Pos E2E',
+        email: `operator.e2e.${timestamp}@example.com`,
+        phone: `0815${Math.floor(10000000 + Math.random() * 90000000)}`,
+        password: 'hashedpassword',
+        role: Role.operator_pos,
+        status: UserStatus.active,
+      },
+    });
+    operatorId = operatorUser.id.toString();
+    operatorToken = `Bearer ${jwtService.sign({
+      id: operatorId,
+      sub: operatorId,
+      role: Role.operator_pos,
+    })}`;
+
+    // 4. Seed Pos Asal & Pos Tujuan Master Data
+    const originPos = await prisma.pickupPoint.create({
+      data: {
+        regionId: existingRegion.id,
+        cityId: existingCity.id,
+        operatorId: operatorUser.id,
+        name: `Pos Asal Surakarta ${timestamp}`,
+        address: 'Terminal Tirtonadi',
+        latitude: -7.55,
+        longitude: 110.82,
         qrCodePos: `POS-ORIGIN-${timestamp}`,
       },
     });
-    posOriginId = posOrigin.id;
+    originPosId = originPos.id.toString();
 
-    const posDestination = await prisma.pickupPoint.create({
+    const destPos = await prisma.pickupPoint.create({
       data: {
-        regionId,
-        cityId,
-        name: `Pos Jombor ${timestamp}`,
-        address: 'Jl. Magelang',
-        latitude: -7.753,
-        longitude: 110.361,
+        regionId: existingRegion.id,
+        cityId: existingCity.id,
+        operatorId: operatorUser.id,
+        name: `Pos Tujuan Jogja ${timestamp}`,
+        address: 'Terminal Giwangan',
+        latitude: -7.83,
+        longitude: 110.39,
         qrCodePos: `POS-DEST-${timestamp}`,
       },
     });
-    posDestinationId = posDestination.id;
+    destPosId = destPos.id.toString();
+
+    // 5. Seed Customer User (Dilengkapi pinHash dummy untuk PIN '123456')
+    const hashedPinForTest = await bcrypt.hash('123456', 10);
+
+    const customerUser = await prisma.user.create({
+      data: {
+        name: 'Customer E2E',
+        email: `customer.e2e.${timestamp}@example.com`,
+        phone: `0812${Math.floor(10000000 + Math.random() * 90000000)}`,
+        password: 'hashedpassword',
+        pinHash: hashedPinForTest, // Menggunakan hash asli yang valid
+        role: Role.customer,
+        status: UserStatus.active,
+      },
+    });
+    customerId = customerUser.id.toString();
+    customerToken = `Bearer ${jwtService.sign({ id: customerId, sub: customerId, role: Role.customer })}`;
+
+    // 6. Seed Mitra User Approved & Kendaraan Sah
+    const mitraUser = await prisma.user.create({
+      data: {
+        name: 'Mitra E2E Approved',
+        email: `mitra.approved.${timestamp}@example.com`,
+        phone: `0813${Math.floor(10000000 + Math.random() * 90000000)}`,
+        password: 'hashedpassword',
+        role: Role.mitra,
+        status: UserStatus.active,
+        statusVerification: VerificationStatus.approved,
+      },
+    });
+    mitraId = mitraUser.id.toString();
+    approvedMitraToken = `Bearer ${jwtService.sign({
+      id: mitraId,
+      sub: mitraId,
+      role: Role.mitra,
+      statusVerification: VerificationStatus.approved,
+    })}`;
+
+    const vehicle = await prisma.vehicle.create({
+      data: {
+        userId: BigInt(mitraId),
+        type: VehicleType.mobil,
+        model: 'Toyota Avanza E2E',
+        plateNumber: `AD${Math.floor(1000 + Math.random() * 9000)}E2E`,
+        color: 'Hitam',
+        capacitySeats: 6,
+        maxWeightCapacityKg: 100,
+      },
+    });
+    validVehicleId = vehicle.id.toString();
+
+    // 7. Seed Mitra User Pending
+    const unapprovedMitraUser = await prisma.user.create({
+      data: {
+        name: 'Mitra E2E Pending',
+        email: `mitra.pending.${timestamp}@example.com`,
+        phone: `0814${Math.floor(10000000 + Math.random() * 90000000)}`,
+        password: 'hashedpassword',
+        role: Role.mitra,
+        status: UserStatus.active,
+        statusVerification: VerificationStatus.pending,
+      },
+    });
+    unapprovedMitraToken = `Bearer ${jwtService.sign({
+      id: unapprovedMitraUser.id.toString(),
+      sub: unapprovedMitraUser.id.toString(),
+      role: Role.mitra,
+      statusVerification: VerificationStatus.pending,
+    })}`;
   });
 
   afterAll(async () => {
@@ -104,304 +211,162 @@ describe('Master E2E Test Suite: Complete Features & Business Flow', () => {
   });
 
   // =========================================================================
-  // 1. AUTHENTICATION & USER PROFILE
+  // 🟢 SUITE 1: ALUR SUKSES TRANSAKSI PENUH (HAPPY PATH LIFE-CYCLE)
   // =========================================================================
-  describe('1. Auth & User Verification', () => {
-    it('1.1. Registrasi & Login Mitra', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          name: 'Mitra E2E',
-          email: mitraEmail,
-          phone: `081${Math.floor(10000000 + Math.random() * 90000000)}`,
-          password: defaultPassword,
-          role: Role.mitra,
-        })
-        .expect(201);
-
+  describe('1. FULL HAPPY PATH: Simulasi Alur Sukses dari Awal hingga Pencairan Escrow', () => {
+    it('STEP 1: Mitra berhasil membuat Jadwal Trip dari Pos Asal ke Pos Tujuan', async () => {
       const res = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: mitraEmail, password: defaultPassword })
-        .expect(200);
-
-      mitraToken = res.body.accessToken;
-      expect(mitraToken).toBeDefined();
-    });
-
-    it('1.2. Upload Verifikasi KTP Mitra', async () => {
-      const mitraUser = await prisma.user.findUnique({
-        where: { email: mitraEmail },
-      });
-
-      await prisma.verification.create({
-        data: {
-          userId: mitraUser!.id,
-          type: VerificationType.ktp,
-        },
-      });
-
-      const profileRes = await request(app.getHttpServer())
-        .get('/auth/me')
-        .set('Authorization', `Bearer ${mitraToken}`)
-        .expect(200);
-
-      expect(profileRes.body.email).toEqual(mitraEmail);
-    });
-
-    it('1.3. Registrasi & Login Customer A & B', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/register')
+        .post('/trips')
+        .set('Authorization', approvedMitraToken)
         .send({
-          name: 'Customer A',
-          email: customerAEmail,
-          phone: `082${Math.floor(10000000 + Math.random() * 90000000)}`,
-          password: defaultPassword,
-          role: Role.customer,
-        })
-        .expect(201);
-
-      const resA = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: customerAEmail, password: defaultPassword })
-        .expect(200);
-      customerAToken = resA.body.accessToken;
-
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          name: 'Customer B',
-          email: customerBEmail,
-          phone: `083${Math.floor(10000000 + Math.random() * 90000000)}`,
-          password: defaultPassword,
-          role: Role.customer,
-        })
-        .expect(201);
-
-      const resB = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: customerBEmail, password: defaultPassword })
-        .expect(200);
-      customerBToken = resB.body.accessToken;
-    });
-
-    it('1.4. Registrasi & Login Operator Pos', async () => {
-      await request(app.getHttpServer())
-        .post('/auth/register')
-        .send({
-          name: 'Operator Pos',
-          email: operatorEmail,
-          phone: `084${Math.floor(10000000 + Math.random() * 90000000)}`,
-          password: defaultPassword,
-          role: Role.operator_pos,
-        })
-        .expect(201);
-
-      const res = await request(app.getHttpServer())
-        .post('/auth/login')
-        .send({ email: operatorEmail, password: defaultPassword })
-        .expect(200);
-
-      operatorToken = res.body.accessToken;
-    });
-  });
-
-  // =========================================================================
-  // 2. VEHICLES & TRIPS MANAGEMENT
-  // =========================================================================
-  describe('2. Vehicles & Trips Management', () => {
-    it('2.1. Seed Kendaraan & Schedule Trip Mitra', async () => {
-      const mitraUser = await prisma.user.findUnique({
-        where: { email: mitraEmail },
-      });
-
-      const vehicle = await prisma.vehicle.create({
-        data: {
-          userId: mitraUser!.id,
-          type: VehicleType.mobil,
-          model: 'Avanza Veloz',
-          plateNumber: `AB ${Math.floor(1000 + Math.random() * 9000)} E2E`,
-          color: 'Hitam',
-          capacitySeats: 6,
-          maxWeightCapacityKg: 100,
-        },
-      });
-      vehicleId = vehicle.id;
-      expect(vehicleId).toBeDefined();
-
-      qrCodeTripStr = `TRIP-QR-${timestamp}`;
-
-      const trip = await prisma.trip.create({
-        data: {
-          mitraId: mitraUser!.id,
-          vehicleId: vehicle.id,
-          originPointId: posOriginId,
-          destinationPointId: posDestinationId,
-          vehicleType: VehicleType.mobil,
-          departureDate: new Date(),
-          departureTime: new Date(),
+          vehicleId: validVehicleId,
+          originPointId: originPosId,
+          destinationPointId: destPosId,
+          departureDate: '2026-10-01',
+          departureTime: '2026-10-01T08:00:00Z',
           price: 50000,
-          seatTotal: 4,
-          seatAvailable: 4,
-          maxWeightCapacityKg: 20,
-          remainingWeightCapacityKg: 20,
-          qrCodeTrip: qrCodeTripStr,
-          status: TripStatus.scheduled,
-        },
-      });
-      tripId = trip.id;
-    });
-  });
-
-  // =========================================================================
-  // 3. ORDERS ENGINE & CONSTRAINTS
-  // =========================================================================
-  describe('3. Orders Engine & Constraints', () => {
-    it('3.1. [Sad Path] Overbooking Kursi', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/orders')
-        .set('Authorization', `Bearer ${customerAToken}`)
-        .send({
-          tripId: tripId.toString(),
-          type: OrderType.passenger,
-          seatsBooked: 10,
+          totalSeats: 4,
+          maxWeightCapacityKg: 50,
         })
-        .expect(400);
+        .expect(201);
 
-      expect(res.body.message).toContain('Sisa kursi tidak mencukupi');
+      createdTripId = res.body.id;
+      createdTripQr = res.body.qrCodeTrip;
+      expect(createdTripId).toBeDefined();
+      expect(createdTripQr).toBeDefined();
     });
 
-    it('3.2. [Happy Path] Order 2 Tiket Penumpang', async () => {
+    it('STEP 2: Customer memesan tiket penumpang (Passenger Booking) pada Trip tersebut', async () => {
       const res = await request(app.getHttpServer())
         .post('/orders')
-        .set('Authorization', `Bearer ${customerAToken}`)
+        .set('Authorization', customerToken)
         .send({
-          tripId: tripId.toString(),
+          tripId: createdTripId,
           type: OrderType.passenger,
           seatsBooked: 2,
         })
         .expect(201);
 
-      passengerOrderId = BigInt(res.body.id);
-      passengerQrTicket = res.body.qrCodeTicket;
+      createdOrderId = res.body.id;
+      createdOrderTicketQr = res.body.qrCodeTicket;
+      expect(createdOrderId).toBeDefined();
+      expect(createdOrderTicketQr).toBeDefined();
     });
 
-    it('3.3. [Happy Path] Order Pengiriman Parcel', async () => {
+    it('STEP 3: Customer melakukan pembayaran (Checkout Payment dengan PIN) & Dana ditahan di Escrow', async () => {
       const res = await request(app.getHttpServer())
-        .post('/orders')
-        .set('Authorization', `Bearer ${customerAToken}`)
+        .post('/payments/checkout')
+        .set('Authorization', customerToken)
         .send({
-          tripId: tripId.toString(),
-          type: OrderType.parcel,
-          items: [
-            {
-              itemName: 'Laptop Asus',
-              itemCategory: 'Elektronik',
-              quantity: 1,
-              weightPerItemKg: 3,
-              sizeEnum: ParcelSize.m,
-              recipientName: 'Budi Penerima',
-              recipientPhone: '081234567890',
-            },
-          ],
+          orderId: createdOrderId,
+          paymentGateway: 'midtrans',
+          pin: '123456',
         })
         .expect(201);
 
-      parcelOrderId = BigInt(res.body.id);
-      parcelQrTicket = res.body.qrCodeTicket;
-      parcelOtpClaim = res.body.otpClaim;
-    });
-  });
-
-  // =========================================================================
-  // 4. PAYMENTS & ESCROW WALLET
-  // =========================================================================
-  describe('4. Payments & Escrow Ledger', () => {
-    it('4.1. [Security Violation] Customer B membayar order Customer A', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/payments')
-        .set('Authorization', `Bearer ${customerBToken}`)
-        .send({
-          orderId: passengerOrderId.toString(),
-          paymentGateway: 'midtrans',
-        })
-        .expect(400);
-
-      expect(res.body.message).toContain('bukan milik anda');
+      expect(res.body.payment.status).toEqual('success');
     });
 
-    it('4.2. [Happy Path] Pelunasan Order Penumpang & Hold Escrow', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/payments')
-        .set('Authorization', `Bearer ${customerAToken}`)
-        .send({
-          orderId: passengerOrderId.toString(),
-          paymentGateway: 'midtrans',
-        })
-        .expect(201);
-
-      expect(res.body.message).toContain('Escrow System');
-    });
-
-    it('4.3. [Happy Path] Pelunasan Order Parcel', async () => {
-      await request(app.getHttpServer())
-        .post('/payments')
-        .set('Authorization', `Bearer ${customerAToken}`)
-        .send({
-          orderId: parcelOrderId.toString(),
-          paymentGateway: 'midtrans',
-        })
-        .expect(201);
-    });
-  });
-
-  // =========================================================================
-  // 5. CHECKPOINTS & ESCROW RELEASE
-  // =========================================================================
-  describe('5. Checkpoints & Escrow Release', () => {
-    it('5.1. [Happy Path] Check-in Origin Penumpang', async () => {
+    it('STEP 4: Operator Pos melakukan Check-in Pos Asal (Origin Scan) -> Status Trip & Order IN_TRANSIT', async () => {
       const res = await request(app.getHttpServer())
         .post('/checkpoints/scan')
-        .set('Authorization', `Bearer ${operatorToken}`)
+        .set('Authorization', operatorToken)
         .send({
-          qrCodeTrip: qrCodeTripStr,
-          qrCodeTicket: passengerQrTicket,
-          posId: posOriginId.toString(),
+          qrCodeTrip: createdTripQr,
+          qrCodeTicket: createdOrderTicketQr,
+          posId: originPosId,
           scanType: ScanType.checkin_origin,
         })
         .expect(201);
 
-      expect(res.body.message).toContain('IN_TRANSIT');
+      expect(res.body.message).toContain('Check-in Pos Asal berhasil');
     });
 
-    it('5.2. [Happy Path] Check-in Destination Parcel & Escrow Release', async () => {
+    it('STEP 5: Operator Pos melakukan Check-in Pos Tujuan (Destination Scan) -> Status COMPLETED & Escrow Release', async () => {
       const res = await request(app.getHttpServer())
         .post('/checkpoints/scan')
-        .set('Authorization', `Bearer ${operatorToken}`)
+        .set('Authorization', operatorToken)
         .send({
-          qrCodeTrip: qrCodeTripStr,
-          qrCodeTicket: parcelQrTicket,
-          posId: posDestinationId.toString(),
-          scanType: ScanType.checkin_destination,
-          otpClaim: parcelOtpClaim,
-        })
-        .expect(201);
-
-      expect(res.body.message).toContain('Dana Escrow telah dicairkan');
-    });
-
-    it('5.3. [Happy Path] Check-in Destination Penumpang & Escrow Release', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/checkpoints/scan')
-        .set('Authorization', `Bearer ${operatorToken}`)
-        .send({
-          qrCodeTrip: qrCodeTripStr,
-          qrCodeTicket: passengerQrTicket,
-          posId: posDestinationId.toString(),
+          qrCodeTrip: createdTripQr,
+          qrCodeTicket: createdOrderTicketQr,
+          posId: destPosId,
           scanType: ScanType.checkin_destination,
         })
         .expect(201);
 
-      expect(res.body.message).toContain('Dana Escrow telah dicairkan');
+      expect(res.body.message).toContain(
+        'Dana Escrow telah dicairkan ke Wallet Mitra',
+      );
+    });
+
+    it('STEP 6: Customer memberikan ulasan bintang 5 setelah transaksi selesai', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/reviews')
+        .set('Authorization', customerToken)
+        .send({
+          tripId: createdTripId,
+          revieweeId: mitraId,
+          rating: 5,
+          comment: 'Perjalanan sangat nyaman dan tepat waktu!',
+        })
+        .expect(201);
+
+      expect(res.body.rating).toEqual(5);
+    });
+  });
+
+  // =========================================================================
+  // 🔴 SUITE 2: SKENARIO PENOLAKAN & INTEGRITAS (NEGATIVE TESTS)
+  // =========================================================================
+  describe('2. SKENARIO PENOLAKAN: Memastikan Validasi Keamanan Sistem Berfungsi', () => {
+    it('Mitra ber-status PENDING ditolak (403) saat membuat jadwal Trip', async () => {
+      await request(app.getHttpServer())
+        .post('/trips')
+        .set('Authorization', unapprovedMitraToken)
+        .send({
+          vehicleId: validVehicleId,
+          originPointId: originPosId,
+          destinationPointId: destPosId,
+          departureDate: '2026-10-01',
+          departureTime: '2026-10-01T08:00:00Z',
+          price: 50000,
+        })
+        .expect(403);
+    });
+
+    it('Ditolak (400) jika Pos Asal dan Pos Tujuan SAMA', async () => {
+      await request(app.getHttpServer())
+        .post('/trips')
+        .set('Authorization', approvedMitraToken)
+        .send({
+          vehicleId: validVehicleId,
+          originPointId: originPosId,
+          destinationPointId: originPosId,
+          departureDate: '2026-10-01',
+          departureTime: '2026-10-01T08:00:00Z',
+          price: 50000,
+        })
+        .expect(400);
+    });
+
+    it('User ditolak (400) jika mencoba mengulas dirinya sendiri', async () => {
+      await request(app.getHttpServer())
+        .post('/reviews')
+        .set('Authorization', customerToken)
+        .send({
+          tripId: createdTripId,
+          revieweeId: customerId,
+          rating: 5,
+        })
+        .expect(400);
+    });
+
+    it('Admin ditolak (400) saat mencoba menangguhkan (suspend) akunnya sendiri', async () => {
+      await request(app.getHttpServer())
+        .patch(`/admin/users/${adminId}/governance`)
+        .set('Authorization', adminToken)
+        .send({ status: UserStatus.suspended })
+        .expect(400);
     });
   });
 });

@@ -45,6 +45,16 @@ export class VehiclesRepository {
     if (!parsedId) return null;
     return this.prisma.vehicle.findUnique({
       where: { id: parsedId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            statusVerification: true,
+          },
+        },
+      },
     });
   }
 
@@ -66,6 +76,20 @@ export class VehiclesRepository {
     const cleanPlate = plateNumber.toUpperCase().replace(/\s+/g, '').trim();
     return this.prisma.vehicle.findFirst({
       where: { plateNumber: cleanPlate },
+    });
+  }
+
+  async countActiveTrips(vehicleId: string) {
+    const parsedId = this.safeParseBigInt(vehicleId);
+    if (!parsedId) return 0;
+
+    return this.prisma.trip.count({
+      where: {
+        vehicleId: parsedId,
+        status: {
+          in: ['scheduled', 'in_transit', 'arrived_dest_pos'],
+        },
+      },
     });
   }
 
@@ -93,6 +117,16 @@ export class VehiclesRepository {
           maxWeightCapacityKg: data.maxWeightCapacityKg,
         }),
       },
+    });
+  }
+
+  async delete(id: string) {
+    const parsedId = this.safeParseBigInt(id);
+    if (!parsedId)
+      throw new BadRequestException('Format id kendaraan tidak valid');
+
+    return this.prisma.vehicle.delete({
+      where: { id: parsedId },
     });
   }
 }

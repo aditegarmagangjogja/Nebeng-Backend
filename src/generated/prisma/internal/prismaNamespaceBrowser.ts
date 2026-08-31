@@ -96,6 +96,7 @@ export const RegionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   code: 'code',
+  pricePerKm: 'pricePerKm',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

@@ -708,14 +708,6 @@ export type PickupPointUncheckedUpdateManyWithoutOperatorNestedInput = {
   deleteMany?: Prisma.PickupPointScalarWhereInput | Prisma.PickupPointScalarWhereInput[]
 }
 
-export type DecimalFieldUpdateOperationsInput = {
-  set?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
-  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
-}
-
 export type PickupPointCreateNestedOneWithoutOriginTripsInput = {
   create?: Prisma.XOR<Prisma.PickupPointCreateWithoutOriginTripsInput, Prisma.PickupPointUncheckedCreateWithoutOriginTripsInput>
   connectOrCreate?: Prisma.PickupPointCreateOrConnectWithoutOriginTripsInput

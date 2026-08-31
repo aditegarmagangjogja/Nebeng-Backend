@@ -34,9 +34,10 @@ export class RewardsController {
   @Roles(Role.superadmin, Role.admin_wilayah)
   @ApiOperation({ summary: 'Menambahkan poin reward ke user (Admin Only)' })
   @ApiResponse({ status: 201, description: 'Poin berhasil ditambahkan' })
+  @ApiResponse({ status: 403, description: 'Bukan user wilayah Anda' })
   @ApiResponse({ status: 404, description: 'User tidak ditemukan' })
-  async earnPoints(@Body() dto: EarnRewardDto) {
-    return this.rewardsService.earnPoints(dto);
+  async earnPoints(@GetUser() currentUser: any, @Body() dto: EarnRewardDto) {
+    return this.rewardsService.earnPoints(currentUser, dto);
   }
 
   @Post('redeem')

@@ -64,13 +64,15 @@ export class PickupPointController {
   @ApiQuery({ name: 'onlyActive', type: Boolean, required: false })
   @ApiResponse({ status: 200, description: 'Daftar Pos Resmi ditemukan' })
   async findAll(
-    @GetUser('role') currentUserRole?: Role,
-    @GetUser('regionId') currentUserRegionId?: string,
+    @GetUser() currentUser?: any,
     @Query('regionId') regionId?: string,
     @Query('cityId') cityId?: string,
     @Query('onlyActive') onlyActive?: string,
   ) {
     const isActive = onlyActive === 'true' || onlyActive === '1';
+
+    const currentUserRole = currentUser?.role;
+    const currentUserRegionId = currentUser?.regionId;
 
     const targetRegionId =
       currentUserRole === Role.admin_wilayah ? currentUserRegionId : regionId;
@@ -92,8 +94,13 @@ export class PickupPointController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update/Deaktivasi Pos Resmi (Admin/Superadmin)' })
   @ApiResponse({ status: 200, description: 'Pos resmi berhasil diperbarui' })
+  @ApiResponse({ status: 403, description: 'Bukan pos resmi wilayah Anda' })
   @ApiResponse({ status: 404, description: 'Pos resmi tidak ditemukan' })
-  async update(@Param('id') id: string, @Body() dto: UpdatePickupPointDto) {
-    return this.pickupPointService.update(id, dto);
+  async update(
+    @Param('id') id: string,
+    @GetUser() currentUser: any,
+    @Body() dto: UpdatePickupPointDto,
+  ) {
+    return this.pickupPointService.update(id, currentUser, dto);
   }
 }

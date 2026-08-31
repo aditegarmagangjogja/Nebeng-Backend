@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,7 +9,7 @@ import { VerificationRepository } from './repositories/verification.repository';
 import { SumbitVerificationDto } from './dto/submit-verification.dto';
 import { ReviewVerificationDto } from './dto/review-verification.dto';
 import { VerificationMapper } from './mappers/verification.mapper';
-import { VerificationStatus } from '../../generated/prisma/enums';
+import { Role, VerificationStatus } from '../../generated/prisma/enums';
 
 @Injectable()
 export class VerificationService {
@@ -22,11 +23,11 @@ export class VerificationService {
     }
   }
 
-  async sumbitVerification(userId: string, dto: SumbitVerificationDto) {
+  async submitVerification(userId: string, dto: SumbitVerificationDto) {
     const userBigIntId = this.safeParseBigInt(userId);
 
     if (!dto.files || dto.files.length === 0) {
-      throw new BadRequestException('File dokumen verifikasi wajib diungah');
+      throw new BadRequestException('File dokumen verifikasi wajib diunggah');
     }
 
     const exsistingActiveVerification =
@@ -38,11 +39,11 @@ export class VerificationService {
     if (exsistingActiveVerification) {
       if (exsistingActiveVerification.status === VerificationStatus.pending) {
         throw new ConflictException(
-          `Pengajuan verifikasi ${dto.type.toUpperCase()} anda masih dalam antrean peninjauan`,
+          `Pengajuan verifikasi ${dto.type.toUpperCase()} Anda masih dalam antrean peninjauan`,
         );
       }
 
-      if (exsistingActiveVerification.status == VerificationStatus.approved) {
+      if (exsistingActiveVerification.status === VerificationStatus.approved) {
         throw new ConflictException(
           `Dokumen verifikasi ${dto.type.toUpperCase()} Anda telah disetujui sebelumnya`,
         );
@@ -74,9 +75,11 @@ export class VerificationService {
 
   async reviewVerification(
     id: string,
-    adminId: string,
+    currentUser: any,
     dto: ReviewVerificationDto,
   ) {
+    const adminId = currentUser.id || currentUser.sub;
+
     if (!adminId || adminId === 'undefined' || adminId === 'null') {
       throw new BadRequestException('ID admin pengulas tidak teridentifikasi');
     }
@@ -84,6 +87,24 @@ export class VerificationService {
     const verification = await this.verificationRepo.findById(id);
     if (!verification) {
       throw new NotFoundException('Verifikasi tidak ditemukan');
+    }
+
+    if (
+      currentUser.role === Role.admin_wilayah ||
+      currentUser.role === 'admin_wilayah'
+    ) {
+      const adminRegionId = currentUser.regionId
+        ? currentUser.regionId.toString()
+        : null;
+      const targetUserRegionId = verification.user?.regionId
+        ? verification.user.regionId.toString()
+        : null;
+
+      if (!adminRegionId || adminRegionId !== targetUserRegionId) {
+        throw new ForbiddenException(
+          'Anda hanya berhak meninjau verifikasi pengguna di wilayah Anda sendiri.',
+        );
+      }
     }
 
     if (
@@ -103,7 +124,7 @@ export class VerificationService {
 
     const updated = await this.verificationRepo.updateReviewStatus(
       id,
-      adminId,
+      String(adminId),
       dto.status,
       dto.rejectionReason,
     );

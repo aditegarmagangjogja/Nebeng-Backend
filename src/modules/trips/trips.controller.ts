@@ -33,7 +33,7 @@ export class TripsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.mitra)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Buat jadwal Trip baru (Mitra Only)' })
+  @ApiOperation({ summary: 'Buat jadwal Trip baru (Mitra Terverifikasi)' })
   @ApiResponse({ status: 201, description: 'Jadwal trip berhasil dibuat' })
   @ApiResponse({
     status: 403,
@@ -43,14 +43,8 @@ export class TripsController {
     status: 400,
     description: 'Pos asal dan pos tujuan tidak boleh sama',
   })
-  async createTrip(@GetUser() user: any, @Body() dto: CreateTripDto) {
-    const userId = user.id || user.sub;
-    const statusVerification = user.statusVerification;
-    return this.tripsService.createTrip(
-      String(userId),
-      statusVerification,
-      dto,
-    );
+  async createTrip(@GetUser('id') userId: string, @Body() dto: CreateTripDto) {
+    return this.tripsService.createTrip(String(userId), dto);
   }
 
   @Get()

@@ -1,0 +1,3034 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/": {
+      "get": {
+        "operationId": "AppController_getHello",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "App"
+        ]
+      }
+    },
+    "/users/me": {
+      "patch": {
+        "operationId": "UserController_updateMyProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserMeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memperbarui profil dasar akun sendiri",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_removeMyAccount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Akun berhasil dianonimkan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Menghapus akun sendiri (Soft Delete & Anonimisasi)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/me/profile": {
+      "patch": {
+        "operationId": "UserController_updateMyProfileDetail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memperbarui rincian profil detail pengguna (KTP, Bank, Alamat KTP)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/me/pin": {
+      "post": {
+        "operationId": "UserController_setPin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPinDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membuat atau memperbarui PIN keamanan (6 digit)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/me/pin/verify": {
+      "post": {
+        "operationId": "UserController_verifyPin",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyPinDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memverifikasi PIN keamanan untuk transaksi",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "UserController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pengguna berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Payload tidak valid"
+          },
+          "409": {
+            "description": "Email atau Nomor HP sudah terdaftar"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membuat pengguna baru",
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "UserController_findAll",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Daftar pengguna berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponseDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan semua daftar pengguna",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "operationId": "UserController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail pengguna ditemukan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan detail pengguna berdasarkan ID",
+        "tags": [
+          "Users"
+        ]
+      },
+      "patch": {
+        "operationId": "UserController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data pengguna berhasil diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memperbarui data pengguna berdasarkan ID",
+        "tags": [
+          "Users"
+        ]
+      },
+      "delete": {
+        "operationId": "UserController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pengguna berhasil dihapus atau dianonimkan"
+          },
+          "404": {
+            "description": "User tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Menghapus pengguna berdasarkan ID (Hard/Soft Guard)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/users/{id}/status": {
+      "patch": {
+        "operationId": "UserController_updateStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mengubah status user (Active/Suspended/Blocked/Inactive)",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Register berhasil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Data inputan tidak valid atau Email/Nomor Telepon sudah terdaftar"
+          }
+        },
+        "summary": "Membuat akun pengguna baru (Public: Customer / Mitra)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "AuthController_login",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil, mengembalikan token"
+          },
+          "401": {
+            "description": "Email/Password salah atau akun ditangguhkan"
+          }
+        },
+        "summary": "Masuk ke aplikasi",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "AuthController_getProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Data pengguna ditemukan"
+          },
+          "401": {
+            "description": "Token tidak valid atau belum dikirimkan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan data pengguna yang sedang login",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "AuthController_refresh",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Access Token baru berhasil diterbitkan"
+          },
+          "401": {
+            "description": "Refresh token tidak valid atau kadaluwarsa"
+          }
+        },
+        "summary": "Memperbarui Access Token menggunakan Refresh Token",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "AuthController_logout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Logout berhasil"
+          },
+          "401": {
+            "description": "Token tidak valid"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Keluar dari aplikasi (Menghapus Refresh Token)",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/verifications/submit": {
+      "post": {
+        "operationId": "VerificationController_submit",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SumbitVerificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Dokumen verifikasi berhasil dikirim dan menungu peninjauan"
+          },
+          "400": {
+            "description": "Payload atau file tidak valid"
+          },
+          "409": {
+            "description": "Dokumen verifikasi jenis ini sedang diproses atau sudah disetujui"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit dokumen verifikasi (KTP/SIM/SKCK/STNK)",
+        "tags": [
+          "Verifications"
+        ]
+      }
+    },
+    "/verifications": {
+      "get": {
+        "operationId": "VerificationController_findAll",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "unverified",
+                "pending",
+                "approved",
+                "rejected"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar verifikasi berhasil diambil"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat seluruh daftar antrean verifikasi",
+        "tags": [
+          "Verifications"
+        ]
+      }
+    },
+    "/verifications/{id}": {
+      "get": {
+        "operationId": "VerificationController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail verifikasi ditemukan"
+          },
+          "404": {
+            "description": "Verifikasi tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat detail verifikasi berdasarkan ID",
+        "tags": [
+          "Verifications"
+        ]
+      }
+    },
+    "/verifications/{id}/review": {
+      "patch": {
+        "operationId": "VerificationController_review",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewVerificationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status verifikasi berhasil ditinjau dan diperbarui"
+          },
+          "400": {
+            "description": "Wajib mengisi alasan penolakan jika status REJECTED"
+          },
+          "404": {
+            "description": "Verifikasi tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Approve atau Reject dokumen verifikasi",
+        "tags": [
+          "Verifications"
+        ]
+      }
+    },
+    "/regions": {
+      "post": {
+        "operationId": "RegionController_createRegion",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah Region Baru (Superadmin Only)",
+        "tags": [
+          "Wilayah & Kota"
+        ]
+      },
+      "get": {
+        "operationId": "RegionController_findAllRegions",
+        "parameters": [
+          {
+            "name": "onlyActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Melihat seluruh daftar Region (Public/Authenticated)",
+        "tags": [
+          "Wilayah & Kota"
+        ]
+      }
+    },
+    "/regions/{id}": {
+      "get": {
+        "operationId": "RegionController_findOneRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Region ditemukan"
+          },
+          "404": {
+            "description": "Region tidak ditemukan"
+          }
+        },
+        "summary": "Melihat detail Region berdasarkan ID",
+        "tags": [
+          "Wilayah & Kota"
+        ]
+      },
+      "patch": {
+        "operationId": "RegionController_updateRegion",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRegionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Region berhasil diperbarui"
+          },
+          "404": {
+            "description": "Region tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update/Deaktivasi Region (Superadmin Only)",
+        "tags": [
+          "Wilayah & Kota"
+        ]
+      }
+    },
+    "/cities": {
+      "post": {
+        "operationId": "RegionController_createCity",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCityDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kota berhasil dibuat"
+          },
+          "409": {
+            "description": "Kota sudah terdaftar"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah Kota Baru (Superadmin & Admin Wilayah)",
+        "tags": [
+          "Wilayah & Kota"
+        ]
+      },
+      "get": {
+        "operationId": "RegionController_findAllCities",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Melihat seluruh daftar Kota",
+        "tags": [
+          "Wilayah & Kota"
+        ]
+      }
+    },
+    "/pickup-points": {
+      "post": {
+        "operationId": "PickupPointController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePickupPointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pos resmi berhasil dibuat"
+          },
+          "400": {
+            "description": "Payload atau role operator tidak valid"
+          },
+          "404": {
+            "description": "Region, City, atau Operator tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah Pickup Point / Pos Resmi Baru (Admin/Superadmin)",
+        "tags": [
+          "Pickup Points (Pos Resmi)"
+        ]
+      },
+      "get": {
+        "operationId": "PickupPointController_findAll",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cityId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "onlyActive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar Pos Resmi ditemukan"
+          }
+        },
+        "summary": "Melihat seluruh Pos Resmi",
+        "tags": [
+          "Pickup Points (Pos Resmi)"
+        ]
+      }
+    },
+    "/pickup-points/{id}": {
+      "get": {
+        "operationId": "PickupPointController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pos resmi ditemukan"
+          },
+          "404": {
+            "description": "Pos Resmi tidak ditemukan"
+          }
+        },
+        "summary": "Melihat detail Pos Resmi berdasarkan ID",
+        "tags": [
+          "Pickup Points (Pos Resmi)"
+        ]
+      },
+      "patch": {
+        "operationId": "PickupPointController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePickupPointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pos resmi berhasil diperbarui"
+          },
+          "404": {
+            "description": "Pos resmi tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update/Deaktivasi Pos Resmi (Admin/Superadmin)",
+        "tags": [
+          "Pickup Points (Pos Resmi)"
+        ]
+      }
+    },
+    "/vehicles": {
+      "post": {
+        "operationId": "VehiclesController_createVehicle",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVehicleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Kendaraan berhasil ditambahkan"
+          },
+          "403": {
+            "description": "Akun mitra belum terverifikasi (statusVerification != approved)"
+          },
+          "409": {
+            "description": "Nomor plat kendaraan sudah terdaftar"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tambah kendaraan baru (Mitra Only)",
+        "tags": [
+          "Kendaraan"
+        ]
+      }
+    },
+    "/vehicles/me": {
+      "get": {
+        "operationId": "VehiclesController_getMyVehicles",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Daftar kendaraan ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar kendaraan milik Mitra yang sedang login",
+        "tags": [
+          "Kendaraan"
+        ]
+      }
+    },
+    "/vehicles/{id}": {
+      "get": {
+        "operationId": "VehiclesController_getVehicleById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail kendaraan ditemukan"
+          },
+          "404": {
+            "description": "Data kendaraan tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detail kendaraan berdasarkan ID",
+        "tags": [
+          "Kendaraan"
+        ]
+      },
+      "patch": {
+        "operationId": "VehiclesController_updateVehicle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVehicleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Data kendaraan berhasil diperbarui"
+          },
+          "403": {
+            "description": "Anda tidak memiliki akses ke kendaraan ini"
+          },
+          "404": {
+            "description": "Data kendaraan tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update data kendaraan (Owner Only)",
+        "tags": [
+          "Kendaraan"
+        ]
+      }
+    },
+    "/trips": {
+      "post": {
+        "operationId": "TripsController_createTrip",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTripDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Jadwal trip berhasil dibuat"
+          },
+          "400": {
+            "description": "Pos asal dan pos tujuan tidak boleh sama"
+          },
+          "403": {
+            "description": "Mitra belum terverifikasi atau kendaraan bukan milik anda"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Buat jadwal Trip baru (Mitra Terverifikasi)",
+        "tags": [
+          "Trips"
+        ]
+      },
+      "get": {
+        "operationId": "TripsController_getTrips",
+        "parameters": [
+          {
+            "name": "originPointId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "10",
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationPointId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "20",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "vehicleType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "in_origin_pos",
+                "in_transit",
+                "arrived_dest_pos",
+                "completed",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar Trip ditemukan"
+          }
+        },
+        "summary": "Pencarian & Listing Trip (Publik / Customer)",
+        "tags": [
+          "Trips"
+        ]
+      }
+    },
+    "/trips/{id}": {
+      "get": {
+        "operationId": "TripsController_getTripById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail trip ditemukan"
+          },
+          "404": {
+            "description": "Trip tidak ditemukan"
+          }
+        },
+        "summary": "Detail Trip berdasarkan ID",
+        "tags": [
+          "Trips"
+        ]
+      },
+      "patch": {
+        "operationId": "TripsController_updateTrip",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTripDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Trip berhasil diperbarui"
+          },
+          "403": {
+            "description": "Anda tidak berhak mengubah trip orang lain"
+          },
+          "404": {
+            "description": "Trip tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update detail / status Trip (Mitra Owner Only)",
+        "tags": [
+          "Trips"
+        ]
+      }
+    },
+    "/orders": {
+      "post": {
+        "operationId": "OrdersController_createOrder",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pesanan berhasil dibuat"
+          },
+          "400": {
+            "description": "Sisa kursi/bagasi tidak mencukupi atau mencoba memesan di trip sendiri"
+          },
+          "404": {
+            "description": "Jadwal trip tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Buat pesanan baru (Passenger / Parcel Booking)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/me": {
+      "get": {
+        "operationId": "OrdersController_getMyOrders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Daftar pesanan ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar riwayat pesanan milik Customer yang sedang login",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "operationId": "OrdersController_getOrderById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail pesanan ditemukan"
+          },
+          "403": {
+            "description": "Tidak memiliki hak akses ke order ini"
+          },
+          "404": {
+            "description": "Order tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Detail pesanan berdasarkan ID (Dengan proteksi otorisasi)",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/wallets/me": {
+      "get": {
+        "operationId": "WalletsController_getMyWallet",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Rincian dompet ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cek saldo & riwayat dompet digital milik sendiri",
+        "tags": [
+          "Wallets"
+        ]
+      }
+    },
+    "/payments/checkout": {
+      "post": {
+        "operationId": "PaymentsController_checkoutPayment",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CheckoutPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pembayaran berhasil dikonfirmasi"
+          },
+          "400": {
+            "description": "Order bukan milik Anda, PIN salah, atau status order tidak valid"
+          },
+          "404": {
+            "description": "Order tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Simulasi checkout pembayaran order (Customer Only)",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/checkpoints/scan": {
+      "post": {
+        "operationId": "CheckpointsController_scanCheckpoint",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanCheckpointDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Scan checkpoint berhasil"
+          },
+          "400": {
+            "description": "Pos tidak sesuai, OTP parcel salah, atau tiket tidak terdaftar di trip"
+          },
+          "404": {
+            "description": "Data Trip atau Tiket tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Scan QR Checkpoint di Pos Asal/Tujuan (Operator Pos & Admin)",
+        "tags": [
+          "Checkpoints"
+        ]
+      }
+    },
+    "/chat/conversation": {
+      "post": {
+        "operationId": "ChatsController_getOrCreateConversation",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateConversationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Percakapan berhasil ditemukan/dibuat"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan atau membuat percakapan baru per trip",
+        "tags": [
+          "Chats"
+        ]
+      },
+      "get": {
+        "operationId": "ChatsController_getUserConversation",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Daftar percakapan ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar semua percakapan milik pengguna",
+        "tags": [
+          "Chats"
+        ]
+      }
+    },
+    "/chat/conversation/{id}/messages": {
+      "post": {
+        "operationId": "ChatsController_sendMessage",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pesan berhasil terkirim"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kirim pesan ke dalam percakapan (HTTP + Realtime Broadcast)",
+        "tags": [
+          "Chats"
+        ]
+      },
+      "get": {
+        "operationId": "ChatsController_getMessages",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Riwayat pesan ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mengambil riwayat pesan dalam percakapan",
+        "tags": [
+          "Chats"
+        ]
+      }
+    },
+    "/reviews": {
+      "post": {
+        "operationId": "ReviewsController_createReview",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ulasan berhasil dibut"
+          },
+          "400": {
+            "description": "Mengulas diri sendiri, trip belum selesai, atau sudah memberi ulasan"
+          },
+          "403": {
+            "description": "Anda bukan partisipan dalam trip ini"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memberikan ulasan/rating untuk trip yang sudah selesai",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/reviews/users/{userId}": {
+      "get": {
+        "operationId": "ReviewsController_getUserRatingSummary",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ringkasan ulasan ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat ringkasan dan daftar ulasan user",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/rewards/me": {
+      "get": {
+        "operationId": "RewardsController_getMyRewardSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ringkasan poin ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat ringkasan saldo poin dan riwayat reward saya",
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/rewards/earn": {
+      "post": {
+        "operationId": "RewardsController_earnPoints",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EarnRewardDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Poin berhasil ditambahkan"
+          },
+          "404": {
+            "description": "User tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Menambahkan poin reward ke user (Admin Only)",
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/rewards/redeem": {
+      "post": {
+        "operationId": "RewardsController_redeemPoints",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemRewardDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Poin berhasil ditukarkan"
+          },
+          "400": {
+            "description": "Saldo poin tidak mencukupi"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Menukarkan poin reward milik pengguna",
+        "tags": [
+          "Rewards"
+        ]
+      }
+    },
+    "/admin/dashboard/global": {
+      "get": {
+        "operationId": "AdminController_getGlobalDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Analitik global ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat dashboard analitik global (Superadmin Only)",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    },
+    "/admin/dashboard/regional": {
+      "get": {
+        "operationId": "AdminController_getRegionalDashboard",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Wajib diisi jika dikirim oleh Superadmin",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Analitik wilayah ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat dashboard analitik wilayah",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    },
+    "/admin/escrow/ledger": {
+      "get": {
+        "operationId": "AdminController_getEscrowLedger",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Buku besar Escrow ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat buku besar audit Escrow (Superadmin Only)",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    },
+    "/admin/users/{id}/governance": {
+      "patch": {
+        "operationId": "AdminController_updateUserGovernance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserGovernanceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status tata kelola user berhasil diperbarui"
+          },
+          "400": {
+            "description": "Tidak dapat mengubah status sendiri"
+          },
+          "404": {
+            "description": "User sasaran tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mengubah status akun user (Suspended / Active / Banned)",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    },
+    "/admin/settings/commission": {
+      "patch": {
+        "operationId": "AdminController_updatePlatformCommission",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePlatformCommissionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Persentase komisi platform berhasil diperbarui"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pengaturan persentase komisi platform global (Hanya Superadmin)",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    },
+    "/admin/regions/{id}/rate": {
+      "patch": {
+        "operationId": "AdminController_updateRegionRate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRegionRateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tarif Rp/Km wilayah berhasil diperbarui"
+          },
+          "404": {
+            "description": "Wilayah tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pengaturan tarif Rp/Km Wilayah Asal (Admin Wilayah & Superadmin)",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    },
+    "/admin/settings/rewards": {
+      "patch": {
+        "operationId": "AdminController_updateRewardSetting",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Pengaturan kelipatan Poin Reward berhasil diperbarui"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Pengaturan kelipatan nominal Poin Reward global (Hanya Superadmin)",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Nebeng App API Specification",
+    "description": "Dokumentasi API Backend Platform Nebeng Transportasi & Pengiriman Paket (Escrow Wallet & Dual QR Checkpoint)",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "register, login, logout, Refresh Token"
+    },
+    {
+      "name": "Orders",
+      "description": "Pemesanan Tiket Penumpang & Pengiriman Paket (Parcel)"
+    },
+    {
+      "name": "Payments",
+      "description": "Gateway Pembayaran & Escrow Balance Hold"
+    },
+    {
+      "name": "Checkpoints",
+      "description": "Verifikasi Dual QR Check-in Pos Asal & Pos Tujuan"
+    },
+    {
+      "name": "Wallets",
+      "description": "Ledger Mutasi Saldo & Pencairan Dana Escrow"
+    }
+  ],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http",
+        "name": "Authorization",
+        "description": "Masukkan token JWT: Bearer <token>",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "UpdateUserMeDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jhons"
+          },
+          "email": {
+            "type": "string",
+            "example": "jhons@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0812345678913"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "regionId": {
+            "type": "string",
+            "example": "1"
+          }
+        }
+      },
+      "UserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "1029103840"
+          },
+          "regionId": {
+            "type": "object",
+            "example": "1"
+          },
+          "name": {
+            "type": "string",
+            "example": "Jhons"
+          },
+          "email": {
+            "type": "string",
+            "example": "jhon@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "1029391032211"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "superadmin",
+              "admin_wilayah",
+              "operator_pos",
+              "mitra",
+              "customer"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended",
+              "blocked",
+              "inactive",
+              "deleted"
+            ]
+          },
+          "statusVerification": {
+            "type": "string",
+            "enum": [
+              "unverified",
+              "pending",
+              "approved",
+              "rejected"
+            ]
+          },
+          "avatar": {
+            "type": "object",
+            "example": "https://example.com/avatar.jpg"
+          },
+          "rewardPoints": {
+            "type": "number",
+            "example": 0
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "phone",
+          "role",
+          "status",
+          "statusVerification",
+          "rewardPoints",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateUserProfileDto": {
+        "type": "object",
+        "properties": {
+          "ktpNumber": {
+            "type": "string",
+            "example": "3374123456789001",
+            "description": "Nomor KTP 16 digit"
+          },
+          "fullNameKtp": {
+            "type": "string",
+            "example": "Budi Santoso",
+            "description": "Nama lengkap sesuai KTP"
+          },
+          "addressKtp": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 12, Jakarta",
+            "description": "Alamat lengkap KTP"
+          },
+          "faceImageUrl": {
+            "type": "string",
+            "example": "https://storage.nebeng.com/faces/user-123.jpg",
+            "description": "URL foto wajah / Face ID scan"
+          },
+          "bankName": {
+            "type": "string",
+            "example": "BCA",
+            "description": "Nama Bank pencairan saldo"
+          },
+          "bankAccountNumber": {
+            "type": "string",
+            "example": "1234567890",
+            "description": "Nomor Rekening Bank"
+          },
+          "bankAccountHolder": {
+            "type": "string",
+            "example": "Budi Santoso",
+            "description": "Nama Pemilik Rekening Bank"
+          }
+        }
+      },
+      "SetPinDto": {
+        "type": "object",
+        "properties": {
+          "pin": {
+            "type": "string",
+            "example": "123456",
+            "description": "PIN 6 digit angka"
+          }
+        },
+        "required": [
+          "pin"
+        ]
+      },
+      "VerifyPinDto": {
+        "type": "object",
+        "properties": {
+          "pin": {
+            "type": "string",
+            "example": "123456",
+            "description": "PIN 6 digit angka"
+          }
+        },
+        "required": [
+          "pin"
+        ]
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jhons"
+          },
+          "email": {
+            "type": "string",
+            "example": "jhons@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0812345678913"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "superadmin",
+              "admin_wilayah",
+              "operator_pos",
+              "mitra",
+              "customer"
+            ],
+            "example": "customer"
+          },
+          "regionId": {
+            "type": "string",
+            "example": "1"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended",
+              "blocked",
+              "inactive",
+              "deleted"
+            ],
+            "default": "active"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "phone",
+          "password",
+          "role",
+          "regionId"
+        ]
+      },
+      "UpdateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jhons"
+          },
+          "email": {
+            "type": "string",
+            "example": "jhons@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "0812345678913"
+          },
+          "password": {
+            "type": "string",
+            "example": "password"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "superadmin",
+              "admin_wilayah",
+              "operator_pos",
+              "mitra",
+              "customer"
+            ],
+            "example": "customer"
+          },
+          "regionId": {
+            "type": "string",
+            "example": "1"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended",
+              "blocked",
+              "inactive",
+              "deleted"
+            ],
+            "default": "active"
+          }
+        }
+      },
+      "UpdateUserStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "suspended",
+              "blocked",
+              "inactive",
+              "deleted"
+            ],
+            "example": "suspended"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Jhons"
+          },
+          "email": {
+            "type": "string",
+            "example": "jhons@gmail.com"
+          },
+          "phone": {
+            "type": "string",
+            "example": "09876543221"
+          },
+          "password": {
+            "type": "string",
+            "example": "Af^dfa1212daG"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "customer",
+              "mitra"
+            ],
+            "default": "customer"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "phone",
+          "password"
+        ]
+      },
+      "LoginDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "steve@gmail.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "P1ss^dhhc198"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshTokenDto": {
+        "type": "object",
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "example": "gshdjdhshfui"
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "VerifiactionFileDto": {
+        "type": "object",
+        "properties": {
+          "filePath": {
+            "type": "string",
+            "example": "/uploads/verifications/ktp-123.jpg"
+          },
+          "fileType": {
+            "type": "string",
+            "example": "image/jpeg",
+            "description": "Format MIME type file hanya .jpg, .png, .pdf"
+          }
+        },
+        "required": [
+          "filePath",
+          "fileType"
+        ]
+      },
+      "SumbitVerificationDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "ktp",
+              "sim",
+              "skck",
+              "stnk"
+            ],
+            "example": "ktp"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerifiactionFileDto"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "files"
+        ]
+      },
+      "ReviewVerificationDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "approved",
+              "rejected"
+            ],
+            "example": "approved"
+          },
+          "rejectionReason": {
+            "type": "string",
+            "example": "Foto Ktp Buram, silakan ulangi kembali"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "CreateRegionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Wilayah Yogyakarta",
+            "description": "nama Wilayah"
+          },
+          "code": {
+            "type": "string",
+            "example": "REG-DIY",
+            "description": "Kode unik wilayah"
+          }
+        },
+        "required": [
+          "name",
+          "code"
+        ]
+      },
+      "UpdateRegionDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Region Yogyakarta Updated"
+          },
+          "code": {
+            "type": "string",
+            "example": "REG-DIY"
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "CreateCityDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Sleman",
+            "description": "Nama kota/kabupaten"
+          },
+          "province": {
+            "type": "string",
+            "example": "DI Yogyakarta",
+            "description": "Nama Provinsi"
+          }
+        },
+        "required": [
+          "name",
+          "province"
+        ]
+      },
+      "CreatePickupPointDto": {
+        "type": "object",
+        "properties": {
+          "regionId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID Region"
+          },
+          "cityId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID City"
+          },
+          "operatorId": {
+            "type": "string",
+            "example": "2",
+            "description": "ID User Operator Pos"
+          },
+          "name": {
+            "type": "string",
+            "example": "Pos Terminal Giwangan",
+            "description": "Nama Pos"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Imogiri Timur No.1, Yogyakarta",
+            "description": "Alamat lengkap"
+          },
+          "latitude": {
+            "type": "number",
+            "example": -7.8333,
+            "description": "Latitude"
+          },
+          "longitude": {
+            "type": "number",
+            "example": 110.3833,
+            "description": "Longitude"
+          }
+        },
+        "required": [
+          "regionId",
+          "cityId",
+          "name",
+          "address",
+          "latitude",
+          "longitude"
+        ]
+      },
+      "UpdatePickupPointDto": {
+        "type": "object",
+        "properties": {
+          "regionId": {
+            "type": "string",
+            "example": "1"
+          },
+          "cityId": {
+            "type": "string",
+            "example": "1"
+          },
+          "operatorId": {
+            "type": "string",
+            "example": "2"
+          },
+          "name": {
+            "type": "string",
+            "example": "Pos Giwangan Baru"
+          },
+          "address": {
+            "type": "string",
+            "example": "Jl. Imogiri Timur No.10"
+          },
+          "latitude": {
+            "type": "number",
+            "example": -7.8333
+          },
+          "longitude": {
+            "type": "number",
+            "example": 110.3833
+          },
+          "isActive": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "CreateVehicleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "motor",
+              "mobil"
+            ],
+            "example": "motor"
+          },
+          "model": {
+            "type": "string",
+            "example": "Matic"
+          },
+          "plateNumber": {
+            "type": "string",
+            "example": "AD 1234 ABC"
+          },
+          "color": {
+            "type": "string",
+            "example": "Hitam"
+          },
+          "capacitySeats": {
+            "type": "number",
+            "example": 4,
+            "description": "Kapasitas kursi penumpang"
+          },
+          "maxWeightCapacityKg": {
+            "type": "number",
+            "example": 50,
+            "description": "Batas Max berat bagasi (kg)"
+          }
+        },
+        "required": [
+          "type",
+          "model",
+          "plateNumber",
+          "color",
+          "capacitySeats",
+          "maxWeightCapacityKg"
+        ]
+      },
+      "UpdateVehicleDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "motor",
+              "mobil"
+            ],
+            "example": "motor"
+          },
+          "model": {
+            "type": "string",
+            "example": "Matic"
+          },
+          "plateNumber": {
+            "type": "string",
+            "example": "AD 1234 ABC"
+          },
+          "color": {
+            "type": "string",
+            "example": "Hitam"
+          },
+          "capacitySeats": {
+            "type": "number",
+            "example": 4,
+            "description": "Kapasitas kursi penumpang"
+          },
+          "maxWeightCapacityKg": {
+            "type": "number",
+            "example": 50,
+            "description": "Batas Max berat bagasi (kg)"
+          }
+        }
+      },
+      "CreateTripDto": {
+        "type": "object",
+        "properties": {
+          "vehicleId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID Kendaraan milik Mitra"
+          },
+          "originPointId": {
+            "type": "string",
+            "example": "10",
+            "description": "ID Pos Pickup Point Asal"
+          },
+          "destinationPointId": {
+            "type": "string",
+            "example": "20",
+            "description": "ID Pos Pickup Point Tujuan"
+          },
+          "departureDate": {
+            "type": "string",
+            "example": "2026-08-25",
+            "description": "Tanggal keberangkatan (YYYY-MM-DD)"
+          },
+          "departureTime": {
+            "type": "string",
+            "example": "1970-01-01T08:00:00.000Z",
+            "description": "Jam keberangkatan (ISO String / Time)"
+          },
+          "price": {
+            "type": "number",
+            "example": 50000,
+            "description": "Harga per kursi / tiket penumpang"
+          },
+          "totalSeats": {
+            "type": "number",
+            "example": 4,
+            "description": "Custom total kursi (Opsional override untuk mobil)"
+          },
+          "maxWeightCapacityKg": {
+            "type": "number",
+            "example": 50,
+            "description": "Custom max berat bagasi kg (Opsional override untuk mobil)"
+          }
+        },
+        "required": [
+          "vehicleId",
+          "originPointId",
+          "destinationPointId",
+          "departureDate",
+          "departureTime",
+          "price",
+          "totalSeats",
+          "maxWeightCapacityKg"
+        ]
+      },
+      "UpdateTripDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "scheduled",
+              "in_origin_pos",
+              "in_transit",
+              "arrived_dest_pos",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "departureDate": {
+            "type": "string",
+            "example": "2026-08-25"
+          },
+          "departureTime": {
+            "type": "string",
+            "example": "1970-01-01T09:00:00.000Z"
+          }
+        }
+      },
+      "CreateOrderItemDto": {
+        "type": "object",
+        "properties": {
+          "itemName": {
+            "type": "string",
+            "example": "Dokumen Penting"
+          },
+          "itemCategory": {
+            "type": "string",
+            "example": "Dokumen"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 1
+          },
+          "weightPerItemKg": {
+            "type": "number",
+            "example": 2.5,
+            "description": "Berat per item dalam KG"
+          },
+          "sizeEnum": {
+            "type": "string",
+            "enum": [
+              "xxs",
+              "xs",
+              "s",
+              "m",
+              "l",
+              "xl"
+            ],
+            "example": "s"
+          },
+          "photoUrl": {
+            "type": "string",
+            "example": "https://storage.nebeng.com/item1.jpg"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "Budi Santoso",
+            "description": "Nama penerima paket"
+          },
+          "recipientPhone": {
+            "type": "string",
+            "example": "081234567890",
+            "description": "Nomor HP penerima paket"
+          }
+        },
+        "required": [
+          "itemName",
+          "itemCategory",
+          "quantity",
+          "weightPerItemKg",
+          "sizeEnum",
+          "recipientName",
+          "recipientPhone"
+        ]
+      },
+      "CreateOrderDto": {
+        "type": "object",
+        "properties": {
+          "tripId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID Trip yang dipesan"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "passenger",
+              "parcel"
+            ],
+            "example": "passenger"
+          },
+          "seatsBooked": {
+            "type": "number",
+            "example": 1,
+            "description": "Jumlah kursi (Wajib diisi jika type = passenger)"
+          },
+          "items": {
+            "description": "Daftar item paket (Wajib diisi jika type = parcel)",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateOrderItemDto"
+            }
+          }
+        },
+        "required": [
+          "tripId",
+          "type"
+        ]
+      },
+      "CheckoutPaymentDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID order yang akan dibayar"
+          },
+          "paymentGateway": {
+            "type": "string",
+            "example": "BANK_TRANSFER / QRIS / MANUAL_SIMULATION"
+          },
+          "pin": {
+            "type": "string",
+            "example": "123456",
+            "description": "PIN transaksi 6-digit keamanan Customer"
+          }
+        },
+        "required": [
+          "orderId",
+          "paymentGateway"
+        ]
+      },
+      "ScanCheckpointDto": {
+        "type": "object",
+        "properties": {
+          "qrCodeTrip": {
+            "type": "string",
+            "example": "TRIP-A2D4CS13",
+            "description": "Kode QR Trip milik mitra"
+          },
+          "qrCodeTicket": {
+            "type": "string",
+            "example": "TKT-SDJF12H",
+            "description": "Kode QR Tiket / Parcel milik customer"
+          },
+          "posId": {
+            "type": "string",
+            "example": "10",
+            "description": "ID pos resmi tempat operator bertugas"
+          },
+          "scanType": {
+            "type": "string",
+            "enum": [
+              "checkin_origin",
+              "checkin_destination"
+            ],
+            "example": "checkin_origin"
+          },
+          "otpClaim": {
+            "type": "string",
+            "example": "8765432",
+            "description": "Kode OTP 6-digit milik penerima"
+          },
+          "securitySealQr": {
+            "type": "string",
+            "example": "SEAL-2981312",
+            "description": "Nomor stiker segel QR"
+          }
+        },
+        "required": [
+          "qrCodeTrip",
+          "qrCodeTicket",
+          "posId",
+          "scanType"
+        ]
+      },
+      "CreateConversationDto": {
+        "type": "object",
+        "properties": {
+          "tripId": {
+            "type": "string",
+            "description": "ID Trip tempat percakapan dibuat",
+            "example": "12"
+          },
+          "customerId": {
+            "type": "string",
+            "description": "ID customer yang memulai percakapan",
+            "example": "5"
+          }
+        },
+        "required": [
+          "tripId",
+          "customerId"
+        ]
+      },
+      "SendMessageDto": {
+        "type": "object",
+        "properties": {
+          "messageText": {
+            "type": "string",
+            "description": "Isi teks pesan singkat",
+            "example": "Hallo mas, saya sudah sampai di Pos Asal ya."
+          }
+        },
+        "required": [
+          "messageText"
+        ]
+      },
+      "CreateReviewDto": {
+        "type": "object",
+        "properties": {
+          "tripId": {
+            "type": "string",
+            "description": "ID trip yang diulas",
+            "example": "10"
+          },
+          "revieweeId": {
+            "type": "string",
+            "description": "ID user yang dinilai",
+            "example": "2"
+          },
+          "rating": {
+            "type": "number",
+            "description": "bintang rating 1 sampai 5",
+            "example": 5,
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "description": "Komentar atau ulasan tertulis",
+            "example": "Perjalanan sangat nyaman driver sangat ramah"
+          }
+        },
+        "required": [
+          "tripId",
+          "revieweeId",
+          "rating"
+        ]
+      },
+      "EarnRewardDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "description": "ID user penerima point",
+            "example": "5"
+          },
+          "points": {
+            "type": "number",
+            "description": "jumlah point yang ditambahkan",
+            "example": 100,
+            "minimum": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "keterangan sumber penamabahn point",
+            "example": "Selesai transaksi nebeng penumpang #TRIP-13NA"
+          }
+        },
+        "required": [
+          "userId",
+          "points"
+        ]
+      },
+      "RedeemRewardDto": {
+        "type": "object",
+        "properties": {
+          "points": {
+            "type": "number",
+            "description": "Jumlah poin yang ingin ditukarkan",
+            "example": 50,
+            "minimum": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "keterangan penukaran point",
+            "example": "Penukaran merchendase"
+          }
+        },
+        "required": [
+          "points"
+        ]
+      },
+      "UpdateUserGovernanceDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "description": "Status akun baru (active, suspended, blocked)",
+            "enum": [
+              "active",
+              "suspended",
+              "blocked",
+              "inactive",
+              "deleted"
+            ],
+            "example": "suspended"
+          },
+          "reason": {
+            "type": "string",
+            "description": "Alasan penanguhan atau pemblokiran akun",
+            "example": "Pelanggaran ketetapan keamanan dan indikasi fraud"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "UpdatePlatformCommissionDto": {
+        "type": "object",
+        "properties": {
+          "commissionPercentage": {
+            "type": "number",
+            "example": 10,
+            "description": "presentase komisi platfrom"
+          }
+        },
+        "required": [
+          "commissionPercentage"
+        ]
+      },
+      "UpdateRegionRateDto": {
+        "type": "object",
+        "properties": {
+          "pricePerKm": {
+            "type": "number",
+            "example": 3000,
+            "description": "Tarip dasar pengiriman/perjalanan per kilometer (Rp/Km)"
+          }
+        },
+        "required": [
+          "pricePerKm"
+        ]
+      }
+    }
+  }
+}

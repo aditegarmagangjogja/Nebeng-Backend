@@ -19,8 +19,24 @@ export class TripsRepository {
       include: {
         mitra: true,
         vehicle: true,
-        originPoint: true,
-        destinationPoint: true,
+        originPoint: {
+          include: { region: true },
+        },
+        destinationPoint: {
+          include: { region: true },
+        },
+      },
+    });
+  }
+
+  async findConflictingTrip(vehicleId: bigint, departureDate: Date) {
+    return this.prisma.trip.findFirst({
+      where: {
+        vehicleId,
+        departureDate,
+        status: {
+          in: ['scheduled', 'in_transit'],
+        },
       },
     });
   }
@@ -31,8 +47,12 @@ export class TripsRepository {
       include: {
         mitra: true,
         vehicle: true,
-        originPoint: true,
-        destinationPoint: true,
+        originPoint: {
+          include: { region: true },
+        },
+        destinationPoint: {
+          include: { region: true },
+        },
       },
       orderBy: [{ departureDate: 'asc' }, { departureTime: 'asc' }],
     });
@@ -47,8 +67,12 @@ export class TripsRepository {
       include: {
         mitra: true,
         vehicle: true,
-        originPoint: true,
-        destinationPoint: true,
+        originPoint: {
+          include: { region: true },
+        },
+        destinationPoint: {
+          include: { region: true },
+        },
       },
     });
   }
@@ -56,6 +80,14 @@ export class TripsRepository {
   async findByQrCode(qrCodeTrip: string) {
     return this.prisma.trip.findUnique({
       where: { qrCodeTrip },
+      include: {
+        originPoint: {
+          include: { region: true },
+        },
+        destinationPoint: {
+          include: { region: true },
+        },
+      },
     });
   }
 
@@ -71,8 +103,12 @@ export class TripsRepository {
       include: {
         mitra: true,
         vehicle: true,
-        originPoint: true,
-        destinationPoint: true,
+        originPoint: {
+          include: { region: true },
+        },
+        destinationPoint: {
+          include: { region: true },
+        },
       },
     });
   }

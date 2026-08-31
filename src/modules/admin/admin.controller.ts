@@ -21,6 +21,10 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/enums';
 import { GetUser } from '../../common/decorators/get-user.decorators';
+import {
+  UpdatePlatformCommissionDto,
+  UpdateRegionRateDto,
+} from './dto/system-setting.dto';
 
 @ApiTags('Admin Governance')
 @ApiBearerAuth()
@@ -30,9 +34,9 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('dashboard/global')
-  @Roles(Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.superadmin)
   @ApiOperation({
-    summary: 'Melihat dashboard analitik global (Admin & Superadmin)',
+    summary: 'Melihat dashboard analitik global (Superadmin Only)',
   })
   @ApiResponse({ status: 200, description: 'Analitik global ditemukan' })
   async getGlobalDashboard() {
@@ -56,9 +60,9 @@ export class AdminController {
   }
 
   @Get('escrow/ledger')
-  @Roles(Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.superadmin)
   @ApiOperation({
-    summary: 'Melihat buku besar audit Escrow (Helds & Releases)',
+    summary: 'Melihat buku besar audit Escrow (Superadmin Only)',
   })
   @ApiResponse({ status: 200, description: 'Buku besar Escrow ditemukan' })
   async getEscrowLedger() {
@@ -80,14 +84,57 @@ export class AdminController {
   })
   @ApiResponse({ status: 404, description: 'User sasaran tidak ditemukan' })
   async updateUserGovernance(
-    @GetUser('id') adminId: string,
+    @GetUser() user: any,
     @Param('id') targetUserId: string,
     @Body() dto: UpdateUserGovernanceDto,
   ) {
-    return this.adminService.updateUserGovernance(
-      String(adminId),
-      targetUserId,
-      dto,
-    );
+    return this.adminService.updateUserGovernance(user, targetUserId, dto);
+  }
+
+  @Patch('settings/commission')
+  @Roles(Role.superadmin)
+  @ApiOperation({
+    summary: 'Pengaturan persentase komisi platform global (Hanya Superadmin)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Persentase komisi platform berhasil diperbarui',
+  })
+  async updatePlatformCommission(@Body() dto: UpdatePlatformCommissionDto) {
+    return this.adminService.updatePlatformCommission(dto.commissionPercentage);
+  }
+
+  @Patch('regions/:id/rate')
+  @Roles(Role.admin_wilayah, Role.superadmin)
+  @ApiOperation({
+    summary: 'Pengaturan tarif Rp/Km Wilayah Asal (Admin Wilayah & Superadmin)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Tarif Rp/Km wilayah berhasil diperbarui',
+  })
+  @ApiResponse({ status: 404, description: 'Wilayah tidak ditemukan' })
+  async updateRegionRate(
+    @GetUser() user: any,
+    @Param('id') regionId: string,
+    @Body() dto: UpdateRegionRateDto,
+  ) {
+    return this.adminService.updateRegionRate(user, regionId, dto.pricePerKm);
+  }
+
+  @Patch('settings/rewards')
+  @Roles(Role.superadmin)
+  @ApiOperation({
+    summary:
+      'Pengaturan kelipatan nominal Poin Reward global (Hanya Superadmin)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Pengaturan kelipatan Poin Reward berhasil diperbarui',
+  })
+  async updateRewardSetting(
+    @Body('pointsMultiplier') pointsMultiplier: number,
+  ) {
+    return this.adminService.updateRewardSetting(pointsMultiplier);
   }
 }

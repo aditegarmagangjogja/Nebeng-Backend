@@ -68,7 +68,7 @@ export class PickupPointRepository {
 
     return this.prisma.user.findUnique({
       where: { id: parseid },
-      select: { id: true, role: true, status: true },
+      select: { id: true, role: true, status: true, regionId: true },
     });
   }
 

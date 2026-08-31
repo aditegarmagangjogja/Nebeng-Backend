@@ -28,16 +28,19 @@ export type AggregateRegion = {
 
 export type RegionAvgAggregateOutputType = {
   id: number | null
+  pricePerKm: runtime.Decimal | null
 }
 
 export type RegionSumAggregateOutputType = {
   id: bigint | null
+  pricePerKm: runtime.Decimal | null
 }
 
 export type RegionMinAggregateOutputType = {
   id: bigint | null
   name: string | null
   code: string | null
+  pricePerKm: runtime.Decimal | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -47,6 +50,7 @@ export type RegionMaxAggregateOutputType = {
   id: bigint | null
   name: string | null
   code: string | null
+  pricePerKm: runtime.Decimal | null
   isActive: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -56,6 +60,7 @@ export type RegionCountAggregateOutputType = {
   id: number
   name: number
   code: number
+  pricePerKm: number
   isActive: number
   createdAt: number
   updatedAt: number
@@ -65,16 +70,19 @@ export type RegionCountAggregateOutputType = {
 
 export type RegionAvgAggregateInputType = {
   id?: true
+  pricePerKm?: true
 }
 
 export type RegionSumAggregateInputType = {
   id?: true
+  pricePerKm?: true
 }
 
 export type RegionMinAggregateInputType = {
   id?: true
   name?: true
   code?: true
+  pricePerKm?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -84,6 +92,7 @@ export type RegionMaxAggregateInputType = {
   id?: true
   name?: true
   code?: true
+  pricePerKm?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -93,6 +102,7 @@ export type RegionCountAggregateInputType = {
   id?: true
   name?: true
   code?: true
+  pricePerKm?: true
   isActive?: true
   createdAt?: true
   updatedAt?: true
@@ -189,6 +199,7 @@ export type RegionGroupByOutputType = {
   id: bigint
   name: string
   code: string
+  pricePerKm: runtime.Decimal
   isActive: boolean
   createdAt: Date
   updatedAt: Date
@@ -221,6 +232,7 @@ export type RegionWhereInput = {
   id?: Prisma.BigIntFilter<"Region"> | bigint | number
   name?: Prisma.StringFilter<"Region"> | string
   code?: Prisma.StringFilter<"Region"> | string
+  pricePerKm?: Prisma.DecimalFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFilter<"Region"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Region"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Region"> | Date | string
@@ -232,6 +244,7 @@ export type RegionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -247,6 +260,7 @@ export type RegionWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.RegionWhereInput[]
   NOT?: Prisma.RegionWhereInput | Prisma.RegionWhereInput[]
   name?: Prisma.StringFilter<"Region"> | string
+  pricePerKm?: Prisma.DecimalFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFilter<"Region"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Region"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Region"> | Date | string
@@ -258,6 +272,7 @@ export type RegionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -275,6 +290,7 @@ export type RegionScalarWhereWithAggregatesInput = {
   id?: Prisma.BigIntWithAggregatesFilter<"Region"> | bigint | number
   name?: Prisma.StringWithAggregatesFilter<"Region"> | string
   code?: Prisma.StringWithAggregatesFilter<"Region"> | string
+  pricePerKm?: Prisma.DecimalWithAggregatesFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Region"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Region"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Region"> | Date | string
@@ -284,6 +300,7 @@ export type RegionCreateInput = {
   id?: bigint | number
   name: string
   code: string
+  pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -295,6 +312,7 @@ export type RegionUncheckedCreateInput = {
   id?: bigint | number
   name: string
   code: string
+  pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -306,6 +324,7 @@ export type RegionUpdateInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -317,6 +336,7 @@ export type RegionUncheckedUpdateInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -328,6 +348,7 @@ export type RegionCreateManyInput = {
   id?: bigint | number
   name: string
   code: string
+  pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -337,6 +358,7 @@ export type RegionUpdateManyMutationInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -346,6 +368,7 @@ export type RegionUncheckedUpdateManyInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -361,6 +384,7 @@ export type RegionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -368,12 +392,14 @@ export type RegionCountOrderByAggregateInput = {
 
 export type RegionAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  pricePerKm?: Prisma.SortOrder
 }
 
 export type RegionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -383,6 +409,7 @@ export type RegionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   code?: Prisma.SortOrder
+  pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -390,6 +417,7 @@ export type RegionMinOrderByAggregateInput = {
 
 export type RegionSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  pricePerKm?: Prisma.SortOrder
 }
 
 export type RegionNullableScalarRelationFilter = {
@@ -412,6 +440,14 @@ export type BigIntFieldUpdateOperationsInput = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type DecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
 export type BoolFieldUpdateOperationsInput = {
@@ -456,6 +492,7 @@ export type RegionCreateWithoutUsersInput = {
   id?: bigint | number
   name: string
   code: string
+  pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -466,6 +503,7 @@ export type RegionUncheckedCreateWithoutUsersInput = {
   id?: bigint | number
   name: string
   code: string
+  pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -492,6 +530,7 @@ export type RegionUpdateWithoutUsersInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -502,6 +541,7 @@ export type RegionUncheckedUpdateWithoutUsersInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -512,6 +552,7 @@ export type RegionCreateWithoutPickupPointsInput = {
   id?: bigint | number
   name: string
   code: string
+  pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -522,6 +563,7 @@ export type RegionUncheckedCreateWithoutPickupPointsInput = {
   id?: bigint | number
   name: string
   code: string
+  pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -548,6 +590,7 @@ export type RegionUpdateWithoutPickupPointsInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -558,6 +601,7 @@ export type RegionUncheckedUpdateWithoutPickupPointsInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   name?: Prisma.StringFieldUpdateOperationsInput | string
   code?: Prisma.StringFieldUpdateOperationsInput | string
+  pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -608,6 +652,7 @@ export type RegionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   name?: boolean
   code?: boolean
+  pricePerKm?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -622,12 +667,13 @@ export type RegionSelectScalar = {
   id?: boolean
   name?: boolean
   code?: boolean
+  pricePerKm?: boolean
   isActive?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RegionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["region"]>
+export type RegionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "pricePerKm" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["region"]>
 export type RegionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Region$usersArgs<ExtArgs>
   pickupPoints?: boolean | Prisma.Region$pickupPointsArgs<ExtArgs>
@@ -644,6 +690,7 @@ export type $RegionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: bigint
     name: string
     code: string
+    pricePerKm: runtime.Decimal
     isActive: boolean
     createdAt: Date
     updatedAt: Date
@@ -1021,6 +1068,7 @@ export interface RegionFieldRefs {
   readonly id: Prisma.FieldRef<"Region", 'BigInt'>
   readonly name: Prisma.FieldRef<"Region", 'String'>
   readonly code: Prisma.FieldRef<"Region", 'String'>
+  readonly pricePerKm: Prisma.FieldRef<"Region", 'Decimal'>
   readonly isActive: Prisma.FieldRef<"Region", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Region", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Region", 'DateTime'>

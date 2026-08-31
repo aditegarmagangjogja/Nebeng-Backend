@@ -5,6 +5,24 @@ import { PrismaService } from '../../prisma/prisma.service';
 export class TrackingRepository {
   constructor(private readonly prisma: PrismaService) {}
 
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
+  async findTripById(tripIdStr: string) {
+    const parsedTripId = this.safeParseBigInt(tripIdStr);
+    if (!parsedTripId) return null;
+
+    return this.prisma.trip.findUnique({
+      where: { id: parsedTripId },
+      select: { id: true, mitraId: true, status: true },
+    });
+  }
+
   async createTrackingLog(tripId: bigint, latitude: number, longitude: number) {
     return this.prisma.tripTracking.create({
       data: {

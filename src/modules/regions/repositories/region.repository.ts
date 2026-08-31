@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { UserStatus } from '../../../generated/prisma/enums';
 
 @Injectable()
 export class RegionRepository {
@@ -19,6 +20,12 @@ export class RegionRepository {
         name: data.name.trim(),
         code: data.code.toUpperCase().trim(),
       },
+      include: {
+        users: {
+          where: { role: 'admin_wilayah', status: UserStatus.active },
+          select: { id: true, name: true, email: true, phone: true },
+        },
+      },
     });
   }
 
@@ -28,6 +35,21 @@ export class RegionRepository {
 
     return this.prisma.region.findUnique({
       where: { id: parseId },
+      include: {
+        users: {
+          where: { role: 'admin_wilayah', status: UserStatus.active },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            statusVerification: true,
+          },
+        },
+        pickupPoints: {
+          select: { id: true, name: true, isActive: true },
+        },
+      },
     });
   }
 
@@ -40,6 +62,12 @@ export class RegionRepository {
   async findAllRegions(onlyActive = false) {
     return this.prisma.region.findMany({
       where: onlyActive ? { isActive: true } : {},
+      include: {
+        users: {
+          where: { role: 'admin_wilayah', status: UserStatus.active },
+          select: { id: true, name: true, email: true, phone: true },
+        },
+      },
       orderBy: { name: 'asc' },
     });
   }
@@ -59,6 +87,12 @@ export class RegionRepository {
         ...(data.name && { name: data.name.trim() }),
         ...(data.code && { code: data.code.toUpperCase().trim() }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
+      },
+      include: {
+        users: {
+          where: { role: 'admin_wilayah', status: UserStatus.active },
+          select: { id: true, name: true, email: true, phone: true },
+        },
       },
     });
   }

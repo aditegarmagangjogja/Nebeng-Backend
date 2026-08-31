@@ -9,6 +9,7 @@ import { UserRepository } from './repositories/user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
+import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserMapper } from './mappers/user.mapper';
 
@@ -77,7 +78,7 @@ export class UsersService {
   ): Promise<UserResponseDto> {
     const currentUser = await this.userRepository.findById(id);
     if (!currentUser) {
-      throw new NotFoundException(`user dengan id ${id} tidak ditemukan`);
+      throw new NotFoundException(`User dengan id ${id} tidak ditemukan`);
     }
 
     if (updateUserDto.email) {
@@ -116,6 +117,31 @@ export class UsersService {
     });
 
     return UserMapper.toResponse(updateUser);
+  }
+
+  async updateProfileDetail(
+    userId: string,
+    dto: UpdateUserProfileDto,
+  ): Promise<UserResponseDto> {
+    const currentUser = await this.userRepository.findById(userId);
+    if (!currentUser) {
+      throw new NotFoundException(`User dengan ID ${userId} tidak ditemukan`);
+    }
+
+    const profilePayload = {
+      ktpNumber: dto.ktpNumber?.trim(),
+      fullNameKtp: dto.fullNameKtp?.trim(),
+      addressKtp: dto.addressKtp?.trim(),
+      faceImageUrl: dto.faceImageUrl?.trim(),
+      bankName: dto.bankName?.trim(),
+      bankAccountNumber: dto.bankAccountNumber?.trim(),
+      bankAccountHolder: dto.bankAccountHolder?.trim(),
+    };
+
+    await this.userRepository.upsertProfile(userId, profilePayload);
+
+    const updatedUser = await this.userRepository.findById(userId);
+    return UserMapper.toResponse(updatedUser);
   }
 
   async setPin(userId: string, pin: string): Promise<{ message: string }> {

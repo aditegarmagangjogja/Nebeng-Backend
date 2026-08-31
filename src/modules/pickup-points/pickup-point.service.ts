@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PickupPointRepository } from './repository/pickup-point.repository';
 import { CreatePickupPointDto } from './dto/create-pickup-point.dto';
@@ -99,10 +100,26 @@ export class PickupPointService {
     return PickupPointMapper.toResponse(pos);
   }
 
-  async update(id: string, dto: UpdatePickupPointDto) {
+  async update(id: string, currentUser: any, dto: UpdatePickupPointDto) {
     const pos = await this.pickupPointRepo.findById(id);
     if (!pos) {
       throw new NotFoundException('Pickup Point/Pos tidak ditemukan');
+    }
+
+    if (
+      currentUser?.role === Role.admin_wilayah ||
+      currentUser?.role === 'admin_wilayah'
+    ) {
+      const adminRegionId = currentUser.regionId
+        ? currentUser.regionId.toString()
+        : null;
+      const posRegionId = pos.regionId.toString();
+
+      if (!adminRegionId || adminRegionId !== posRegionId) {
+        throw new ForbiddenException(
+          'Anda hanya berhak memperbarui Pos Resmi di wilayah Anda sendiri.',
+        );
+      }
     }
 
     if (dto.regionId || dto.cityId) {

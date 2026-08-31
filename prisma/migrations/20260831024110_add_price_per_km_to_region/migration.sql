@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `regions` ADD COLUMN `pricePerKm` DECIMAL(12, 2) NOT NULL DEFAULT 3000;

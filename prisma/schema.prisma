@@ -128,6 +128,7 @@ model Region {
   id        BigInt   @id @default(autoincrement())
   name      String
   code      String   @unique
+  pricePerKm Decimal @default(3000) @db.Decimal(12, 2)
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

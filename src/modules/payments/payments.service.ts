@@ -2,24 +2,63 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { PaymentsRepository } from './repository/payments.repository';
 import { OrdersRepository } from '../orders/repository/orders.repository';
-import { WalletsService } from '../wallets/wallets.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CheckoutPaymentDto } from './dto/checkout-payment.dto';
 import { OrderStatus } from '../../generated/prisma/enums';
 import { randomBytes } from 'crypto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class PaymentsService {
   constructor(
     private readonly paymentsRepository: PaymentsRepository,
     private readonly ordersRepository: OrdersRepository,
-    private readonly walletsService: WalletsService,
+    private readonly prisma: PrismaService,
   ) {}
 
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
   async checkoutPayment(userIdStr: string, dto: CheckoutPaymentDto) {
-    // 1. Fetch Order menggunakan string ID (Fixes TS2345 error)
+    const parsedUserId = this.safeParseBigInt(userIdStr);
+    if (!parsedUserId) {
+      throw new BadRequestException('ID User tidak valid.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: parsedUserId },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Data pengguna tidak ditemukan.');
+    }
+
+    if (!user.pinHash) {
+      throw new BadRequestException(
+        'Anda belum mengatur PIN Transaksi. Silakan buat PIN terlebih dahulu pada menu pengaturan akun.',
+      );
+    }
+
+    if (!dto.pin) {
+      throw new BadRequestException('PIN Transaksi wajib diisi.');
+    }
+
+    const isPinValid = await bcrypt.compare(dto.pin, user.pinHash);
+    if (!isPinValid) {
+      throw new UnauthorizedException(
+        'PIN transaksi yang Anda masukkan salah.',
+      );
+    }
+
     const order = await this.ordersRepository.findById(dto.orderId);
 
     if (!order) {
@@ -38,17 +77,16 @@ export class PaymentsService {
 
     const transactionId = `TRX-${randomBytes(4).toString('hex').toUpperCase()}`;
     const amount = Number(order.totalPrice);
+    const mitraUserId = order.trip.mitraId.toString();
 
-    const { payment, order: updatedOrder } =
-      await this.paymentsRepository.createPaymentAndUpdateOrder(
+    const { payment } =
+      await this.paymentsRepository.processCheckoutTransaction(
         dto.orderId,
+        mitraUserId,
         dto.paymentGateway,
         transactionId,
         amount,
       );
-
-    const mitraUserId = updatedOrder.trip.mitraId.toString();
-    await this.walletsService.holdEscrow(mitraUserId, dto.orderId, amount);
 
     return {
       message:

@@ -20,6 +20,14 @@ export class RewardsRepository {
 
     return this.prisma.user.findUnique({
       where: { id: parsedUserId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        rewardPoints: true,
+        regionId: true,
+        status: true,
+      },
     });
   }
 
@@ -67,11 +75,20 @@ export class RewardsRepository {
 
     return this.prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
-        where: { id: parsedUserId },
+        where: {
+          id: parsedUserId,
+          rewardPoints: { gte: data.points },
+        },
         data: {
           rewardPoints: { decrement: data.points },
         },
       });
+
+      if (!updatedUser) {
+        throw new BadRequestException(
+          'Saldo poin tidak mencukupi atau terjadi kesalahan transaksi.',
+        );
+      }
 
       const transaction = await tx.rewardTransaction.create({
         data: {

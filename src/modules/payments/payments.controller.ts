@@ -29,7 +29,7 @@ export class PaymentsController {
   @ApiResponse({
     status: 400,
     description:
-      'Order bukan milik Anda atau tidak dalam status menunggu pembayaran',
+      'Order bukan milik Anda, PIN salah, atau status order tidak valid',
   })
   @ApiResponse({ status: 404, description: 'Order tidak ditemukan' })
   async checkoutPayment(

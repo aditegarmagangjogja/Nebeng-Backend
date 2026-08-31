@@ -1,22 +1,62 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TrackingRepository } from './tracking.repository';
 import { UpdateLocationDto } from './dto/update-location.dto';
+import { TripStatus } from '../../generated/prisma/enums';
 
 @Injectable()
 export class TrackingService {
   constructor(private readonly trackingRepository: TrackingRepository) {}
 
-  async saveLocation(dto: UpdateLocationDto) {
+  private safeParseBigInt(id: string): bigint | null {
+    try {
+      return BigInt(id);
+    } catch {
+      return null;
+    }
+  }
+
+  async validateAndSaveLocation(
+    mitraUserIdStr: string,
+    dto: UpdateLocationDto,
+  ) {
+    const trip = await this.trackingRepository.findTripById(dto.tripId);
+    if (!trip) {
+      throw new NotFoundException('Jadwal Trip tidak ditemukan.');
+    }
+
+    if (trip.mitraId.toString() !== mitraUserIdStr) {
+      throw new ForbiddenException(
+        'Anda tidak berhak memperbarui lokasi pada trip orang lain.',
+      );
+    }
+
+    if (trip.status !== TripStatus.in_transit) {
+      throw new BadRequestException(
+        'Pencatatan lokasi hanya dapat dilakukan saat status Trip IN_TRANSIT.',
+      );
+    }
+
     const tripBigIntId = BigInt(dto.tripId);
+    const longitude = dto.longtitude ?? (dto as any).longtitude;
+
     return this.trackingRepository.createTrackingLog(
       tripBigIntId,
       dto.latitude,
-      dto.longtitude,
+      longitude,
     );
   }
 
   async getTripHistory(tripId: string) {
-    const tripBigIntId = BigInt(tripId);
+    const tripBigIntId = this.safeParseBigInt(tripId);
+    if (!tripBigIntId) {
+      throw new BadRequestException('Format ID Trip tidak valid');
+    }
+
     const logs =
       await this.trackingRepository.getRecentTrackingLogs(tripBigIntId);
 

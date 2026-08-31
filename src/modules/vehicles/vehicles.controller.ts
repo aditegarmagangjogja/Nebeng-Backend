@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -43,10 +44,10 @@ export class VehiclesController {
     description: 'Nomor plat kendaraan sudah terdaftar',
   })
   async createVehicle(
-    @GetUser('id') user: string,
+    @GetUser('id') userId: string,
     @Body() dto: CreateVehicleDto,
   ) {
-    return this.vehiclesService.createVehicle(String(user), dto);
+    return this.vehiclesService.createVehicle(String(userId), dto);
   }
 
   @Get('me')
@@ -58,6 +59,7 @@ export class VehiclesController {
   }
 
   @Get(':id')
+  @Roles(Role.mitra, Role.superadmin, Role.admin_wilayah, Role.customer)
   @ApiOperation({ summary: 'Detail kendaraan berdasarkan ID' })
   @ApiResponse({ status: 200, description: 'Detail kendaraan ditemukan' })
   @ApiResponse({ status: 404, description: 'Data kendaraan tidak ditemukan' })
@@ -83,5 +85,18 @@ export class VehiclesController {
     @Body() dto: UpdateVehicleDto,
   ) {
     return this.vehiclesService.updateVehicle(id, String(userId), dto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.mitra)
+  @ApiOperation({ summary: 'Hapus kendaraan milik Mitra (Owner Only)' })
+  @ApiResponse({ status: 200, description: 'Kendaraan berhasil dihapus' })
+  @ApiResponse({
+    status: 400,
+    description: 'Kendaraan masih terikat pada perjalanan aktif',
+  })
+  @ApiResponse({ status: 404, description: 'Data kendaraan tidak ditemukan' })
+  async deleteVehicle(@Param('id') id: string, @GetUser('id') userId: string) {
+    return this.vehiclesService.deleteVehicle(id, String(userId));
   }
 }

@@ -6,6 +6,7 @@ import {
   OrderStatus,
   TripStatus,
   VerificationStatus,
+  ServiceType,
 } from '../../generated/prisma/enums';
 
 @Injectable()
@@ -21,6 +22,13 @@ export class AdminRepository {
   }
 
   async getGlobalAnalytics() {
+    const defaultPricing = await this.prisma.pricingSetting.findFirst({
+      select: { adminFeePercentage: true },
+    });
+    const commissionRate = defaultPricing
+      ? Number(defaultPricing.adminFeePercentage) / 100
+      : 0.1;
+
     const [
       totalPaidOrders,
       activeTripsCount,
@@ -34,6 +42,7 @@ export class AdminRepository {
               OrderStatus.paid,
               OrderStatus.completed,
               OrderStatus.in_transit,
+              OrderStatus.arrived_destination,
             ],
           },
         },
@@ -42,7 +51,11 @@ export class AdminRepository {
       this.prisma.trip.count({
         where: {
           status: {
-            in: [TripStatus.scheduled, TripStatus.in_transit],
+            in: [
+              TripStatus.scheduled,
+              TripStatus.in_transit,
+              TripStatus.in_origin_pos,
+            ],
           },
         },
       }),
@@ -61,7 +74,7 @@ export class AdminRepository {
     ]);
 
     const totalRevenue = Number(totalPaidOrders._sum.totalPrice || 0);
-    const platformCommission = totalRevenue * 0.1; // Komisi 10% platform
+    const platformCommission = totalRevenue * commissionRate;
 
     return {
       totalRevenue,
@@ -104,7 +117,7 @@ export class AdminRepository {
       this.prisma.trip.count({
         where: {
           destinationPoint: { regionId: parsedRegionId },
-          status: { in: [TripStatus.completed] },
+          status: { in: [TripStatus.completed, TripStatus.arrived_dest_pos] },
         },
       }),
       this.prisma.verification.count({
@@ -122,6 +135,48 @@ export class AdminRepository {
       arrivedTripsCount,
       pendingVerificationsCount,
     };
+  }
+
+  async getRewardSetting() {
+    const setting = await this.prisma.pricingSetting.findFirst({
+      where: { serviceType: ServiceType.barang },
+      select: { farePerKg: true },
+    });
+    return setting?.farePerKg ? Number(setting.farePerKg) : 10000;
+  }
+
+  async updateRewardSetting(pointsMultiplier: number) {
+    const serviceTypes = [
+      ServiceType.motor,
+      ServiceType.mobil,
+      ServiceType.barang,
+    ];
+
+    const updatePromises = serviceTypes.map(async (serviceType) => {
+      const existing = await this.prisma.pricingSetting.findFirst({
+        where: { serviceType },
+      });
+
+      if (existing) {
+        return this.prisma.pricingSetting.update({
+          where: { id: existing.id },
+          data: { farePerKg: pointsMultiplier },
+        });
+      }
+
+      return this.prisma.pricingSetting.create({
+        data: {
+          serviceType,
+          baseFare: 5000,
+          farePerKm: 3000,
+          farePerKg: pointsMultiplier,
+          adminFeePercentage: 10,
+        },
+      });
+    });
+
+    await Promise.all(updatePromises);
+    return pointsMultiplier;
   }
 
   async getEscrowLedger() {
@@ -150,6 +205,59 @@ export class AdminRepository {
       totalReleasedEscrow: Number(releasedAggregate._sum.amount || 0),
       recentTransactions,
     };
+  }
+
+  async updateRegionPriceRate(regionIdStr: string, pricePerKm: number) {
+    const parsedRegionId = this.safeParseBigInt(regionIdStr);
+    if (!parsedRegionId) {
+      throw new BadRequestException(
+        'Format ID Wilayah (Region ID) tidak valid',
+      );
+    }
+
+    const region = await this.prisma.region.findUnique({
+      where: { id: parsedRegionId },
+    });
+
+    if (!region) return null;
+
+    return this.prisma.region.update({
+      where: { id: parsedRegionId },
+      data: { pricePerKm },
+    });
+  }
+
+  async updatePlatformCommissionRate(percentage: number) {
+    const serviceTypes = [
+      ServiceType.motor,
+      ServiceType.mobil,
+      ServiceType.barang,
+    ];
+
+    const updatePromises = serviceTypes.map(async (serviceType) => {
+      const existing = await this.prisma.pricingSetting.findFirst({
+        where: { serviceType },
+      });
+
+      if (existing) {
+        return this.prisma.pricingSetting.update({
+          where: { id: existing.id },
+          data: { adminFeePercentage: percentage },
+        });
+      }
+
+      return this.prisma.pricingSetting.create({
+        data: {
+          serviceType,
+          baseFare: 5000,
+          farePerKm: 3000,
+          adminFeePercentage: percentage,
+        },
+      });
+    });
+
+    await Promise.all(updatePromises);
+    return percentage;
   }
 
   async updateUserStatus(userIdStr: string, status: UserStatus) {

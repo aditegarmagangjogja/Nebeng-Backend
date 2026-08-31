@@ -41,7 +41,7 @@ export class RegionController {
 
   @Get('regions')
   @ApiOperation({
-    summary: 'Melihat seluruh daftar Region (Public/Authenticated)',
+    summary: 'Melihat seluruh daftar Region beserta Admin Penanggung Jawab',
   })
   @ApiQuery({ name: 'onlyActive', type: Boolean, required: false })
   async findAllRegions(@Query('onlyActive') onlyActive?: string) {
@@ -50,7 +50,7 @@ export class RegionController {
   }
 
   @Get('regions/:id')
-  @ApiOperation({ summary: 'Melihat detail Region berdasarkan ID' })
+  @ApiOperation({ summary: 'Melihat detail Region & daftar Admin Wilayah' })
   @ApiResponse({ status: 200, description: 'Region ditemukan' })
   @ApiResponse({ status: 404, description: 'Region tidak ditemukan' })
   async findOneRegion(@Param('id') id: string) {

@@ -44,7 +44,6 @@ export class AuthService {
   }
 
   async register(registerDto: RegisterDto): Promise<UserResponseDto> {
-    // Casting dari PublicRole ke Prisma Role untuk kompatibilitas data
     const assignedRole = (registerDto.role as unknown as Role) || Role.customer;
 
     return this.usersService.create({

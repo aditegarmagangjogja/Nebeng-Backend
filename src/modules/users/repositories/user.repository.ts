@@ -16,15 +16,19 @@ export class UserRepository {
   }
 
   async create(data: Prisma.UserCreateInput): Promise<User> {
-    return this.prisma.user.create({ data });
+    return this.prisma.user.create({
+      data,
+      include: { profile: true, region: true },
+    });
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: string): Promise<any | null> {
     const parseId = this.safeParseBigInt(id);
     if (!parseId) return null;
 
     return this.prisma.user.findUnique({
       where: { id: parseId },
+      include: { profile: true, region: true },
     });
   }
 
@@ -49,13 +53,14 @@ export class UserRepository {
     });
   }
 
-  async findAll(): Promise<User[]> {
+  async findAll(): Promise<any[]> {
     return this.prisma.user.findMany({
       where: {
         status: {
           not: UserStatus.deleted,
         },
       },
+      include: { profile: true, region: true },
     });
   }
 
@@ -66,6 +71,21 @@ export class UserRepository {
     return this.prisma.user.update({
       where: { id: parseId },
       data,
+      include: { profile: true, region: true },
+    });
+  }
+
+  async upsertProfile(userIdStr: string, profileData: any) {
+    const parseId = this.safeParseBigInt(userIdStr);
+    if (!parseId) throw new BadRequestException('Format ID tidak valid');
+
+    return this.prisma.userProfile.upsert({
+      where: { userId: parseId },
+      update: profileData,
+      create: {
+        userId: parseId,
+        ...profileData,
+      },
     });
   }
 

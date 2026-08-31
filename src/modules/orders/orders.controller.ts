@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -23,7 +31,7 @@ export class OrdersController {
   @Post()
   @Roles(Role.customer)
   @ApiOperation({ summary: 'Buat pesanan baru (Passenger / Parcel Booking)' })
-  @ApiResponse({ status: 201, description: 'pesanan berhasil dibuat' })
+  @ApiResponse({ status: 201, description: 'Pesanan berhasil dibuat' })
   @ApiResponse({
     status: 400,
     description:
@@ -45,10 +53,42 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Detail pesanan berdasarkan ID' })
+  @Roles(
+    Role.customer,
+    Role.mitra,
+    Role.operator_pos,
+    Role.admin_wilayah,
+    Role.superadmin,
+  )
+  @ApiOperation({
+    summary: 'Detail pesanan berdasarkan ID (Dengan proteksi otorisasi)',
+  })
   @ApiResponse({ status: 200, description: 'Detail pesanan ditemukan' })
+  @ApiResponse({
+    status: 403,
+    description: 'Tidak memiliki hak akses ke order ini',
+  })
   @ApiResponse({ status: 404, description: 'Order tidak ditemukan' })
-  async getOrderById(@Param('id') id: string) {
-    return this.ordersService.getOrderById(id);
+  async getOrderById(@GetUser() user: any, @Param('id') id: string) {
+    return this.ordersService.getOrderById(user, id);
+  }
+
+  @Patch(':id/cancel')
+  @Roles(Role.customer, Role.operator_pos, Role.admin_wilayah, Role.superadmin)
+  @ApiOperation({
+    summary: 'Membatalkan pesanan dan mengembalikan kuota kursi/bagasi trip',
+  })
+  @ApiResponse({ status: 200, description: 'Pesanan berhasil dibatalkan' })
+  @ApiResponse({
+    status: 400,
+    description: 'Pesanan sudah selesai/berjalan atau tidak dapat dibatalkan',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Tidak memiliki hak akses untuk membatalkan pesanan ini',
+  })
+  @ApiResponse({ status: 404, description: 'Order tidak ditemukan' })
+  async cancelOrder(@GetUser() user: any, @Param('id') id: string) {
+    return this.ordersService.cancelOrder(user, id);
   }
 }

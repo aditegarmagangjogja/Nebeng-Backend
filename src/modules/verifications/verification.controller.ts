@@ -11,7 +11,6 @@ import {
   Post,
   Query,
   UseGuards,
-  Request,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -42,7 +41,7 @@ export class VerificationController {
   @ApiOperation({ summary: 'Submit dokumen verifikasi (KTP/SIM/SKCK/STNK)' })
   @ApiResponse({
     status: 201,
-    description: 'Dokumen verifikasi berhasil dikirim dan menungu peninjauan',
+    description: 'Dokumen verifikasi berhasil dikirim dan menunggu peninjauan',
   })
   @ApiResponse({ status: 400, description: 'Payload atau file tidak valid' })
   @ApiResponse({
@@ -54,7 +53,7 @@ export class VerificationController {
     @GetUser('id') userId: string,
     @Body() dto: SumbitVerificationDto,
   ) {
-    return this.verificationService.sumbitVerification(String(userId), dto);
+    return this.verificationService.submitVerification(String(userId), dto);
   }
 
   @Get()
@@ -66,12 +65,14 @@ export class VerificationController {
     description: 'Daftar verifikasi berhasil diambil',
   })
   async findAll(
-    @GetUser('role') currentUserRole: Role,
-    @GetUser('regionId') currentUserRegionId: string,
+    @GetUser() currentUser: any,
     @Query('status') status?: VerificationStatus,
   ) {
     const targetRegionId =
-      currentUserRole === Role.admin_wilayah ? currentUserRegionId : undefined;
+      currentUser.role === Role.admin_wilayah ||
+      currentUser.role === 'admin_wilayah'
+        ? currentUser.regionId?.toString()
+        : undefined;
 
     return this.verificationService.getAllVerifications(status, targetRegionId);
   }
@@ -81,23 +82,22 @@ export class VerificationController {
   @ApiOperation({ summary: 'Melihat detail verifikasi berdasarkan ID' })
   @ApiResponse({ status: 200, description: 'Detail verifikasi ditemukan' })
   @ApiResponse({ status: 404, description: 'Verifikasi tidak ditemukan' })
-  async findOne(
-    @Param('id') id: string,
-    @GetUser('id') currentUserId: string,
-    @GetUser('role') currentUserRole: Role,
-  ) {
+  async findOne(@Param('id') id: string, @GetUser() currentUser: any) {
     const verification = await this.verificationService.getVerificationById(id);
 
     if (!verification) {
       throw new NotFoundException('Verifikasi tidak ditemukan');
     }
 
+    const currentUserId = String(currentUser.id);
+    const currentUserRole = currentUser.role;
+
     if (
       currentUserRole !== Role.superadmin &&
       currentUserRole !== Role.admin_wilayah
     ) {
       const ownerUserId = String(verification.userId || verification.user?.id);
-      if (ownerUserId !== String(currentUserId)) {
+      if (ownerUserId !== currentUserId) {
         throw new ForbiddenException(
           'Anda tidak memiliki akses untuk melihat detail verifikasi ini',
         );
@@ -121,14 +121,9 @@ export class VerificationController {
   @ApiResponse({ status: 404, description: 'Verifikasi tidak ditemukan' })
   async review(
     @Param('id') id: string,
-    @Request() req: any,
+    @GetUser() currentUser: any,
     @Body() dto: ReviewVerificationDto,
   ) {
-    const adminId = req.user?.id || req.user?.sub;
-    return this.verificationService.reviewVerification(
-      id,
-      String(adminId),
-      dto,
-    );
+    return this.verificationService.reviewVerification(id, currentUser, dto);
   }
 }

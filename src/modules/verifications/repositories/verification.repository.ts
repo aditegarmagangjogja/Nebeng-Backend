@@ -46,6 +46,9 @@ export class VerificationRepository {
         },
         include: {
           files: true,
+          user: {
+            include: { profile: true },
+          },
         },
       });
 
@@ -68,7 +71,10 @@ export class VerificationRepository {
       where: { id: parseId },
       include: {
         files: true,
-        user: true,
+        user: {
+          include: { profile: true },
+        },
+        approvedByUser: true,
       },
     });
   }
@@ -83,7 +89,9 @@ export class VerificationRepository {
       },
       include: {
         files: true,
-        user: true,
+        user: {
+          include: { profile: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -115,7 +123,12 @@ export class VerificationRepository {
           rejectionReason:
             status === VerificationStatus.rejected ? rejectionReason : null,
         },
-        include: { files: true, user: true },
+        include: {
+          files: true,
+          user: {
+            include: { profile: true },
+          },
+        },
       });
 
       if (status === VerificationStatus.rejected) {
@@ -124,6 +137,15 @@ export class VerificationRepository {
           data: { statusVerification: VerificationStatus.rejected },
         });
       } else if (status === VerificationStatus.approved) {
+        await tx.userProfile.upsert({
+          where: { userId: updatedVerfication.userId },
+          update: { isFaceVerified: true },
+          create: {
+            userId: updatedVerfication.userId,
+            isFaceVerified: true,
+          },
+        });
+
         const pendingOrRejected = await tx.verification.count({
           where: {
             userId: updatedVerfication.userId,

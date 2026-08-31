@@ -17,7 +17,7 @@ export class ChatService {
   constructor(
     private readonly chatRepository: ChatRepository,
     private readonly prisma: PrismaService,
-    private readonly chatGateway: ChatGateway, // Inject Gateway WebSocket
+    private readonly chatGateway: ChatGateway,
   ) {}
 
   private safeParseBigInt(id: string): bigint | null {
@@ -45,25 +45,31 @@ export class ChatService {
       throw new NotFoundException('Trip tidak ditemukan');
     }
 
-    if (
-      currentUserId !== dto.customerId &&
-      currentUserId !== trip.mitraId.toString()
-    ) {
+    const isMitra = trip.mitraId.toString() === currentUserId;
+    const targetCustomerId = isMitra ? dto.customerId : currentUserId;
+
+    if (!targetCustomerId) {
+      throw new BadRequestException(
+        'Mitra wajib menyertakan ID Customer untuk membuka obrolan.',
+      );
+    }
+
+    if (!isMitra && dto.customerId && dto.customerId !== currentUserId) {
       throw new ForbiddenException(
-        'Akses ditolak. Anda bukan partisipan dalam trip ini.',
+        'Anda tidak diperbolehkan membuat percakapan atas nama pengguna lain.',
       );
     }
 
     let conversation =
       await this.chatRepository.findConversationByTripAndCustomer(
         dto.tripId,
-        dto.customerId,
+        targetCustomerId,
       );
 
     if (!conversation) {
       conversation = await this.chatRepository.createConversation({
         tripIdStr: dto.tripId,
-        customerIdStr: dto.customerId,
+        customerIdStr: targetCustomerId,
         mitraIdStr: trip.mitraId.toString(),
       });
     }
@@ -137,7 +143,6 @@ export class ChatService {
       );
     }
 
-    // 1. Simpan pesan ke database MySQL
     const message = await this.chatRepository.createMessage({
       conversationIdStr: conversationId,
       senderIdStr: currentUserId,
@@ -146,7 +151,6 @@ export class ChatService {
 
     const responsePayload = ChatMapper.toMessageResponse(message);
 
-    // 2. Pancarkan pesan ke WebSocket secara Real-Time ke Room terkait
     this.chatGateway.emitNewMessage(conversationId, responsePayload);
 
     return responsePayload;

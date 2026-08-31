@@ -74,7 +74,7 @@ export class WalletsRepository {
           orderId: parseOrderId,
           amount,
           type: TransactionType.escrow_hold,
-          description: `Escrow hold untuk order ${orderIdStr}`,
+          description: `Escrow hold untuk order #${orderIdStr}`,
         },
       });
 
@@ -86,18 +86,21 @@ export class WalletsRepository {
     walletId: bigint,
     orderIdStr: string,
     amount: number,
+    platformFee: number = 0,
   ) {
     const parseOrderId = this.safeParseBigInt(orderIdStr);
     if (!parseOrderId) {
       throw new BadRequestException('Format ID order tidak valid');
     }
 
+    const netAmount = amount - platformFee;
+
     return this.prisma.$transaction(async (tx) => {
       const wallet = await tx.wallet.update({
         where: { id: walletId },
         data: {
           heldEscrowBalance: { decrement: amount },
-          balance: { increment: amount },
+          balance: { increment: netAmount },
         },
       });
 
@@ -105,13 +108,39 @@ export class WalletsRepository {
         data: {
           walletId,
           orderId: parseOrderId,
-          amount,
+          amount: netAmount,
           type: TransactionType.escrow_release,
-          description: `Pencairan dana Escrow untuk order #${orderIdStr}`,
+          description: `Pencairan dana Escrow untuk order #${orderIdStr} (setelah dipotong komisi)`,
         },
       });
 
       return wallet;
+    });
+  }
+
+  async processWithdrawal(
+    walletId: bigint,
+    amount: number,
+    bankDetails: string,
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      const wallet = await tx.wallet.update({
+        where: { id: walletId },
+        data: {
+          balance: { decrement: amount },
+        },
+      });
+
+      const transaction = await tx.walletTransaction.create({
+        data: {
+          walletId,
+          amount,
+          type: TransactionType.debit,
+          description: `Penarikan saldo (Withdrawal) ke ${bankDetails}`,
+        },
+      });
+
+      return { wallet, transaction };
     });
   }
 }

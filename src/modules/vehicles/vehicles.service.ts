@@ -20,7 +20,7 @@ export class VehicleService {
       await this.vehiclesRepository.findUserVerificationStatus(userIdStr);
     if (!user || user.statusVerification !== VerificationStatus.approved) {
       throw new ForbiddenException(
-        'Akun anda belum disetujui. Selesaikan verifikasi identitas terlebih dahulu.',
+        'Akun Anda belum disetujui. Selesaikan verifikasi identitas terlebih dahulu.',
       );
     }
 
@@ -29,17 +29,22 @@ export class VehicleService {
       await this.vehiclesRepository.findByPlateNumber(cleanPlate);
 
     if (existingPlate) {
-      throw new BadRequestException('Nomor plat sudah terdaftar di sistem');
+      throw new ConflictException(
+        'Nomor plat kendaraan sudah terdaftar di sistem.',
+      );
     }
 
-    let finalSeats = dto.capacitySeats;
-    let finalWeight = dto.maxWeightCapacityKg;
+    let finalSeats = dto.capacitySeats ?? 1;
+    let finalWeight = dto.maxWeightCapacityKg ?? 10;
 
     if (dto.type === VehicleType.motor) {
       finalSeats = 1;
       if (!dto.maxWeightCapacityKg || dto.maxWeightCapacityKg > 15) {
         finalWeight = 15.0;
       }
+    } else if (dto.type === VehicleType.mobil) {
+      if (finalSeats < 1) finalSeats = 1;
+      if (finalWeight < 10) finalWeight = 10;
     }
 
     const vehicle = await this.vehiclesRepository.create(userIdStr, {
@@ -52,14 +57,14 @@ export class VehicleService {
   }
 
   async getMyVehicles(userIdStr: string) {
-    const vehicle = await this.vehiclesRepository.findByUserId(userIdStr);
-    return vehicle.map(VehicleMapper.toResponse);
+    const vehicles = await this.vehiclesRepository.findByUserId(userIdStr);
+    return vehicles.map(VehicleMapper.toResponse);
   }
 
   async getVehicleById(idStr: string) {
     const vehicle = await this.vehiclesRepository.findById(idStr);
     if (!vehicle) {
-      throw new NotFoundException('Data kendaraan tidak ditemukan');
+      throw new NotFoundException('Data kendaraan tidak ditemukan.');
     }
     return VehicleMapper.toResponse(vehicle);
   }
@@ -85,7 +90,7 @@ export class VehicleService {
         await this.vehiclesRepository.findByPlateNumber(cleanPlate);
       if (existingPlate && existingPlate.id.toString() !== idStr) {
         throw new ConflictException(
-          'Nomor plat kendaraan sudah digunakan oleh kendaraan lain',
+          'Nomor plat kendaraan sudah digunakan oleh kendaraan lain.',
         );
       }
     }
@@ -107,5 +112,28 @@ export class VehicleService {
       ...(targetWeight !== undefined && { maxWeightCapacityKg: targetWeight }),
     });
     return VehicleMapper.toResponse(updated);
+  }
+
+  async deleteVehicle(idStr: string, userIdStr: string) {
+    const vehicle = await this.vehiclesRepository.findById(idStr);
+    if (!vehicle) {
+      throw new NotFoundException('Data kendaraan tidak ditemukan.');
+    }
+
+    if (vehicle.userId.toString() !== userIdStr) {
+      throw new ForbiddenException(
+        'Anda tidak memiliki akses untuk menghapus kendaraan ini.',
+      );
+    }
+
+    const activeTrips = await this.vehiclesRepository.countActiveTrips(idStr);
+    if (activeTrips > 0) {
+      throw new BadRequestException(
+        'Kendaraan tidak dapat dihapus karena masih terikat pada perjalanan/trip yang aktif.',
+      );
+    }
+
+    await this.vehiclesRepository.delete(idStr);
+    return { message: 'Kendaraan berhasil dihapus.' };
   }
 }

@@ -15,14 +15,14 @@ export class ReviewsRepository {
 
   async findReviewByTripAndReviewer(tripId: string, reviewerId: string) {
     const parseTripId = this.safeParseBigInt(tripId);
-    const parseReviewId = this.safeParseBigInt(reviewerId);
+    const parseReviewerId = this.safeParseBigInt(reviewerId);
 
-    if (!parseTripId || !parseReviewId) return null;
+    if (!parseTripId || !parseReviewerId) return null;
 
     return this.prisma.tripReview.findFirst({
       where: {
         tripId: parseTripId,
-        reviewerId: parseReviewId,
+        reviewerId: parseReviewerId,
       },
     });
   }
@@ -36,11 +36,11 @@ export class ReviewsRepository {
   }) {
     const parseTripId = this.safeParseBigInt(data.tripId);
     const parseReviewerId = this.safeParseBigInt(data.reviewerId);
-    const parseReviewId = this.safeParseBigInt(data.revieweeId);
+    const parseRevieweeId = this.safeParseBigInt(data.revieweeId);
 
-    if (!parseTripId || !parseReviewerId || !parseReviewId) {
+    if (!parseTripId || !parseReviewerId || !parseRevieweeId) {
       throw new BadRequestException(
-        'Format ID trip, Reviewer, atau review tidak valid',
+        'Format ID trip, Reviewer, atau Reviewee tidak valid',
       );
     }
 
@@ -48,26 +48,32 @@ export class ReviewsRepository {
       data: {
         tripId: parseTripId,
         reviewerId: parseReviewerId,
-        revieweeId: parseReviewId,
+        revieweeId: parseRevieweeId,
         rating: data.rating,
-        comment: data.comment,
+        comment: data.comment ? data.comment.trim() : undefined,
       },
       include: {
-        reviewer: true,
-        reviewee: true,
+        reviewer: {
+          select: { id: true, name: true, avatar: true },
+        },
+        reviewee: {
+          select: { id: true, name: true, avatar: true },
+        },
         trip: true,
       },
     });
   }
 
   async getReviewsByReviewee(revieweeId: string) {
-    const parsedRevieweId = this.safeParseBigInt(revieweeId);
-    if (!parsedRevieweId) return [];
+    const parsedRevieweeId = this.safeParseBigInt(revieweeId);
+    if (!parsedRevieweeId) return [];
 
     return this.prisma.tripReview.findMany({
-      where: { revieweeId: parsedRevieweId },
+      where: { revieweeId: parsedRevieweeId },
       include: {
-        reviewer: true,
+        reviewer: {
+          select: { id: true, name: true, avatar: true },
+        },
         trip: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -86,8 +92,10 @@ export class ReviewsRepository {
       _count: { rating: true },
     });
 
+    const rawAvg = aggregate._avg.rating ? Number(aggregate._avg.rating) : 0;
+
     return {
-      averageRating: aggregate._avg.rating || 0,
+      averageRating: Number(rawAvg.toFixed(1)),
       totalReviews: aggregate._count.rating || 0,
     };
   }
@@ -99,7 +107,9 @@ export class ReviewsRepository {
     return this.prisma.trip.findUnique({
       where: { id: parsedTripId },
       include: {
-        orders: true,
+        orders: {
+          select: { id: true, customerId: true, status: true },
+        },
       },
     });
   }

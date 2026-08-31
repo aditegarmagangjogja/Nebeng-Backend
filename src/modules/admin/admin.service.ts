@@ -55,10 +55,12 @@ export class AdminService {
   }
 
   async updateUserGovernance(
-    currentAdminId: string,
+    currentUser: any,
     targetUserId: string,
     dto: UpdateUserGovernanceDto,
   ) {
+    const currentAdminId = String(currentUser.id);
+
     if (currentAdminId === targetUserId) {
       throw new BadRequestException(
         'Anda tidak dapat mengubah status akun sendiri.',
@@ -70,6 +72,30 @@ export class AdminService {
       throw new NotFoundException('User sasaran tidak ditemukan.');
     }
 
+    if (
+      currentUser.role === Role.admin_wilayah ||
+      currentUser.role === 'admin_wilayah'
+    ) {
+      if (
+        targetUser.role === Role.superadmin ||
+        targetUser.role === Role.admin_wilayah
+      ) {
+        throw new ForbiddenException(
+          'Admin Wilayah tidak dapat mengubah status Superadmin atau sesama Admin Wilayah.',
+        );
+      }
+
+      if (
+        targetUser.regionId &&
+        currentUser.regionId &&
+        targetUser.regionId.toString() !== currentUser.regionId.toString()
+      ) {
+        throw new ForbiddenException(
+          'Anda hanya dapat mengubah status user di wilayah Anda sendiri.',
+        );
+      }
+    }
+
     const updatedUser = await this.adminRepository.updateUserStatus(
       targetUserId,
       dto.status,
@@ -79,6 +105,66 @@ export class AdminService {
       message: `Status pengguna berhasil diperbarui menjadi ${updatedUser.status}`,
       userId: updatedUser.id.toString(),
       status: updatedUser.status,
+    };
+  }
+
+  async updatePlatformCommission(percentage: number) {
+    await this.adminRepository.updatePlatformCommissionRate(percentage);
+
+    return {
+      message:
+        'Persentase komisi platform berhasil diperbarui di database global',
+      commissionPercentage: percentage,
+    };
+  }
+
+  async updateRewardSetting(pointsMultiplier: number) {
+    if (pointsMultiplier <= 0) {
+      throw new BadRequestException(
+        'Nilai kelipatan poin reward harus lebih besar dari 0.',
+      );
+    }
+
+    await this.adminRepository.updateRewardSetting(pointsMultiplier);
+
+    return {
+      message: 'Pengaturan kelipatan Poin Reward berhasil diperbarui',
+      rewardPointsMultiplier: pointsMultiplier,
+    };
+  }
+
+  async updateRegionRate(
+    currentUser: any,
+    regionId: string,
+    pricePerKm: number,
+  ) {
+    if (
+      currentUser.role === Role.admin_wilayah ||
+      currentUser.role === 'admin_wilayah'
+    ) {
+      if (
+        !currentUser.regionId ||
+        currentUser.regionId.toString() !== regionId
+      ) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki akses untuk mengubah tarif wilayah lain.',
+        );
+      }
+    }
+
+    const updatedRegion = await this.adminRepository.updateRegionPriceRate(
+      regionId,
+      pricePerKm,
+    );
+
+    if (!updatedRegion) {
+      throw new NotFoundException('Wilayah sasaran tidak ditemukan.');
+    }
+
+    return {
+      message: `Tarif per Km untuk wilayah ${updatedRegion.name} berhasil diperbarui`,
+      regionId: updatedRegion.id.toString(),
+      pricePerKm: Number(updatedRegion.pricePerKm),
     };
   }
 }
