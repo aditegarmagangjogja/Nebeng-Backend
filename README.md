@@ -72,36 +72,27 @@ JWT_SECRET="super-secret-jwt-key"
 JWT_REFRESH_SECRET="super-secret-refresh-key"
 JWT_EXPIRES_IN="15m"
 JWT_REFRESH_EXPIRES_IN="7d"
+
+## Instalasi dan migrasi database
+```
+  npm install
+
+  npx prisma validate
+  npx prisma migrate dev
+  npx prisma generate
 ```
 
-## Install Dependensi & Persiapan Database
-# Install package dependencies
-npm install
+## Menjalankan pengujian testing
+```
+  npm run test:e2e
+```
 
-# Validasi dan Jalankan Migrasi Prisma
-npx prisma validate
-npx prisma migrate dev
-npx prisma generate
+## Menjalankan Applikasi
+```
+  npm run start
 
-# Jalankan seluruh Unit Test
-npm run test
+  npm run start:dev
 
-# Jalankan Unit Test modul spesifik
-npx jest src/modules/orders/
-npx jest src/modules/checkpoints/
-
-# Jalankan Full Lifecycle Integration E2E Test
-npm run test:e2e
-
-# Check Test Coverage
-npm run test:cov
-
-# Development Mode
-npm run start
-
-# Watch Mode (Auto Recompile)
-npm run start:dev
-
-# Production Build & Run
-npm run build
-npm run start:prod
+  npm run build
+  npm run start:prod
+```
