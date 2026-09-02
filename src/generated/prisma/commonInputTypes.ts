@@ -306,6 +306,13 @@ export type EnumServiceTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumServiceTypeFilter<$PrismaModel> | $Enums.ServiceType
 }
 
+export type EnumParcelSizeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ParcelSize | Prisma.EnumParcelSizeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ParcelSize[] | null
+  notIn?: $Enums.ParcelSize[] | null
+  not?: Prisma.NestedEnumParcelSizeNullableFilter<$PrismaModel> | $Enums.ParcelSize | null
+}
+
 export type DecimalNullableFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel> | null
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[] | null
@@ -325,6 +332,16 @@ export type EnumServiceTypeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumServiceTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumServiceTypeFilter<$PrismaModel>
+}
+
+export type EnumParcelSizeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ParcelSize | Prisma.EnumParcelSizeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ParcelSize[] | null
+  notIn?: $Enums.ParcelSize[] | null
+  not?: Prisma.NestedEnumParcelSizeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ParcelSize | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumParcelSizeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumParcelSizeNullableFilter<$PrismaModel>
 }
 
 export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -858,6 +875,13 @@ export type NestedEnumServiceTypeFilter<$PrismaModel = never> = {
   not?: Prisma.NestedEnumServiceTypeFilter<$PrismaModel> | $Enums.ServiceType
 }
 
+export type NestedEnumParcelSizeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.ParcelSize | Prisma.EnumParcelSizeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ParcelSize[] | null
+  notIn?: $Enums.ParcelSize[] | null
+  not?: Prisma.NestedEnumParcelSizeNullableFilter<$PrismaModel> | $Enums.ParcelSize | null
+}
+
 export type NestedDecimalNullableFilter<$PrismaModel = never> = {
   equals?: runtime.Decimal | runtime.DecimalJsLike | number | string | Prisma.DecimalFieldRefInput<$PrismaModel> | null
   in?: runtime.Decimal[] | runtime.DecimalJsLike[] | number[] | string[] | null
@@ -877,6 +901,16 @@ export type NestedEnumServiceTypeWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumServiceTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumServiceTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumParcelSizeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ParcelSize | Prisma.EnumParcelSizeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.ParcelSize[] | null
+  notIn?: $Enums.ParcelSize[] | null
+  not?: Prisma.NestedEnumParcelSizeNullableWithAggregatesFilter<$PrismaModel> | $Enums.ParcelSize | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumParcelSizeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumParcelSizeNullableFilter<$PrismaModel>
 }
 
 export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {

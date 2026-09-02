@@ -8,6 +8,7 @@ import { AdminRepository } from './admin.repository';
 import { AdminMapper } from './mappers/admin.mapper';
 import { UpdateUserGovernanceDto } from './dto/update-user-governance.dto';
 import { Role } from '../../generated/prisma/enums';
+import { UpdatePricingPolicyDto } from './dto/update-pricing-policy.dto';
 
 @Injectable()
 export class AdminService {
@@ -46,8 +47,8 @@ export class AdminService {
     return AdminMapper.toRegionalDashboardResponse(analytics);
   }
 
-  async getEscrowLedger() {
-    const ledger = await this.adminRepository.getEscrowLedger();
+  async getEscrowLedger(page?: number, limit?: number) {
+    const ledger = await this.adminRepository.getEscrowLedger(page, limit);
     return AdminMapper.toEscrowLedgerResponse(ledger);
   }
 
@@ -99,6 +100,20 @@ export class AdminService {
     };
   }
 
+  async getPricingPolicy() {
+    return this.adminRepository.getAllPricingSettings();
+  }
+
+  async updatePricingPolicy(dto: UpdatePricingPolicyDto) {
+    if (dto.rideFeePercent < 0 || dto.parcelFeePercent < 0) {
+      throw new BadRequestException(
+        'Persentase komisi tidak boleh bernilai negatif.',
+      );
+    }
+
+    return this.adminRepository.updatePricingPolicy(dto);
+  }
+
   async updatePlatformCommission(percentage: number) {
     await this.adminRepository.updatePlatformCommissionRate(percentage);
 
@@ -115,8 +130,6 @@ export class AdminService {
         'Nilai kelipatan poin reward harus lebih besar dari 0.',
       );
     }
-
-    await this.adminRepository.updateRewardSetting(pointsMultiplier);
 
     return {
       message: 'Pengaturan kelipatan Poin Reward berhasil diperbarui',

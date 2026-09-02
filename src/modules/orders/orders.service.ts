@@ -11,6 +11,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderMapper } from './mappers/order.mapper';
 import {
   OrderType,
+  ParcelSize,
   ServiceType,
   TripStatus,
 } from '../../generated/prisma/enums';
@@ -63,22 +64,12 @@ export class OrdersService {
       );
     }
 
-    const serviceType =
-      dto.type === OrderType.parcel ? ServiceType.barang : ServiceType.mobil;
-
-    const pricingSetting = await this.prisma.pricingSetting.findFirst({
-      where: { serviceType },
-    });
-
     const regionData = trip.originPoint?.regionId
       ? await this.prisma.region.findUnique({
           where: { id: trip.originPoint.regionId },
         })
       : null;
 
-    const adminFeePercentage = pricingSetting
-      ? Number(pricingSetting.adminFeePercentage)
-      : 10;
     const regionPricePerKm = regionData?.pricePerKm
       ? Number(regionData.pricePerKm)
       : 3000;
@@ -87,13 +78,28 @@ export class OrdersService {
     let totalItemsCount = 0;
     let totalWeightKg = 0;
     let totalPrice = 0;
+    let adminFeePercentage = 10;
     let otpClaim: string | null = null;
     const itemsDataProcessed: any[] = [];
 
-    const unitPrice =
-      Number(trip.price) > 0 ? Number(trip.price) : regionPricePerKm;
-
     if (dto.type === OrderType.passenger) {
+      const serviceType =
+        trip.vehicleType === 'motor' ? ServiceType.motor : ServiceType.mobil;
+      const pricingSetting = await this.prisma.pricingSetting.findFirst({
+        where: { serviceType, size: null },
+      });
+
+      adminFeePercentage = pricingSetting
+        ? Number(pricingSetting.adminFeePercentage)
+        : 10;
+
+      const baseFare = pricingSetting ? Number(pricingSetting.baseFare) : 5000;
+      const farePerKm = pricingSetting
+        ? Number(pricingSetting.farePerKm)
+        : regionPricePerKm;
+      const unitPrice =
+        Number(trip.price) > 0 ? Number(trip.price) : baseFare + farePerKm;
+
       seatsBooked = dto.seatsBooked ?? 1;
 
       if (trip.seatAvailable < seatsBooked) {
@@ -114,9 +120,49 @@ export class OrdersService {
 
       totalItemsCount = dto.items.length;
 
+      // Ambil pengaturan umum komisi parsel barang
+      const defaultParcelSetting = await this.prisma.pricingSetting.findFirst({
+        where: { serviceType: ServiceType.barang },
+      });
+      adminFeePercentage = defaultParcelSetting
+        ? Number(defaultParcelSetting.adminFeePercentage)
+        : 12;
+
       for (const item of dto.items) {
         const itemTotalWeight = item.weightPerItemKg * item.quantity;
         totalWeightKg += itemTotalWeight;
+
+        // Validasi dan ambil tarif berdasarkan ukuran matriks paket (XXS - XL)
+        const sizeEnum = item.sizeEnum as unknown as ParcelSize;
+        const parcelPricing = await this.prisma.pricingSetting.findFirst({
+          where: {
+            serviceType: ServiceType.barang,
+            size: sizeEnum,
+          },
+        });
+
+        if (!parcelPricing) {
+          throw new BadRequestException(
+            `Konfigurasi tarif untuk ukuran paket ${item.sizeEnum} tidak ditemukan.`,
+          );
+        }
+
+        // Validasi batas berat maksimum per ukuran paket
+        if (
+          parcelPricing.maxWeightKg &&
+          item.weightPerItemKg > Number(parcelPricing.maxWeightKg)
+        ) {
+          throw new BadRequestException(
+            `Berat item "${item.itemName}" (${item.weightPerItemKg} KG) melebihi batas maksimum untuk ukuran ${item.sizeEnum} (${parcelPricing.maxWeightKg} KG).`,
+          );
+        }
+
+        const itemBaseRate = Number(parcelPricing.baseFare);
+        const itemFarePerKm = Number(parcelPricing.farePerKm) || 2000;
+
+        // Akumulasi harga per item: (Tarif Dasar Ukuran + Komponen Jarak) * Kuantitas
+        const singleItemPrice = (itemBaseRate + itemFarePerKm) * item.quantity;
+        totalPrice += singleItemPrice;
 
         itemsDataProcessed.push({
           ...item,
@@ -131,7 +177,6 @@ export class OrdersService {
         );
       }
 
-      totalPrice = unitPrice * totalWeightKg;
       otpClaim = this.generateOtp();
     }
 
@@ -233,7 +278,7 @@ export class OrdersService {
     if (userRole === Role.customer || userRole === 'customer') {
       if (order.customerId.toString() !== currentUserId) {
         throw new ForbiddenException(
-          'Anda tidak memiliki akses ke pesanan ini.',
+          'Anak tidak memiliki akses ke pesanan ini.',
         );
       }
     }

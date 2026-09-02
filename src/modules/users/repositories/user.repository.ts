@@ -53,15 +53,30 @@ export class UserRepository {
     });
   }
 
-  async findAll(): Promise<any[]> {
-    return this.prisma.user.findMany({
-      where: {
-        status: {
-          not: UserStatus.deleted,
-        },
+  // Diperbarui dengan Pagination untuk mencegah lag & beban memori berlebih
+  async findAll(
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<{ users: any[]; total: number }> {
+    const skip = (page - 1) * limit;
+    const where = {
+      status: {
+        not: UserStatus.deleted,
       },
-      include: { profile: true, region: true },
-    });
+    };
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        skip,
+        take: limit,
+        include: { profile: true, region: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return { users, total };
   }
 
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {

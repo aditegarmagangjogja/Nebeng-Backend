@@ -7,7 +7,9 @@ import {
   TripStatus,
   VerificationStatus,
   ServiceType,
+  ParcelSize,
 } from '../../generated/prisma/enums';
+import { UpdatePricingPolicyDto } from './dto/update-pricing-policy.dto';
 
 @Injectable()
 export class AdminRepository {
@@ -85,6 +87,124 @@ export class AdminRepository {
     };
   }
 
+  async getAllPricingSettings() {
+    const settings = await this.prisma.pricingSetting.findMany();
+
+    // Konversi BigInt ke Number / String agar aman dikirim ke JSON frontend
+    return settings.map((setting) => ({
+      id: setting.id.toString(),
+      serviceType: setting.serviceType,
+      size: setting.size,
+      baseFare: Number(setting.baseFare),
+      farePerKm: Number(setting.farePerKm),
+      farePerKg: setting.farePerKg ? Number(setting.farePerKg) : null,
+      maxWeightKg: setting.maxWeightKg ? Number(setting.maxWeightKg) : null,
+      adminFeePercentage: Number(setting.adminFeePercentage),
+    }));
+  }
+
+  async updatePricingPolicy(dto: UpdatePricingPolicyDto) {
+    // 1. Update atau Create tarif untuk Motor (size = null)
+    const existingMotor = await this.prisma.pricingSetting.findFirst({
+      where: { serviceType: ServiceType.motor, size: null },
+    });
+
+    if (existingMotor) {
+      await this.prisma.pricingSetting.update({
+        where: { id: existingMotor.id },
+        data: {
+          baseFare: dto.motorBaseFare,
+          farePerKm: dto.motorPerKm,
+          farePerKg: null, // Membersihkan kolom farePerKg agar tidak tercampur
+          maxWeightKg: null,
+          adminFeePercentage: dto.rideFeePercent,
+        },
+      });
+    } else {
+      await this.prisma.pricingSetting.create({
+        data: {
+          serviceType: ServiceType.motor,
+          size: null as any,
+          baseFare: dto.motorBaseFare,
+          farePerKm: dto.motorPerKm,
+          farePerKg: null,
+          maxWeightKg: null,
+          adminFeePercentage: dto.rideFeePercent,
+        },
+      });
+    }
+
+    // 2. Update atau Create tarif untuk Mobil (size = null)
+    const existingMobil = await this.prisma.pricingSetting.findFirst({
+      where: { serviceType: ServiceType.mobil, size: null },
+    });
+
+    if (existingMobil) {
+      await this.prisma.pricingSetting.update({
+        where: { id: existingMobil.id },
+        data: {
+          baseFare: dto.carBaseFare,
+          farePerKm: dto.carPerKm,
+          farePerKg: null, // Membersihkan kolom farePerKg agar tidak tercampur
+          maxWeightKg: null,
+          adminFeePercentage: dto.rideFeePercent,
+        },
+      });
+    } else {
+      await this.prisma.pricingSetting.create({
+        data: {
+          serviceType: ServiceType.mobil,
+          size: null as any,
+          baseFare: dto.carBaseFare,
+          farePerKm: dto.carPerKm,
+          farePerKg: null,
+          maxWeightKg: null,
+          adminFeePercentage: dto.rideFeePercent,
+        },
+      });
+    }
+
+    // Pemetaan string dari DTO ke Prisma Enum ParcelSize yang valid
+    const sizeMapping: Record<string, ParcelSize> = {
+      XXS: ParcelSize.xxs,
+      XS: ParcelSize.xs,
+      S: ParcelSize.s,
+      M: ParcelSize.m,
+      L: ParcelSize.l,
+      XL: ParcelSize.xl,
+    };
+
+    // 3. Bersihkan data lama khusus serviceType 'barang' agar tidak terjadi duplikasi atau tertukar
+    await this.prisma.pricingSetting.deleteMany({
+      where: { serviceType: ServiceType.barang },
+    });
+
+    // 4. Masukkan kembali matriks paket secara bersih, berurutan, dan menggunakan farePerKm
+    const parcelDataToCreate = dto.parcelMatrix.map((item) => {
+      const parcelSizeEnum = sizeMapping[item.size];
+
+      if (!parcelSizeEnum) {
+        throw new BadRequestException(
+          `Ukuran parcel tidak valid: ${item.size}`,
+        );
+      }
+
+      return {
+        serviceType: ServiceType.barang,
+        size: parcelSizeEnum,
+        baseFare: item.baseRate,
+        farePerKm: 2000, // Menggunakan farePerKm untuk pengiriman barang
+        farePerKg: null, // Tidak menggunakan tarif per kg
+        maxWeightKg: item.maxWeightKg, // Batas berat maksimum paket per ukuran
+        adminFeePercentage: dto.parcelFeePercent,
+      };
+    });
+
+    await this.prisma.pricingSetting.createMany({
+      data: parcelDataToCreate,
+    });
+  }
+
   async getRegionalAnalytics(regionIdStr: string) {
     const parsedRegionId = this.safeParseBigInt(regionIdStr);
     if (!parsedRegionId) {
@@ -137,72 +257,50 @@ export class AdminRepository {
     };
   }
 
-  async getRewardSetting() {
-    const setting = await this.prisma.pricingSetting.findFirst({
-      where: { serviceType: ServiceType.barang },
-      select: { farePerKg: true },
-    });
-    return setting?.farePerKg ? Number(setting.farePerKg) : 10000;
-  }
+  async getEscrowLedger(page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
 
-  async updateRewardSetting(pointsMultiplier: number) {
-    const serviceTypes = [
-      ServiceType.motor,
-      ServiceType.mobil,
-      ServiceType.barang,
-    ];
-
-    const updatePromises = serviceTypes.map(async (serviceType) => {
-      const existing = await this.prisma.pricingSetting.findFirst({
-        where: { serviceType },
-      });
-
-      if (existing) {
-        return this.prisma.pricingSetting.update({
-          where: { id: existing.id },
-          data: { farePerKg: pointsMultiplier },
-        });
-      }
-
-      return this.prisma.pricingSetting.create({
-        data: {
-          serviceType,
-          baseFare: 5000,
-          farePerKm: 3000,
-          farePerKg: pointsMultiplier,
-          adminFeePercentage: 10,
-        },
-      });
-    });
-
-    await Promise.all(updatePromises);
-    return pointsMultiplier;
-  }
-
-  async getEscrowLedger() {
-    const [heldAggregate, releasedAggregate, recentTransactions] =
-      await Promise.all([
-        this.prisma.wallet.aggregate({
-          _sum: { heldEscrowBalance: true },
-        }),
-        this.prisma.walletTransaction.aggregate({
-          where: { type: TransactionType.escrow_release },
-          _sum: { amount: true },
-        }),
-        this.prisma.walletTransaction.findMany({
-          where: {
-            type: {
-              in: [TransactionType.escrow_hold, TransactionType.escrow_release],
-            },
+    const [
+      heldAggregate,
+      releasedAggregate,
+      recentTransactions,
+      totalTransactions,
+    ] = await Promise.all([
+      this.prisma.wallet.aggregate({
+        _sum: { heldEscrowBalance: true },
+      }),
+      this.prisma.walletTransaction.aggregate({
+        where: { type: TransactionType.escrow_release },
+        _sum: { amount: true },
+      }),
+      this.prisma.walletTransaction.findMany({
+        where: {
+          type: {
+            in: [TransactionType.escrow_hold, TransactionType.escrow_release],
           },
-          orderBy: { createdAt: 'desc' },
-          take: 20,
-        }),
-      ]);
+        },
+        orderBy: { createdAt: 'desc' },
+        skip: skip,
+        take: limit, // Menggunakan limit dinamis untuk pagination
+      }),
+      this.prisma.walletTransaction.count({
+        where: {
+          type: {
+            in: [TransactionType.escrow_hold, TransactionType.escrow_release],
+          },
+        },
+      }),
+    ]);
 
     return {
       totalHeldEscrow: Number(heldAggregate._sum.heldEscrowBalance || 0),
       totalReleasedEscrow: Number(releasedAggregate._sum.amount || 0),
+      pagination: {
+        totalData: totalTransactions,
+        currentPage: page,
+        totalPages: Math.ceil(totalTransactions / limit) || 1,
+        limit: limit,
+      },
       recentTransactions,
     };
   }

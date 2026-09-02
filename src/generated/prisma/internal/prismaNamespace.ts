@@ -2106,9 +2106,11 @@ export type PickupPointScalarFieldEnum = (typeof PickupPointScalarFieldEnum)[key
 export const PricingSettingScalarFieldEnum = {
   id: 'id',
   serviceType: 'serviceType',
+  size: 'size',
   baseFare: 'baseFare',
   farePerKm: 'farePerKm',
   farePerKg: 'farePerKg',
+  maxWeightKg: 'maxWeightKg',
   adminFeePercentage: 'adminFeePercentage',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -2591,6 +2593,13 @@ export type EnumServiceTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
 
 
 /**
+ * Reference to a field of type 'ParcelSize'
+ */
+export type EnumParcelSizeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ParcelSize'>
+    
+
+
+/**
  * Reference to a field of type 'VehicleType'
  */
 export type EnumVehicleTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'VehicleType'>
@@ -2622,13 +2631,6 @@ export type EnumOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pris
  * Reference to a field of type 'EscrowStatus'
  */
 export type EnumEscrowStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EscrowStatus'>
-    
-
-
-/**
- * Reference to a field of type 'ParcelSize'
- */
-export type EnumParcelSizeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ParcelSize'>
     
 
 

@@ -59,9 +59,20 @@ export class UsersService {
     return UserMapper.toResponse(newUser);
   }
 
-  async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.userRepository.findAll();
-    return UserMapper.toResponseList(users);
+  async findAll(
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<{ data: UserResponseDto[]; meta: any }> {
+    const { users, total } = await this.userRepository.findAll(page, limit);
+    return {
+      data: UserMapper.toResponseList(users),
+      meta: {
+        totalData: total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit) || 1,
+        limit,
+      },
+    };
   }
 
   async findOne(id: string): Promise<UserResponseDto> {

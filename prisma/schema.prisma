@@ -272,13 +272,16 @@ model PickupPoint {
 model PricingSetting {
   id                 BigInt      @id @default(autoincrement())
   serviceType        ServiceType @map("service_type")
+  size               ParcelSize?
   baseFare           Decimal     @map("base_fare") @db.Decimal(10, 2)
   farePerKm          Decimal     @map("fare_per_km") @db.Decimal(10, 2)
   farePerKg          Decimal?    @map("fare_per_kg") @db.Decimal(10, 2)
+  maxWeightKg        Decimal?    @map("max_weight_kg") @db.Decimal(8, 2) // Kolom baru khusus batas berat paket
   adminFeePercentage Decimal     @map("admin_fee_percentage") @db.Decimal(5, 2)
   createdAt          DateTime    @default(now()) @map("created_at")
   updatedAt          DateTime    @updatedAt @map("updated_at")
 
+  @@unique([serviceType, size])
   @@map("pricing_settings")
 }
 

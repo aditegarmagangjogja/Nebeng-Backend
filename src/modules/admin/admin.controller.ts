@@ -21,6 +21,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/enums';
 import { GetUser } from '../../common/decorators/get-user.decorators';
+import { UpdatePricingPolicyDto } from './dto/update-pricing-policy.dto';
 import {
   UpdatePlatformCommissionDto,
   UpdateRegionRateDto,
@@ -67,6 +68,29 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Buku besar Escrow ditemukan' })
   async getEscrowLedger() {
     return this.adminService.getEscrowLedger();
+  }
+
+  @Get('settings/pricing-policy')
+  @Roles(Role.admin)
+  @ApiOperation({
+    summary: 'Mendapatkan seluruh data kebijakan tarif global & matriks paket',
+  })
+  @ApiResponse({ status: 200, description: 'Data tarif ditemukan' })
+  async getPricingPolicy() {
+    return this.adminService.getPricingPolicy();
+  }
+
+  @Patch('settings/pricing-policy')
+  @Roles(Role.admin)
+  @ApiOperation({
+    summary: 'Memperbarui seluruh kebijakan tarif global & komisi',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Kebijakan tarif berhasil diperbarui',
+  })
+  async updatePricingPolicy(@Body() dto: UpdatePricingPolicyDto) {
+    return this.adminService.updatePricingPolicy(dto);
   }
 
   @Patch('users/:id/governance')

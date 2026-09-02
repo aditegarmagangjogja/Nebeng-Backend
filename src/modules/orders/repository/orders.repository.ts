@@ -29,7 +29,6 @@ export class OrdersRepository {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. Validasi Kunci Atomik: Cek ulang ketersediaan kursi & berat persis di dalam transaksi
       const trip = await tx.trip.findUnique({
         where: { id: parseTripId },
         select: {
@@ -62,7 +61,6 @@ export class OrdersRepository {
         );
       }
 
-      // 2. Buat record Order
       const createdOrder = await tx.order.create({
         data: {
           tripId: parseTripId,
@@ -79,7 +77,6 @@ export class OrdersRepository {
         },
       });
 
-      // 3. Buat record Item Orders (jika ada)
       if (itemsData && itemsData.length > 0) {
         await tx.itemOrder.createMany({
           data: itemsData.map((item) => ({
@@ -97,7 +94,6 @@ export class OrdersRepository {
         });
       }
 
-      // 4. Kurangi kursi dan kapasitas berat secara atomik
       await tx.trip.update({
         where: { id: parseTripId },
         data: {
@@ -106,7 +102,6 @@ export class OrdersRepository {
         },
       });
 
-      // 5. Kembalikan data order lengkap dengan relasinya
       return tx.order.findUnique({
         where: { id: createdOrder.id },
         include: {
@@ -154,7 +149,7 @@ export class OrdersRepository {
           include: {
             originPoint: {
               include: {
-                region: true, // Dipasang penyesuaian untuk mengambil data Region asal
+                region: true,
               },
             },
             destinationPoint: true,

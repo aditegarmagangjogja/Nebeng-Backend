@@ -202,9 +202,11 @@ export type PickupPointScalarFieldEnum = (typeof PickupPointScalarFieldEnum)[key
 export const PricingSettingScalarFieldEnum = {
   id: 'id',
   serviceType: 'serviceType',
+  size: 'size',
   baseFare: 'baseFare',
   farePerKm: 'farePerKm',
   farePerKg: 'farePerKg',
+  maxWeightKg: 'maxWeightKg',
   adminFeePercentage: 'adminFeePercentage',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

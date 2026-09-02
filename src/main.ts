@@ -8,7 +8,6 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import * as fs from 'fs';
 import * as path from 'path';
-import { join } from 'path'; // <-- Tambahkan join dari path
 
 async function bootstrap() {
   (BigInt.prototype as any).toJSON = function () {

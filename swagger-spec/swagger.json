@@ -1985,6 +1985,54 @@
         ]
       }
     },
+    "/api/admin/settings/pricing-policy": {
+      "get": {
+        "operationId": "AdminController_getPricingPolicy",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Data tarif ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan seluruh data kebijakan tarif global & matriks paket",
+        "tags": [
+          "Admin Governance"
+        ]
+      },
+      "patch": {
+        "operationId": "AdminController_updatePricingPolicy",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePricingPolicyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Kebijakan tarif berhasil diperbarui"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memperbarui seluruh kebijakan tarif global & komisi",
+        "tags": [
+          "Admin Governance"
+        ]
+      }
+    },
     "/api/admin/users/{id}/governance": {
       "patch": {
         "operationId": "AdminController_updateUserGovernance",
@@ -3158,6 +3206,80 @@
         },
         "required": [
           "points"
+        ]
+      },
+      "ParcelMatrixDto": {
+        "type": "object",
+        "properties": {
+          "size": {
+            "type": "string",
+            "example": "XXS",
+            "enum": [
+              "XXS",
+              "XS",
+              "S",
+              "M",
+              "L",
+              "XL"
+            ]
+          },
+          "maxWeightKg": {
+            "type": "number",
+            "example": 1
+          },
+          "baseRate": {
+            "type": "number",
+            "example": 6000
+          }
+        },
+        "required": [
+          "size",
+          "maxWeightKg",
+          "baseRate"
+        ]
+      },
+      "UpdatePricingPolicyDto": {
+        "type": "object",
+        "properties": {
+          "motorPerKm": {
+            "type": "number",
+            "example": 2500
+          },
+          "carPerKm": {
+            "type": "number",
+            "example": 5000
+          },
+          "motorBaseFare": {
+            "type": "number",
+            "example": 5000
+          },
+          "carBaseFare": {
+            "type": "number",
+            "example": 10000
+          },
+          "rideFeePercent": {
+            "type": "number",
+            "example": 15
+          },
+          "parcelFeePercent": {
+            "type": "number",
+            "example": 12
+          },
+          "parcelMatrix": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParcelMatrixDto"
+            }
+          }
+        },
+        "required": [
+          "motorPerKm",
+          "carPerKm",
+          "motorBaseFare",
+          "carBaseFare",
+          "rideFeePercent",
+          "parcelFeePercent",
+          "parcelMatrix"
         ]
       },
       "UpdateUserGovernanceDto": {
