@@ -10,9 +10,9 @@
 */
 
 export const Role = {
-  superadmin: 'superadmin',
-  admin_wilayah: 'admin_wilayah',
-  operator_pos: 'operator_pos',
+  admin: 'admin',
+  regional: 'regional',
+  operator: 'operator',
   mitra: 'mitra',
   customer: 'customer'
 } as const

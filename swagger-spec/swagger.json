@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.0",
   "paths": {
-    "/": {
+    "/api": {
       "get": {
         "operationId": "AppController_getHello",
         "parameters": [],
@@ -15,7 +15,7 @@
         ]
       }
     },
-    "/users/me": {
+    "/api/users/me": {
       "patch": {
         "operationId": "UserController_updateMyProfile",
         "parameters": [],
@@ -70,7 +70,7 @@
         ]
       }
     },
-    "/users/me/profile": {
+    "/api/users/me/profile": {
       "patch": {
         "operationId": "UserController_updateMyProfileDetail",
         "parameters": [],
@@ -107,7 +107,7 @@
         ]
       }
     },
-    "/users/me/pin": {
+    "/api/users/me/pin": {
       "post": {
         "operationId": "UserController_setPin",
         "parameters": [],
@@ -137,7 +137,7 @@
         ]
       }
     },
-    "/users/me/pin/verify": {
+    "/api/users/me/pin/verify": {
       "post": {
         "operationId": "UserController_verifyPin",
         "parameters": [],
@@ -167,7 +167,7 @@
         ]
       }
     },
-    "/users": {
+    "/api/users": {
       "post": {
         "operationId": "UserController_create",
         "parameters": [],
@@ -238,7 +238,27 @@
         ]
       }
     },
-    "/users/{id}": {
+    "/api/users/me/avatar": {
+      "post": {
+        "operationId": "UserController_uploadAvatar",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mengunggah dan memperbarui avatar pengguna",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/users/{id}": {
       "get": {
         "operationId": "UserController_findOne",
         "parameters": [
@@ -354,7 +374,7 @@
         ]
       }
     },
-    "/users/{id}/status": {
+    "/api/users/{id}/status": {
       "patch": {
         "operationId": "UserController_updateStatus",
         "parameters": [
@@ -400,7 +420,7 @@
         ]
       }
     },
-    "/auth/register": {
+    "/api/auth/register": {
       "post": {
         "operationId": "AuthController_register",
         "parameters": [],
@@ -435,7 +455,7 @@
         ]
       }
     },
-    "/auth/login": {
+    "/api/auth/login": {
       "post": {
         "operationId": "AuthController_login",
         "parameters": [],
@@ -463,13 +483,20 @@
         ]
       }
     },
-    "/auth/me": {
+    "/api/auth/me": {
       "get": {
         "operationId": "AuthController_getProfile",
         "parameters": [],
         "responses": {
           "200": {
-            "description": "Data pengguna ditemukan"
+            "description": "Data pengguna ditemukan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
           },
           "401": {
             "description": "Token tidak valid atau belum dikirimkan"
@@ -486,7 +513,30 @@
         ]
       }
     },
-    "/auth/refresh": {
+    "/api/auth/change-password": {
+      "patch": {
+        "operationId": "AuthController_changePassword",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Kata sandi berhasil diubah"
+          },
+          "401": {
+            "description": "Kata sandi lama salah atau token tidak valid"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mengubah kata sandi akun sendiri",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/auth/refresh": {
       "post": {
         "operationId": "AuthController_refresh",
         "parameters": [],
@@ -514,7 +564,7 @@
         ]
       }
     },
-    "/auth/logout": {
+    "/api/auth/logout": {
       "post": {
         "operationId": "AuthController_logout",
         "parameters": [],
@@ -537,7 +587,7 @@
         ]
       }
     },
-    "/verifications/submit": {
+    "/api/verifications/submit": {
       "post": {
         "operationId": "VerificationController_submit",
         "parameters": [],
@@ -553,7 +603,7 @@
         },
         "responses": {
           "201": {
-            "description": "Dokumen verifikasi berhasil dikirim dan menungu peninjauan"
+            "description": "Dokumen verifikasi berhasil dikirim dan menunggu peninjauan"
           },
           "400": {
             "description": "Payload atau file tidak valid"
@@ -573,7 +623,7 @@
         ]
       }
     },
-    "/verifications": {
+    "/api/verifications": {
       "get": {
         "operationId": "VerificationController_findAll",
         "parameters": [
@@ -608,7 +658,7 @@
         ]
       }
     },
-    "/verifications/{id}": {
+    "/api/verifications/{id}": {
       "get": {
         "operationId": "VerificationController_findOne",
         "parameters": [
@@ -640,7 +690,7 @@
         ]
       }
     },
-    "/verifications/{id}/review": {
+    "/api/verifications/{id}/review": {
       "patch": {
         "operationId": "VerificationController_review",
         "parameters": [
@@ -685,7 +735,7 @@
         ]
       }
     },
-    "/regions": {
+    "/api/regions": {
       "post": {
         "operationId": "RegionController_createRegion",
         "parameters": [],
@@ -731,13 +781,13 @@
             "description": ""
           }
         },
-        "summary": "Melihat seluruh daftar Region (Public/Authenticated)",
+        "summary": "Melihat seluruh daftar Region beserta Admin Penanggung Jawab",
         "tags": [
           "Wilayah & Kota"
         ]
       }
     },
-    "/regions/{id}": {
+    "/api/regions/{id}": {
       "get": {
         "operationId": "RegionController_findOneRegion",
         "parameters": [
@@ -758,7 +808,7 @@
             "description": "Region tidak ditemukan"
           }
         },
-        "summary": "Melihat detail Region berdasarkan ID",
+        "summary": "Melihat detail Region & daftar Admin Wilayah",
         "tags": [
           "Wilayah & Kota"
         ]
@@ -804,7 +854,7 @@
         ]
       }
     },
-    "/cities": {
+    "/api/cities": {
       "post": {
         "operationId": "RegionController_createCity",
         "parameters": [],
@@ -850,7 +900,7 @@
         ]
       }
     },
-    "/pickup-points": {
+    "/api/pickup-points": {
       "post": {
         "operationId": "PickupPointController_create",
         "parameters": [],
@@ -924,7 +974,7 @@
         ]
       }
     },
-    "/pickup-points/{id}": {
+    "/api/pickup-points/{id}": {
       "get": {
         "operationId": "PickupPointController_findOne",
         "parameters": [
@@ -976,6 +1026,9 @@
           "200": {
             "description": "Pos resmi berhasil diperbarui"
           },
+          "403": {
+            "description": "Bukan pos resmi wilayah Anda"
+          },
           "404": {
             "description": "Pos resmi tidak ditemukan"
           }
@@ -991,7 +1044,7 @@
         ]
       }
     },
-    "/vehicles": {
+    "/api/vehicles": {
       "post": {
         "operationId": "VehiclesController_createVehicle",
         "parameters": [],
@@ -1027,7 +1080,7 @@
         ]
       }
     },
-    "/vehicles/me": {
+    "/api/vehicles/me": {
       "get": {
         "operationId": "VehiclesController_getMyVehicles",
         "parameters": [],
@@ -1047,7 +1100,7 @@
         ]
       }
     },
-    "/vehicles/{id}": {
+    "/api/vehicles/{id}": {
       "get": {
         "operationId": "VehiclesController_getVehicleById",
         "parameters": [
@@ -1120,9 +1173,42 @@
         "tags": [
           "Kendaraan"
         ]
+      },
+      "delete": {
+        "operationId": "VehiclesController_deleteVehicle",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Kendaraan berhasil dihapus"
+          },
+          "400": {
+            "description": "Kendaraan masih terikat pada perjalanan aktif"
+          },
+          "404": {
+            "description": "Data kendaraan tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hapus kendaraan milik Mitra (Owner Only)",
+        "tags": [
+          "Kendaraan"
+        ]
       }
     },
-    "/trips": {
+    "/api/trips": {
       "post": {
         "operationId": "TripsController_createTrip",
         "parameters": [],
@@ -1227,7 +1313,7 @@
         ]
       }
     },
-    "/trips/{id}": {
+    "/api/trips/{id}": {
       "get": {
         "operationId": "TripsController_getTripById",
         "parameters": [
@@ -1297,7 +1383,7 @@
         ]
       }
     },
-    "/orders": {
+    "/api/orders": {
       "post": {
         "operationId": "OrdersController_createOrder",
         "parameters": [],
@@ -1333,7 +1419,7 @@
         ]
       }
     },
-    "/orders/me": {
+    "/api/orders/me": {
       "get": {
         "operationId": "OrdersController_getMyOrders",
         "parameters": [],
@@ -1353,7 +1439,7 @@
         ]
       }
     },
-    "/orders/{id}": {
+    "/api/orders/{id}": {
       "get": {
         "operationId": "OrdersController_getOrderById",
         "parameters": [
@@ -1388,7 +1474,45 @@
         ]
       }
     },
-    "/wallets/me": {
+    "/api/orders/{id}/cancel": {
+      "patch": {
+        "operationId": "OrdersController_cancelOrder",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pesanan berhasil dibatalkan"
+          },
+          "400": {
+            "description": "Pesanan sudah selesai/berjalan atau tidak dapat dibatalkan"
+          },
+          "403": {
+            "description": "Tidak memiliki hak akses untuk membatalkan pesanan ini"
+          },
+          "404": {
+            "description": "Order tidak ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membatalkan pesanan dan mengembalikan kuota kursi/bagasi trip",
+        "tags": [
+          "Orders"
+        ]
+      }
+    },
+    "/api/wallets/me": {
       "get": {
         "operationId": "WalletsController_getMyWallet",
         "parameters": [],
@@ -1408,7 +1532,30 @@
         ]
       }
     },
-    "/payments/checkout": {
+    "/api/wallets/withdraw": {
+      "post": {
+        "operationId": "WalletsController_withdraw",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Permintaan penarikan saldo berhasil"
+          },
+          "400": {
+            "description": "Saldo tidak mencukupi atau rekening belum diisi"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Penarikan saldo dompet ke rekening bank terdaftar",
+        "tags": [
+          "Wallets"
+        ]
+      }
+    },
+    "/api/payments/checkout": {
       "post": {
         "operationId": "PaymentsController_checkoutPayment",
         "parameters": [],
@@ -1444,7 +1591,7 @@
         ]
       }
     },
-    "/checkpoints/scan": {
+    "/api/checkpoints/scan": {
       "post": {
         "operationId": "CheckpointsController_scanCheckpoint",
         "parameters": [],
@@ -1480,7 +1627,27 @@
         ]
       }
     },
-    "/chat/conversation": {
+    "/api/checkpoints/manual-force-release": {
+      "post": {
+        "operationId": "CheckpointsController_manualForceRelease",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Pencairan manual berhasil"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Intervensi Darurat: Force Complete & Release Escrow manual oleh Operator Pos (HP Mitra Rusak)",
+        "tags": [
+          "Checkpoints"
+        ]
+      }
+    },
+    "/api/chat/conversation": {
       "post": {
         "operationId": "ChatsController_getOrCreateConversation",
         "parameters": [],
@@ -1528,7 +1695,7 @@
         ]
       }
     },
-    "/chat/conversation/{id}/messages": {
+    "/api/chat/conversation/{id}/messages": {
       "post": {
         "operationId": "ChatsController_sendMessage",
         "parameters": [
@@ -1594,7 +1761,7 @@
         ]
       }
     },
-    "/reviews": {
+    "/api/reviews": {
       "post": {
         "operationId": "ReviewsController_createReview",
         "parameters": [],
@@ -1610,10 +1777,10 @@
         },
         "responses": {
           "201": {
-            "description": "Ulasan berhasil dibut"
+            "description": "Ulasan berhasil dibuat"
           },
           "400": {
-            "description": "Mengulas diri sendiri, trip belum selesai, atau sudah memberi ulasan"
+            "description": "Mengulas diri sendiri, trip belum selesai, rating di luar range 1-5, atau salah target reviewee"
           },
           "403": {
             "description": "Anda bukan partisipan dalam trip ini"
@@ -1630,7 +1797,7 @@
         ]
       }
     },
-    "/reviews/users/{userId}": {
+    "/api/reviews/users/{userId}": {
       "get": {
         "operationId": "ReviewsController_getUserRatingSummary",
         "parameters": [
@@ -1659,7 +1826,7 @@
         ]
       }
     },
-    "/rewards/me": {
+    "/api/rewards/me": {
       "get": {
         "operationId": "RewardsController_getMyRewardSummary",
         "parameters": [],
@@ -1679,7 +1846,7 @@
         ]
       }
     },
-    "/rewards/earn": {
+    "/api/rewards/earn": {
       "post": {
         "operationId": "RewardsController_earnPoints",
         "parameters": [],
@@ -1697,6 +1864,9 @@
           "201": {
             "description": "Poin berhasil ditambahkan"
           },
+          "403": {
+            "description": "Bukan user wilayah Anda"
+          },
           "404": {
             "description": "User tidak ditemukan"
           }
@@ -1712,7 +1882,7 @@
         ]
       }
     },
-    "/rewards/redeem": {
+    "/api/rewards/redeem": {
       "post": {
         "operationId": "RewardsController_redeemPoints",
         "parameters": [],
@@ -1745,7 +1915,7 @@
         ]
       }
     },
-    "/admin/dashboard/global": {
+    "/api/admin/dashboard/global": {
       "get": {
         "operationId": "AdminController_getGlobalDashboard",
         "parameters": [],
@@ -1765,7 +1935,7 @@
         ]
       }
     },
-    "/admin/dashboard/regional": {
+    "/api/admin/dashboard/regional": {
       "get": {
         "operationId": "AdminController_getRegionalDashboard",
         "parameters": [
@@ -1795,7 +1965,7 @@
         ]
       }
     },
-    "/admin/escrow/ledger": {
+    "/api/admin/escrow/ledger": {
       "get": {
         "operationId": "AdminController_getEscrowLedger",
         "parameters": [],
@@ -1815,7 +1985,7 @@
         ]
       }
     },
-    "/admin/users/{id}/governance": {
+    "/api/admin/users/{id}/governance": {
       "patch": {
         "operationId": "AdminController_updateUserGovernance",
         "parameters": [
@@ -1860,7 +2030,7 @@
         ]
       }
     },
-    "/admin/settings/commission": {
+    "/api/admin/settings/commission": {
       "patch": {
         "operationId": "AdminController_updatePlatformCommission",
         "parameters": [],
@@ -1890,7 +2060,7 @@
         ]
       }
     },
-    "/admin/regions/{id}/rate": {
+    "/api/admin/regions/{id}/rate": {
       "patch": {
         "operationId": "AdminController_updateRegionRate",
         "parameters": [
@@ -1932,7 +2102,7 @@
         ]
       }
     },
-    "/admin/settings/rewards": {
+    "/api/admin/settings/rewards": {
       "patch": {
         "operationId": "AdminController_updateRewardSetting",
         "parameters": [],
@@ -2016,6 +2186,10 @@
           "regionId": {
             "type": "string",
             "example": "1"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "base64_string_or_url"
           }
         }
       },
@@ -2045,9 +2219,9 @@
           "role": {
             "type": "string",
             "enum": [
-              "superadmin",
-              "admin_wilayah",
-              "operator_pos",
+              "admin",
+              "regional",
+              "operator",
               "mitra",
               "customer"
             ]
@@ -2189,9 +2363,9 @@
           "role": {
             "type": "string",
             "enum": [
-              "superadmin",
-              "admin_wilayah",
-              "operator_pos",
+              "admin",
+              "regional",
+              "operator",
               "mitra",
               "customer"
             ],
@@ -2211,6 +2385,10 @@
               "deleted"
             ],
             "default": "active"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "base64_string_or_url"
           }
         },
         "required": [
@@ -2244,9 +2422,9 @@
           "role": {
             "type": "string",
             "enum": [
-              "superadmin",
-              "admin_wilayah",
-              "operator_pos",
+              "admin",
+              "regional",
+              "operator",
               "mitra",
               "customer"
             ],
@@ -2266,6 +2444,10 @@
               "deleted"
             ],
             "default": "active"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "base64_string_or_url"
           }
         }
       },

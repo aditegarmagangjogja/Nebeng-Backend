@@ -10,6 +10,9 @@ import {
   HttpCode,
   HttpStatus,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -30,6 +33,9 @@ import { Role } from '../../generated/prisma/enums';
 import { SetPinDto } from './dto/set-pin.dto';
 import { VerifyPinDto } from './dto/verify-pin.dto';
 import { UpdateUserMeDto } from './dto/update-user-me.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { extname } from 'path';
+import { diskStorage } from 'multer';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -93,7 +99,7 @@ export class UserController {
   }
 
   @Post()
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Membuat pengguna baru' })
   @ApiResponse({
@@ -111,7 +117,7 @@ export class UserController {
   }
 
   @Get()
-  @Roles(Role.superadmin, Role.admin_wilayah, Role.operator_pos)
+  @Roles(Role.admin, Role.regional, Role.operator)
   @ApiOperation({ summary: 'Mendapatkan semua daftar pengguna' })
   @ApiResponse({
     status: 200,
@@ -122,8 +128,38 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Post('me/avatar')
+  @UseGuards(JwtAuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads/avatars', // Pastikan folder ini ada di backend
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          callback(null, `avatar-${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    }),
+  )
+  @ApiOperation({ summary: 'Mengunggah dan memperbarui avatar pengguna' })
+  async uploadAvatar(
+    @Request() req: any,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<UserResponseDto> {
+    if (!file) {
+      throw new BadRequestException('File gambar tidak ditemukan');
+    }
+
+    const userId = req.user.id || req.user.sub;
+    const filePath = `/uploads/avatars/${file.filename}`;
+
+    // Simpan path ke database melalui service
+    return this.userService.update(String(userId), { avatar: filePath });
+  }
+
   @Get(':id')
-  @Roles(Role.superadmin, Role.admin_wilayah, Role.operator_pos)
+  @Roles(Role.admin, Role.regional, Role.operator)
   @ApiOperation({ summary: 'Mendapatkan detail pengguna berdasarkan ID' })
   @ApiResponse({
     status: 200,
@@ -136,7 +172,7 @@ export class UserController {
   }
 
   @Patch(':id')
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiOperation({ summary: 'Memperbarui data pengguna berdasarkan ID' })
   @ApiResponse({
     status: 200,
@@ -152,7 +188,7 @@ export class UserController {
   }
 
   @Patch(':id/status')
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiOperation({
     summary: 'Mengubah status user (Active/Suspended/Blocked/Inactive)',
   })
@@ -165,7 +201,7 @@ export class UserController {
   }
 
   @Delete(':id')
-  @Roles(Role.superadmin)
+  @Roles(Role.admin)
   @ApiOperation({
     summary: 'Menghapus pengguna berdasarkan ID (Hard/Soft Guard)',
   })

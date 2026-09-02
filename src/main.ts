@@ -2,16 +2,35 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express'; // <-- Tambahkan import ini
 
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import * as fs from 'fs';
 import * as path from 'path';
+import { join } from 'path'; // <-- Tambahkan join dari path
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  (BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+  };
+
+  // Ubah tipe ke NestExpressApplication agar mendukung useStaticAssets
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors();
+  app.setGlobalPrefix('api');
+
+  // Pastikan folder fisik untuk upload avatar otomatis dibuat di luar folder src (root project)
+  const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  // Konfigurasi agar folder uploads dapat diakses secara publik via URL (contoh: /uploads/avatars/...)
+  app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
+    prefix: '/uploads',
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -69,11 +88,5 @@ async function bootstrap() {
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`🚀 Aplikasi berjalan di: http://localhost:${port}/docs`);
-  console.log(
-    `📄 File Spec JSON untuk Postman tersimpan di: ./swagger-spec/swagger.json`,
-  );
 }
-(BigInt.prototype as any).toJSON = function () {
-  return this.toString();
-};
 bootstrap();

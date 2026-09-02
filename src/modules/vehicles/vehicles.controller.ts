@@ -59,7 +59,7 @@ export class VehiclesController {
   }
 
   @Get(':id')
-  @Roles(Role.mitra, Role.superadmin, Role.admin_wilayah, Role.customer)
+  @Roles(Role.mitra, Role.admin, Role.regional, Role.customer)
   @ApiOperation({ summary: 'Detail kendaraan berdasarkan ID' })
   @ApiResponse({ status: 200, description: 'Detail kendaraan ditemukan' })
   @ApiResponse({ status: 404, description: 'Data kendaraan tidak ditemukan' })

@@ -49,4 +49,9 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(UserStatus)
   status?: UserStatus;
+
+  @ApiPropertyOptional({ example: 'base64_string_or_url' })
+  @IsOptional()
+  @IsString()
+  avatar?: string;
 }

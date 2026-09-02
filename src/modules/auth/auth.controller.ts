@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   Get,
+  Patch,
   UseGuards,
   Request,
   HttpCode,
@@ -64,12 +65,34 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Mendapatkan data pengguna yang sedang login' })
-  @ApiResponse({ status: 200, description: 'Data pengguna ditemukan' })
+  @ApiResponse({
+    status: 200,
+    description: 'Data pengguna ditemukan',
+    type: UserResponseDto,
+  })
   @ApiUnauthorizedResponse({
     description: 'Token tidak valid atau belum dikirimkan',
   })
   getProfile(@Request() req: any) {
-    return req.user;
+    const userId = req.user.id || req.user.sub;
+    return this.authService.getProfile(userId);
+  }
+
+  @Patch('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mengubah kata sandi akun sendiri' })
+  @ApiResponse({ status: 200, description: 'Kata sandi berhasil diubah' })
+  @ApiUnauthorizedResponse({
+    description: 'Kata sandi lama salah atau token tidak valid',
+  })
+  changePassword(
+    @Request() req: any,
+    @Body() dto: { currentPassword: string; newPassword: string },
+  ) {
+    const userId = req.user.id || req.user.sub;
+    return this.authService.changePassword(userId, dto);
   }
 
   @Post('refresh')

@@ -53,13 +53,7 @@ export class OrdersController {
   }
 
   @Get(':id')
-  @Roles(
-    Role.customer,
-    Role.mitra,
-    Role.operator_pos,
-    Role.admin_wilayah,
-    Role.superadmin,
-  )
+  @Roles(Role.customer, Role.mitra, Role.operator, Role.regional, Role.admin)
   @ApiOperation({
     summary: 'Detail pesanan berdasarkan ID (Dengan proteksi otorisasi)',
   })
@@ -74,7 +68,7 @@ export class OrdersController {
   }
 
   @Patch(':id/cancel')
-  @Roles(Role.customer, Role.operator_pos, Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.customer, Role.operator, Role.regional, Role.admin)
   @ApiOperation({
     summary: 'Membatalkan pesanan dan mengembalikan kuota kursi/bagasi trip',
   })

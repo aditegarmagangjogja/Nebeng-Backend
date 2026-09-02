@@ -37,7 +37,7 @@ export class PickupPointService {
       throw new NotFoundException('User operator tidak ditemukan');
     }
 
-    if (user.role !== Role.operator_pos) {
+    if (user.role !== Role.operator) {
       throw new BadRequestException(
         'User yang dipilih harus mempunyai role operator pos',
       );
@@ -107,8 +107,8 @@ export class PickupPointService {
     }
 
     if (
-      currentUser?.role === Role.admin_wilayah ||
-      currentUser?.role === 'admin_wilayah'
+      currentUser?.role === Role.regional ||
+      currentUser?.role === 'regional'
     ) {
       const adminRegionId = currentUser.regionId
         ? currentUser.regionId.toString()

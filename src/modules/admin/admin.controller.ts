@@ -34,7 +34,7 @@ export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 
   @Get('dashboard/global')
-  @Roles(Role.superadmin)
+  @Roles(Role.admin)
   @ApiOperation({
     summary: 'Melihat dashboard analitik global (Superadmin Only)',
   })
@@ -44,7 +44,7 @@ export class AdminController {
   }
 
   @Get('dashboard/regional')
-  @Roles(Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.regional, Role.admin)
   @ApiOperation({ summary: 'Melihat dashboard analitik wilayah' })
   @ApiQuery({
     name: 'regionId',
@@ -60,7 +60,7 @@ export class AdminController {
   }
 
   @Get('escrow/ledger')
-  @Roles(Role.superadmin)
+  @Roles(Role.admin)
   @ApiOperation({
     summary: 'Melihat buku besar audit Escrow (Superadmin Only)',
   })
@@ -70,7 +70,7 @@ export class AdminController {
   }
 
   @Patch('users/:id/governance')
-  @Roles(Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.regional, Role.admin)
   @ApiOperation({
     summary: 'Mengubah status akun user (Suspended / Active / Banned)',
   })
@@ -92,7 +92,7 @@ export class AdminController {
   }
 
   @Patch('settings/commission')
-  @Roles(Role.superadmin)
+  @Roles(Role.admin)
   @ApiOperation({
     summary: 'Pengaturan persentase komisi platform global (Hanya Superadmin)',
   })
@@ -105,7 +105,7 @@ export class AdminController {
   }
 
   @Patch('regions/:id/rate')
-  @Roles(Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.regional, Role.admin)
   @ApiOperation({
     summary: 'Pengaturan tarif Rp/Km Wilayah Asal (Admin Wilayah & Superadmin)',
   })
@@ -123,7 +123,7 @@ export class AdminController {
   }
 
   @Patch('settings/rewards')
-  @Roles(Role.superadmin)
+  @Roles(Role.admin)
   @ApiOperation({
     summary:
       'Pengaturan kelipatan nominal Poin Reward global (Hanya Superadmin)',

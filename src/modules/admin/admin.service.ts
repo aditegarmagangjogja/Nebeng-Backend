@@ -21,10 +21,7 @@ export class AdminService {
   async getRegionalDashboard(currentUser: any, targetRegionId?: string) {
     let regionId: string;
 
-    if (
-      currentUser.role === Role.admin_wilayah ||
-      currentUser.role === 'admin_wilayah'
-    ) {
+    if (currentUser.role === Role.regional || currentUser.role === 'regional') {
       if (!currentUser.regionId) {
         throw new ForbiddenException(
           'Admin Wilayah tidak memiliki penugasan wilayah.',
@@ -32,8 +29,8 @@ export class AdminService {
       }
       regionId = currentUser.regionId.toString();
     } else if (
-      currentUser.role === Role.superadmin ||
-      currentUser.role === 'superadmin'
+      currentUser.role === Role.admin ||
+      currentUser.role === 'admin'
     ) {
       if (!targetRegionId) {
         throw new BadRequestException(
@@ -72,14 +69,8 @@ export class AdminService {
       throw new NotFoundException('User sasaran tidak ditemukan.');
     }
 
-    if (
-      currentUser.role === Role.admin_wilayah ||
-      currentUser.role === 'admin_wilayah'
-    ) {
-      if (
-        targetUser.role === Role.superadmin ||
-        targetUser.role === Role.admin_wilayah
-      ) {
+    if (currentUser.role === Role.regional || currentUser.role === 'regional') {
+      if (targetUser.role === Role.admin || targetUser.role === Role.regional) {
         throw new ForbiddenException(
           'Admin Wilayah tidak dapat mengubah status Superadmin atau sesama Admin Wilayah.',
         );
@@ -138,10 +129,7 @@ export class AdminService {
     regionId: string,
     pricePerKm: number,
   ) {
-    if (
-      currentUser.role === Role.admin_wilayah ||
-      currentUser.role === 'admin_wilayah'
-    ) {
+    if (currentUser.role === Role.regional || currentUser.role === 'regional') {
       if (
         !currentUser.regionId ||
         currentUser.regionId.toString() !== regionId

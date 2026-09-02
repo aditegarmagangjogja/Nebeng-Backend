@@ -88,6 +88,37 @@ export class AuthService {
     };
   }
 
+  async getProfile(userId: string): Promise<UserResponseDto> {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Pengguna tidak ditemukan');
+    }
+    return UserMapper.toResponse(user);
+  }
+
+  async changePassword(
+    userId: string,
+    dto: { currentPassword: string; newPassword: string },
+  ) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('Pengguna tidak ditemukan');
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      dto.currentPassword,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Kata sandi saat ini salah');
+    }
+
+    const hashedNewPassword = await bcrypt.hash(dto.newPassword, 10);
+    await this.userRepository.update(userId, { password: hashedNewPassword });
+
+    return { message: 'Kata sandi berhasil diperbarui' };
+  }
+
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
     try {
       const secret =

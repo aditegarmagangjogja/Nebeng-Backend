@@ -16,9 +16,9 @@ datasource db {
 // ------------------------------------------------------
 
 enum Role {
-  superadmin
-  admin_wilayah
-  operator_pos
+  admin
+  regional
+  operator
   mitra
   customer
 }
@@ -125,13 +125,13 @@ enum RewardType {
 // ------------------------------------------------------
 
 model Region {
-  id        BigInt   @id @default(autoincrement())
-  name      String
-  code      String   @unique
-  pricePerKm Decimal @default(3000) @db.Decimal(12, 2)
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id          BigInt   @id @default(autoincrement())
+  name        String
+  code        String   @unique
+  pricePerKm  Decimal  @default(3000) @db.Decimal(12, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   users        User[]
   pickupPoints PickupPoint[]
@@ -173,22 +173,24 @@ model User {
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
 
-  profile                 UserProfile?
-  wallet                  Wallet?
-  assignedPickupPoints    PickupPoint[]       @relation("OperatorAssigned")
-  verifications           Verification[]      @relation("UserVerifications")
-  approvedVerifications   Verification[]      @relation("AdminApprovals")
-  tripsAsMitra            Trip[]              @relation("MitraTrips")
-  ordersAsCustomer        Order[]             @relation("CustomerOrders")
-  checkpointsScanned      CheckpointsLog[]    @relation("OperatorCheckpoints")
-  rewardTransactions      RewardTransaction[]
-  conversationsAsCustomer Conversation[]      @relation("CustomerConversations")
-  conversationsAsMitra    Conversation[]      @relation("MitraConversations")
-  sentMessages            Message[]           @relation("SentMessages")
-  reviewsGiven            TripReview[]        @relation("ReviewsGiven")
-  reviewsReceived         TripReview[]        @relation("ReviewsReceived")
-  vehicles                Vehicle[]
+  profile                   UserProfile?
+  wallet                    Wallet?
+  assignedPickupPoints      PickupPoint[]       @relation("OperatorAssigned")
+  verifications             Verification[]      @relation("UserVerifications")
+  approvedVerifications     Verification[]      @relation("AdminApprovals")
+  tripsAsMitra              Trip[]              @relation("MitraTrips")
+  ordersAsCustomer          Order[]             @relation("CustomerOrders")
+  checkpointsScanned        CheckpointsLog[]    @relation("OperatorCheckpoints")
+  rewardTransactions        RewardTransaction[]
+  conversationsAsCustomer   Conversation[]      @relation("CustomerConversations")
+  conversationsAsMitra      Conversation[]      @relation("MitraConversations")
+  sentMessages              Message[]           @relation("SentMessages")
+  reviewsGiven              TripReview[]        @relation("ReviewsGiven")
+  reviewsReceived           TripReview[]        @relation("ReviewsReceived")
+  vehicles                  Vehicle[]
 
+  @@index([role])
+  @@index([status])
   @@map("users")
 }
 
@@ -315,6 +317,8 @@ model Trip {
   conversations   Conversation[]
   reviews         TripReview[]
 
+  @@index([departureDate, status])
+  @@index([originPointId, destinationPointId])
   @@map("trips")
 }
 
@@ -343,6 +347,7 @@ model Order {
   payments           Payment[]
   walletTransactions WalletTransaction[]
 
+  @@index([status, escrowStatus])
   @@map("orders")
 }
 
@@ -498,6 +503,8 @@ model Conversation {
 
   messages Message[]
 
+  // PERBAIKAN: Menambahkan Unique Constraint mencegah duplikasi chat room per trip & customer
+  @@unique([tripId, customerId])
   @@map("conversations")
 }
 

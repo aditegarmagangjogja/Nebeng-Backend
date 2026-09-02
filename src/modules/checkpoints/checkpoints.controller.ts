@@ -21,7 +21,7 @@ export class CheckpointsController {
   constructor(private readonly checkpointsService: CheckpointsService) {}
 
   @Post('scan')
-  @Roles(Role.mitra, Role.operator_pos, Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.mitra, Role.operator, Role.regional, Role.admin)
   @ApiOperation({
     summary: 'Scan QR Checkpoint di Pos Asal/Tujuan (Operator Pos & Admin)',
   })
@@ -40,7 +40,7 @@ export class CheckpointsController {
   }
 
   @Post('manual-force-release')
-  @Roles(Role.operator_pos, Role.admin_wilayah, Role.superadmin)
+  @Roles(Role.operator, Role.regional, Role.admin)
   @ApiOperation({
     summary:
       'Intervensi Darurat: Force Complete & Release Escrow manual oleh Operator Pos (HP Mitra Rusak)',

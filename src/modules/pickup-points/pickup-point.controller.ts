@@ -31,7 +31,7 @@ export class PickupPointController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Tambah Pickup Point / Pos Resmi Baru (Admin/Superadmin)',
@@ -50,7 +50,7 @@ export class PickupPointController {
     @GetUser('regionId') currentUserRegionId: string,
     @Body() dto: CreatePickupPointDto,
   ) {
-    if (currentUserRole === Role.admin_wilayah && currentUserRegionId) {
+    if (currentUserRole === Role.regional && currentUserRegionId) {
       dto.regionId = currentUserRegionId;
     }
 
@@ -75,7 +75,7 @@ export class PickupPointController {
     const currentUserRegionId = currentUser?.regionId;
 
     const targetRegionId =
-      currentUserRole === Role.admin_wilayah ? currentUserRegionId : regionId;
+      currentUserRole === Role.regional ? currentUserRegionId : regionId;
 
     return this.pickupPointService.findAll(targetRegionId, cityId, isActive);
   }
@@ -90,7 +90,7 @@ export class PickupPointController {
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update/Deaktivasi Pos Resmi (Admin/Superadmin)' })
   @ApiResponse({ status: 200, description: 'Pos resmi berhasil diperbarui' })

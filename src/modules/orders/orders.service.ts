@@ -246,7 +246,7 @@ export class OrdersService {
       }
     }
 
-    if (userRole === Role.admin_wilayah || userRole === 'admin_wilayah') {
+    if (userRole === Role.regional || userRole === 'regional') {
       const userRegionId = currentUser.regionId
         ? currentUser.regionId.toString()
         : null;

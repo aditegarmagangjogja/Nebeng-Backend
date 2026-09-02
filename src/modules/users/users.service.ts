@@ -111,6 +111,7 @@ export class UsersService {
       password: hashedPassword,
       role: updateUserDto.role,
       status: updateUserDto.status,
+      avatar: updateUserDto.avatar,
       region: updateUserDto.regionId
         ? { connect: { id: BigInt(updateUserDto.regionId) } }
         : undefined,

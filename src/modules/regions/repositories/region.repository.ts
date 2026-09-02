@@ -22,7 +22,7 @@ export class RegionRepository {
       },
       include: {
         users: {
-          where: { role: 'admin_wilayah', status: UserStatus.active },
+          where: { role: 'regional', status: UserStatus.active },
           select: { id: true, name: true, email: true, phone: true },
         },
       },
@@ -37,7 +37,7 @@ export class RegionRepository {
       where: { id: parseId },
       include: {
         users: {
-          where: { role: 'admin_wilayah', status: UserStatus.active },
+          where: { role: 'regional', status: UserStatus.active },
           select: {
             id: true,
             name: true,
@@ -64,7 +64,7 @@ export class RegionRepository {
       where: onlyActive ? { isActive: true } : {},
       include: {
         users: {
-          where: { role: 'admin_wilayah', status: UserStatus.active },
+          where: { role: 'regional', status: UserStatus.active },
           select: { id: true, name: true, email: true, phone: true },
         },
       },
@@ -90,7 +90,7 @@ export class RegionRepository {
       },
       include: {
         users: {
-          where: { role: 'admin_wilayah', status: UserStatus.active },
+          where: { role: 'regional', status: UserStatus.active },
           select: { id: true, name: true, email: true, phone: true },
         },
       },

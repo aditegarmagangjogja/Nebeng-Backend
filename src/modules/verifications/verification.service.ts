@@ -89,10 +89,7 @@ export class VerificationService {
       throw new NotFoundException('Verifikasi tidak ditemukan');
     }
 
-    if (
-      currentUser.role === Role.admin_wilayah ||
-      currentUser.role === 'admin_wilayah'
-    ) {
+    if (currentUser.role === Role.regional || currentUser.role === 'regional') {
       const adminRegionId = currentUser.regionId
         ? currentUser.regionId.toString()
         : null;

@@ -94,5 +94,4 @@ JWT_REFRESH_EXPIRES_IN="7d"
   npm run start:dev
 
   npm run build
-  npm run start:prod
 ```

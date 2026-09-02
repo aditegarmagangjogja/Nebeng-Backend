@@ -31,7 +31,7 @@ export class RewardsController {
   }
 
   @Post('earn')
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiOperation({ summary: 'Menambahkan poin reward ke user (Admin Only)' })
   @ApiResponse({ status: 201, description: 'Poin berhasil ditambahkan' })
   @ApiResponse({ status: 403, description: 'Bukan user wilayah Anda' })

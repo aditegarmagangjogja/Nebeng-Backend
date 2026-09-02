@@ -32,7 +32,7 @@ export class RegionController {
   // --- REGIONS ENDPOINTS ---
   @Post('regions')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superadmin)
+  @Roles(Role.admin)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Tambah Region Baru (Superadmin Only)' })
   async createRegion(@Body() dto: CreateRegionDto) {
@@ -59,7 +59,7 @@ export class RegionController {
 
   @Patch('regions/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superadmin)
+  @Roles(Role.admin)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update/Deaktivasi Region (Superadmin Only)' })
   @ApiResponse({ status: 200, description: 'Region berhasil diperbarui' })
@@ -71,7 +71,7 @@ export class RegionController {
   // --- CITIES ENDPOINTS ---
   @Post('cities')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Tambah Kota Baru (Superadmin & Admin Wilayah)' })
   @ApiResponse({ status: 200, description: 'Kota berhasil dibuat' })

@@ -145,7 +145,7 @@ export class CheckpointsRepository {
       });
 
       const superadmin = await tx.user.findFirst({
-        where: { role: Role.superadmin },
+        where: { role: Role.admin },
       });
 
       if (superadmin) {
@@ -272,7 +272,7 @@ export class CheckpointsRepository {
       });
 
       const superadmin = await tx.user.findFirst({
-        where: { role: Role.superadmin },
+        where: { role: Role.admin },
       });
 
       if (superadmin) {

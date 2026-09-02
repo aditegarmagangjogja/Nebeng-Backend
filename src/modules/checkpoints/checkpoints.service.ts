@@ -34,10 +34,7 @@ export class CheckpointsService {
 
   async scanCheckpoint(currentUser: any, dto: ScanCheckpointDto) {
     const operatorUserIdStr = String(currentUser.id);
-    if (
-      currentUser.role === Role.operator_pos ||
-      currentUser.role === 'operator_pos'
-    ) {
+    if (currentUser.role === Role.regional || currentUser.role === 'regional') {
       const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
       if (parsedOperatorId) {
         const assignedPos = await this.prisma.pickupPoint.findFirst({
@@ -183,8 +180,8 @@ export class CheckpointsService {
 
     if (
       !assignedPos &&
-      currentUser.role !== Role.superadmin &&
-      currentUser.role !== Role.admin_wilayah
+      currentUser.role !== Role.admin &&
+      currentUser.role !== Role.regional
     ) {
       throw new ForbiddenException(
         'Anda tidak memiliki otoritas bertugas di Pos ini.',

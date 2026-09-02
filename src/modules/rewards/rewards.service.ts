@@ -29,10 +29,7 @@ export class RewardsService {
     const currentUserRole = currentUser?.role;
     const currentUserRegionId = currentUser?.regionId?.toString();
 
-    if (
-      currentUserRole === Role.admin_wilayah ||
-      currentUserRole === 'admin_wilayah'
-    ) {
+    if (currentUserRole === Role.regional || currentUserRole === 'regional') {
       const targetUserRegionId = targetUser.regionId
         ? targetUser.regionId.toString()
         : null;

@@ -57,7 +57,7 @@ export class VerificationController {
   }
 
   @Get()
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiOperation({ summary: 'Melihat seluruh daftar antrean verifikasi' })
   @ApiQuery({ name: 'status', enum: VerificationStatus, required: false })
   @ApiResponse({
@@ -69,8 +69,7 @@ export class VerificationController {
     @Query('status') status?: VerificationStatus,
   ) {
     const targetRegionId =
-      currentUser.role === Role.admin_wilayah ||
-      currentUser.role === 'admin_wilayah'
+      currentUser.role === Role.regional || currentUser.role === 'regional'
         ? currentUser.regionId?.toString()
         : undefined;
 
@@ -78,7 +77,7 @@ export class VerificationController {
   }
 
   @Get(':id')
-  @Roles(Role.superadmin, Role.admin_wilayah, Role.mitra, Role.customer)
+  @Roles(Role.admin, Role.regional, Role.mitra, Role.customer)
   @ApiOperation({ summary: 'Melihat detail verifikasi berdasarkan ID' })
   @ApiResponse({ status: 200, description: 'Detail verifikasi ditemukan' })
   @ApiResponse({ status: 404, description: 'Verifikasi tidak ditemukan' })
@@ -92,10 +91,7 @@ export class VerificationController {
     const currentUserId = String(currentUser.id);
     const currentUserRole = currentUser.role;
 
-    if (
-      currentUserRole !== Role.superadmin &&
-      currentUserRole !== Role.admin_wilayah
-    ) {
+    if (currentUserRole !== Role.admin && currentUserRole !== Role.regional) {
       const ownerUserId = String(verification.userId || verification.user?.id);
       if (ownerUserId !== currentUserId) {
         throw new ForbiddenException(
@@ -108,7 +104,7 @@ export class VerificationController {
   }
 
   @Patch(':id/review')
-  @Roles(Role.superadmin, Role.admin_wilayah)
+  @Roles(Role.admin, Role.regional)
   @ApiOperation({ summary: 'Approve atau Reject dokumen verifikasi' })
   @ApiResponse({
     status: 200,
