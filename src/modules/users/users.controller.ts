@@ -124,8 +124,9 @@ export class UserController {
     description: 'Daftar pengguna berhasil diambil',
     type: [UserResponseDto],
   })
-  findAll(): Promise<UserResponseDto[]> {
-    return this.userService.findAll();
+  async findAll(): Promise<UserResponseDto[]> {
+    const result = await this.userService.findAll();
+    return result.data;
   }
 
   @Post('me/avatar')
