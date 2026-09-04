@@ -37,6 +37,7 @@ import { UpdateUserMeDto } from './dto/update-user-me.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import { GetUser } from '../../common/decorators/get-user.decorators';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -113,7 +114,18 @@ export class UserController {
     status: 409,
     description: 'Email atau Nomor HP sudah terdaftar',
   })
-  create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async create(
+    @GetUser() currentUser: any,
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<UserResponseDto> {
+    if (
+      currentUser?.role === Role.regional ||
+      currentUser?.role === 'regional'
+    ) {
+      if (currentUser.regionId) {
+        createUserDto.regionId = currentUser.regionId.toString();
+      }
+    }
     return this.userService.create(createUserDto);
   }
 

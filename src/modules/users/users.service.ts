@@ -31,15 +31,19 @@ export class UsersService {
       throw new ConflictException('Nomor telepon sudah terdaftar');
     }
 
-    if (createUserDto.regionId) {
-      const region = await this.userRepository.findRegionById(
-        createUserDto.regionId,
+    if (!createUserDto.regionId) {
+      throw new BadRequestException(
+        'Region ID wajib disertakan untuk pengguna ini.',
       );
-      if (!region) {
-        throw new NotFoundException(
-          `Region dengan ID ${createUserDto.regionId} tidak ditemukan`,
-        );
-      }
+    }
+
+    const regionIdStr = String(createUserDto.regionId); // Memastikan tipenya string murni
+
+    const region = await this.userRepository.findRegionById(regionIdStr);
+    if (!region) {
+      throw new NotFoundException(
+        `Region dengan ID ${regionIdStr} tidak ditemukan`,
+      );
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -51,9 +55,7 @@ export class UsersService {
       password: hashedPassword,
       role: createUserDto.role,
       status: createUserDto.status,
-      region: createUserDto.regionId
-        ? { connect: { id: BigInt(createUserDto.regionId) } }
-        : undefined,
+      region: { connect: { id: BigInt(createUserDto.regionId) } },
     });
 
     return UserMapper.toResponse(newUser);

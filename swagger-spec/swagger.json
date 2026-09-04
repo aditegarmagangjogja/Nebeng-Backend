@@ -1598,6 +1598,36 @@
         ]
       }
     },
+    "/api/payments": {
+      "get": {
+        "operationId": "PaymentsController_getPayments",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Opsional untuk superadmin",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar transaksi berhasil diambil"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat daftar transaksi wilayah (admin & regional) ",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
     "/api/checkpoints/scan": {
       "post": {
         "operationId": "CheckpointsController_scanCheckpoint",

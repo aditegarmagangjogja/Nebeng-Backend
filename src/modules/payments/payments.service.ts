@@ -99,4 +99,35 @@ export class PaymentsService {
       },
     };
   }
+
+  async getPaymentsByRegion(regionId?: string) {
+    const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
+
+    const payments = await this.prisma.payment.findMany({
+      where: {
+        order: {
+          trip: {
+            originPoint: {
+              ...(parsedRegionId ? { regionId: parsedRegionId } : {}),
+            },
+          },
+        },
+      },
+      include: {
+        order: {
+          include: {
+            customer: true,
+            trip: {
+              include: {
+                originPoint: { include: { region: true } },
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return payments;
+  }
 }
