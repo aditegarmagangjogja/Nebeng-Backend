@@ -130,4 +130,8 @@ export class PaymentsService {
 
     return payments;
   }
+
+  async getPaymentsByOperator(operatorUserIdStr: string) {
+    return this.paymentsRepository.getPaymentsByOperator(operatorUserIdStr);
+  }
 }

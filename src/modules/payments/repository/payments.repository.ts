@@ -103,4 +103,37 @@ export class PaymentsRepository {
       return { payment, order };
     });
   }
+
+  async getPaymentsByOperator(operatorUserIdStr: string) {
+    const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
+    if (!parsedOperatorId) {
+      throw new BadRequestException('Format ID Operator tidak valid');
+    }
+
+    // Mencari pembayaran dari trip yang berasal dari PickupPoint yang dikelola operator ini
+    return this.prisma.payment.findMany({
+      where: {
+        order: {
+          trip: {
+            originPoint: {
+              operatorId: parsedOperatorId,
+            },
+          },
+        },
+      },
+      include: {
+        order: {
+          include: {
+            customer: true,
+            trip: {
+              include: {
+                originPoint: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }

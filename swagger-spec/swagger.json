@@ -1628,6 +1628,26 @@
         ]
       }
     },
+    "/api/payments/operator-summary": {
+      "get": {
+        "operationId": "PaymentsController_getOperatorSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat rekapitulasi finansial pos untuk Operator",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
     "/api/checkpoints/scan": {
       "post": {
         "operationId": "CheckpointsController_scanCheckpoint",

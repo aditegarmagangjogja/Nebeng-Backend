@@ -65,4 +65,13 @@ export class PaymentsController {
 
     return this.paymentsService.getPaymentsByRegion(targetRegionId);
   }
+
+  @Get('operator-summary')
+  @Roles(Role.operator, Role.regional, Role.admin)
+  @ApiOperation({
+    summary: 'Melihat rekapitulasi finansial pos untuk Operator',
+  })
+  async getOperatorSummary(@GetUser() currentUser: any) {
+    return this.paymentsService.getPaymentsByOperator(String(currentUser.id));
+  }
 }
