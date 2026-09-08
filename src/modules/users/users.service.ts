@@ -12,6 +12,7 @@ import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { UserMapper } from './mappers/user.mapper';
+import { Role } from '../../generated/prisma/enums';
 
 @Injectable()
 export class UsersService {
@@ -31,18 +32,19 @@ export class UsersService {
       throw new ConflictException('Nomor telepon sudah terdaftar');
     }
 
-    if (!createUserDto.regionId) {
+    // FIX: role 'regional' wajib punya regionId. Sebelumnya tidak ada
+    // validasi ini, sehingga bisa terbentuk admin regional tanpa wilayah
+    // (regionId: null), yang berpotensi bikin endpoint seperti
+    // getRegionalDashboard salah menangani filter regionId.
+    if (createUserDto.role === Role.regional && !createUserDto.regionId) {
       throw new BadRequestException(
-        'Region ID wajib disertakan untuk pengguna ini.',
+        'regionId wajib diisi untuk role regional',
       );
     }
 
-    const regionIdStr = String(createUserDto.regionId); // Memastikan tipenya string murni
-
-    const region = await this.userRepository.findRegionById(regionIdStr);
-    if (!region) {
-      throw new NotFoundException(
-        `Region dengan ID ${regionIdStr} tidak ditemukan`,
+    if (createUserDto.regionId) {
+      const region = await this.userRepository.findRegionById(
+        createUserDto.regionId,
       );
     }
 
@@ -110,6 +112,24 @@ export class UsersService {
           'Nomor telepon sudah digunakan oleh pengguna lain',
         );
       }
+    }
+
+    // FIX: cek juga saat update. Ambil role hasil akhir (baru kalau
+    // dikirim, kalau tidak pakai role user yang sudah ada), lalu cocokkan
+    // dengan regionId hasil akhir (baru kalau dikirim, kalau tidak pakai
+    // regionId user yang sudah ada). Ini mencegah:
+    //  - user diubah jadi role 'regional' tanpa mengisi regionId sekaligus
+    //  - user yang sudah 'regional' di-strip regionId-nya lewat update lain
+    const resultingRole = updateUserDto.role ?? currentUser.role;
+    const resultingRegionId =
+      updateUserDto.regionId !== undefined
+        ? updateUserDto.regionId
+        : currentUser.regionId;
+
+    if (resultingRole === Role.regional && !resultingRegionId) {
+      throw new BadRequestException(
+        'regionId wajib diisi untuk role regional',
+      );
     }
 
     let hashedPassword: string | undefined = undefined;
