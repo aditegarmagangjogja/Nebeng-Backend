@@ -29,6 +29,32 @@ export class VerificationMapper {
             email: verification.user.email,
             phone: verification.user.phone,
             statusVerification: verification.user.statusVerification,
+            // TAMBAHKAN BARIS INI AGAR REGIONID TERSEDIA PADA OBJEK USER MAPPING
+            regionId: verification.user.regionId
+              ? verification.user.regionId.toString()
+              : null,
+            profile: verification.user.profile
+              ? {
+                  ktpNumber: verification.user.profile.ktpNumber,
+                  fullNameKtp: verification.user.profile.fullNameKtp,
+                  addressKtp: verification.user.profile.addressKtp,
+                  faceImageUrl: verification.user.profile.faceImageUrl,
+                  bankName: verification.user.profile.bankName,
+                  bankAccountNumber:
+                    verification.user.profile.bankAccountNumber,
+                  bankAccountHolder:
+                    verification.user.profile.bankAccountHolder,
+                }
+              : null,
+            vehicles: verification.user.vehicles
+              ? verification.user.vehicles.map((v: any) => ({
+                  id: v.id.toString(),
+                  type: v.type,
+                  model: v.model,
+                  plateNumber: v.plateNumber,
+                  color: v.color,
+                }))
+              : [],
           }
         : undefined,
     };

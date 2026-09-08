@@ -9,7 +9,7 @@ import { VehiclesRepository } from './repository/vehicles.repository';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { VehicleMapper } from './mappers/vehicle.mapper';
-import { VehicleType, VerificationStatus } from '../../generated/prisma/enums';
+import { VehicleType } from '../../generated/prisma/enums';
 
 @Injectable()
 export class VehicleService {
@@ -18,10 +18,8 @@ export class VehicleService {
   async createVehicle(userIdStr: string, dto: CreateVehicleDto) {
     const user =
       await this.vehiclesRepository.findUserVerificationStatus(userIdStr);
-    if (!user || user.statusVerification !== VerificationStatus.approved) {
-      throw new ForbiddenException(
-        'Akun Anda belum disetujui. Selesaikan verifikasi identitas terlebih dahulu.',
-      );
+    if (!user) {
+      throw new ForbiddenException('Data pengguna tidak ditemukan di sistem.');
     }
 
     const cleanPlate = dto.plateNumber.toUpperCase().replace(/\s+/g, '').trim();

@@ -24,6 +24,7 @@ import { ReviewModule } from './modules/reviews/reviews.module';
 import { RewardsModule } from './modules/rewards/rewards.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { TrackingModule } from './modules/tracking/tracking.module';
+import { UploadController } from './upload.controller';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -53,7 +54,7 @@ import { TrackingModule } from './modules/tracking/tracking.module';
     AdminModule,
     TrackingModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UploadController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

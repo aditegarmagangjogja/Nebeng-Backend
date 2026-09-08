@@ -97,7 +97,7 @@ export class VerificationService {
         ? verification.user.regionId.toString()
         : null;
 
-      if (!adminRegionId || adminRegionId !== targetUserRegionId) {
+      if (targetUserRegionId && adminRegionId !== targetUserRegionId) {
         throw new ForbiddenException(
           'Anda hanya berhak meninjau verifikasi pengguna di wilayah Anda sendiri.',
         );
@@ -127,5 +127,10 @@ export class VerificationService {
     );
 
     return VerificationMapper.toResponse(updated);
+  }
+
+  async findByUserId(userId: string) {
+    const userBigIntId = this.safeParseBigInt(userId);
+    return this.verificationRepo.findByUserId(userBigIntId);
   }
 }

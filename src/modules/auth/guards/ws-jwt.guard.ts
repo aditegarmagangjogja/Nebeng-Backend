@@ -1,11 +1,15 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { WsException } from '@nestjs/websockets';
 import { Socket } from 'socket.io';
 
 @Injectable()
 export class WsJwtAuthGuard implements CanActivate {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
@@ -19,9 +23,14 @@ export class WsJwtAuthGuard implements CanActivate {
         throw new WsException('Token autentikasi WebSocket tidak ditemukan.');
       }
 
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || 'super-secret-key',
-      });
+      const secret = this.configService.get<string>('JWT_SECRET');
+      if (!secret) {
+        throw new WsException(
+          'Konfigurasi server bermasalah (JWT_SECRET kosong).',
+        );
+      }
+
+      const payload = await this.jwtService.verifyAsync(token, { secret });
 
       (client as any).user = payload;
       return true;

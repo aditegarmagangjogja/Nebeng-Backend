@@ -72,7 +72,7 @@ export class VerificationRepository {
       include: {
         files: true,
         user: {
-          include: { profile: true },
+          include: { profile: true, vehicles: true },
         },
         approvedByUser: true,
       },
@@ -85,12 +85,19 @@ export class VerificationRepository {
     return this.prisma.verification.findMany({
       where: {
         ...(status ? { status } : {}),
-        ...(parsedRegionid ? { user: { regionId: parsedRegionid } } : {}),
+        ...(parsedRegionid
+          ? {
+              OR: [
+                { user: { regionId: parsedRegionid } },
+                { user: { regionId: null } },
+              ],
+            }
+          : {}),
       },
       include: {
         files: true,
         user: {
-          include: { profile: true },
+          include: { profile: true, vehicles: true },
         },
       },
       orderBy: { createdAt: 'desc' },
@@ -137,6 +144,21 @@ export class VerificationRepository {
           data: { statusVerification: VerificationStatus.rejected },
         });
       } else if (status === VerificationStatus.approved) {
+        const currentUserData = await tx.user.findUnique({
+          where: { id: updatedVerfication.userId },
+        });
+        if (currentUserData && !currentUserData.regionId && parseAdminId) {
+          const adminUser = await tx.user.findUnique({
+            where: { id: parseAdminId },
+          });
+          if (adminUser?.regionId) {
+            await tx.user.update({
+              where: { id: updatedVerfication.userId },
+              data: { regionId: adminUser.regionId },
+            });
+          }
+        }
+
         await tx.userProfile.upsert({
           where: { userId: updatedVerfication.userId },
           update: { isFaceVerified: true },
@@ -146,16 +168,17 @@ export class VerificationRepository {
           },
         });
 
-        const pendingOrRejected = await tx.verification.count({
+        // Opsi 1: Ubah status user langsung jadi approved saat salah satu verifikasi di-approve,
+        // atau pastikan mengecek apakah SEMUA verifikasi milik user ini sudah tidak ada yang pending.
+        const remainingPending = await tx.verification.count({
           where: {
             userId: updatedVerfication.userId,
-            status: {
-              in: [VerificationStatus.pending, VerificationStatus.rejected],
-            },
+            status: VerificationStatus.pending,
           },
         });
 
-        if (pendingOrRejected === 0) {
+        // Jika sudah tidak ada lagi yang pending (semua sudah di-approve/reject), aktifkan user
+        if (remainingPending === 0) {
           await tx.user.update({
             where: { id: updatedVerfication.userId },
             data: { statusVerification: VerificationStatus.approved },
@@ -164,6 +187,14 @@ export class VerificationRepository {
       }
 
       return updatedVerfication;
+    });
+  }
+
+  async findByUserId(userId: bigint) {
+    return this.prisma.verification.findMany({
+      where: { userId },
+      include: { files: true },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }

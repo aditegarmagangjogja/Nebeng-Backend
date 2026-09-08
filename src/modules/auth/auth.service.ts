@@ -13,26 +13,34 @@ import { Role } from '../../generated/prisma/enums';
 
 @Injectable()
 export class AuthService {
+  private readonly jwtSecret: string;
+
   constructor(
     private readonly usersService: UsersService,
     private readonly userRepository: UserRepository,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-  ) {}
+  ) {
+    const secret = this.configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error(
+        'FATAL ERROR: JWT_SECRET belum didefinisikan di environment variables.',
+      );
+    }
+    this.jwtSecret = secret;
+  }
 
   private async generateTokens(userId: string, email: string, role: string) {
     const payload = { sub: userId, email, role };
-    const secret =
-      this.configService.get<string>('JWT_SECRET') || 'nebeng_secret_key';
 
     const accessToken = this.jwtService.sign(payload, {
-      secret,
+      secret: this.jwtSecret,
       expiresIn: (this.configService.get<string>('JWT_EXPIRES_IN') ||
         '15m') as any,
     });
 
     const refreshToken = this.jwtService.sign(payload, {
-      secret,
+      secret: this.jwtSecret,
       expiresIn: (this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') ||
         '7d') as any,
     });
@@ -121,10 +129,8 @@ export class AuthService {
 
   async refreshToken(refreshTokenDto: RefreshTokenDto) {
     try {
-      const secret =
-        this.configService.get<string>('JWT_SECRET') || 'nebeng_secret_key';
       const payload = this.jwtService.verify(refreshTokenDto.refreshToken, {
-        secret,
+        secret: this.jwtSecret,
       });
 
       const user = await this.userRepository.findById(payload.sub);
@@ -140,6 +146,7 @@ export class AuthService {
       );
 
       if (!isRefreshTokenMatching) {
+        await this.userRepository.updateRefreshToken(payload.sub, null);
         throw new UnauthorizedException('Refresh token tidak cocok');
       }
 
@@ -149,8 +156,7 @@ export class AuthService {
         user.role,
       );
       return tokens;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
+    } catch {
       throw new UnauthorizedException(
         'Refresh token kedaluwarsa atau tidak valid',
       );

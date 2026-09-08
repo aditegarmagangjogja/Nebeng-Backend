@@ -129,7 +129,6 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  // src/modules/users/users.controller.ts
   @Get()
   @Roles(Role.admin, Role.regional, Role.operator)
   @ApiOperation({
@@ -143,7 +142,6 @@ export class UserController {
     const parsedPage = page ? parseInt(page, 10) : 1;
     const parsedLimit = limit ? parseInt(limit, 10) : 50;
 
-    // Mengembalikan objek { data, meta } agar paginasi frontend bekerja sempurna
     return this.userService.findAll(parsedPage, parsedLimit);
   }
 
@@ -151,8 +149,21 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
+      limits: { fileSize: 2 * 1024 * 1024 }, // Batasi maksimal ukuran file 2MB di server
+      fileFilter: (req, file, callback) => {
+        // Validasi ketat ekstensi file gambar yang diizinkan
+        if (!file.originalname.match(/\.(jpg|jpeg|png)$/i)) {
+          return callback(
+            new BadRequestException(
+              'Hanya file gambar berformat JPG, JPEG, atau PNG yang diizinkan!',
+            ),
+            false,
+          );
+        }
+        callback(null, true);
+      },
       storage: diskStorage({
-        destination: './uploads/avatars', // Pastikan folder ini ada di backend
+        destination: './uploads/avatars',
         filename: (req, file, callback) => {
           const uniqueSuffix =
             Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -173,7 +184,6 @@ export class UserController {
     const userId = req.user.id || req.user.sub;
     const filePath = `/uploads/avatars/${file.filename}`;
 
-    // Simpan path ke database melalui service
     return this.userService.update(String(userId), { avatar: filePath });
   }
 

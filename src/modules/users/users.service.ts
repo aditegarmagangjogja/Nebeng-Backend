@@ -32,20 +32,19 @@ export class UsersService {
       throw new ConflictException('Nomor telepon sudah terdaftar');
     }
 
-    // FIX: role 'regional' wajib punya regionId. Sebelumnya tidak ada
-    // validasi ini, sehingga bisa terbentuk admin regional tanpa wilayah
-    // (regionId: null), yang berpotensi bikin endpoint seperti
-    // getRegionalDashboard salah menangani filter regionId.
     if (createUserDto.role === Role.regional && !createUserDto.regionId) {
-      throw new BadRequestException(
-        'regionId wajib diisi untuk role regional',
-      );
+      throw new BadRequestException('regionId wajib diisi untuk role regional');
     }
 
     if (createUserDto.regionId) {
       const region = await this.userRepository.findRegionById(
         createUserDto.regionId,
       );
+      if (!region) {
+        throw new NotFoundException(
+          `Region dengan ID ${createUserDto.regionId} tidak ditemukan`,
+        );
+      }
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -57,7 +56,9 @@ export class UsersService {
       password: hashedPassword,
       role: createUserDto.role,
       status: createUserDto.status,
-      region: { connect: { id: BigInt(createUserDto.regionId) } },
+      region: createUserDto.regionId
+        ? { connect: { id: BigInt(createUserDto.regionId) } }
+        : undefined,
     });
 
     return UserMapper.toResponse(newUser);
@@ -114,12 +115,6 @@ export class UsersService {
       }
     }
 
-    // FIX: cek juga saat update. Ambil role hasil akhir (baru kalau
-    // dikirim, kalau tidak pakai role user yang sudah ada), lalu cocokkan
-    // dengan regionId hasil akhir (baru kalau dikirim, kalau tidak pakai
-    // regionId user yang sudah ada). Ini mencegah:
-    //  - user diubah jadi role 'regional' tanpa mengisi regionId sekaligus
-    //  - user yang sudah 'regional' di-strip regionId-nya lewat update lain
     const resultingRole = updateUserDto.role ?? currentUser.role;
     const resultingRegionId =
       updateUserDto.regionId !== undefined
@@ -127,9 +122,18 @@ export class UsersService {
         : currentUser.regionId;
 
     if (resultingRole === Role.regional && !resultingRegionId) {
-      throw new BadRequestException(
-        'regionId wajib diisi untuk role regional',
+      throw new BadRequestException('regionId wajib diisi untuk role regional');
+    }
+
+    if (updateUserDto.regionId) {
+      const region = await this.userRepository.findRegionById(
+        updateUserDto.regionId,
       );
+      if (!region) {
+        throw new NotFoundException(
+          `Region dengan ID ${updateUserDto.regionId} tidak ditemukan`,
+        );
+      }
     }
 
     let hashedPassword: string | undefined = undefined;

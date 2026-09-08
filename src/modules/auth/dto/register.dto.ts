@@ -49,4 +49,9 @@ export class RegisterDto {
     message: 'Role tidak valid! Hanya diizinkan customer atau mitra',
   })
   role?: PublicRole = PublicRole.customer;
+
+  @ApiProperty({ example: 'Surakarta' })
+  @IsString()
+  @IsOptional()
+  regionId?: string;
 }

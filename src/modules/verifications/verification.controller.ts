@@ -76,6 +76,20 @@ export class VerificationController {
     return this.verificationService.getAllVerifications(status, targetRegionId);
   }
 
+  // Tambahkan endpoint ini di dalam class VerificationController
+  @Get('my-status')
+  @Roles(Role.customer, Role.mitra)
+  @ApiOperation({
+    summary: 'Melihat status pengajuan verifikasi milik sendiri',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Status verifikasi berhasil diambil',
+  })
+  async getMyVerificationStatus(@GetUser('id') userId: string) {
+    return this.verificationService.findByUserId(String(userId));
+  }
+
   @Get(':id')
   @Roles(Role.admin, Role.regional, Role.mitra, Role.customer)
   @ApiOperation({ summary: 'Melihat detail verifikasi berdasarkan ID' })
@@ -91,7 +105,28 @@ export class VerificationController {
     const currentUserId = String(currentUser.id);
     const currentUserRole = currentUser.role;
 
-    if (currentUserRole !== Role.admin && currentUserRole !== Role.regional) {
+    // PERBAIKAN: Validasi tambahan untuk Admin Regional agar tidak bisa lintas wilayah
+    if (currentUserRole === Role.regional || currentUserRole === 'regional') {
+      const adminRegionId = currentUser.regionId
+        ? currentUser.regionId.toString()
+        : null;
+      const targetUserRegionId = verification.user?.regionId
+        ? verification.user.regionId.toString()
+        : null;
+
+      // Jika user pemilik verifikasi memiliki regionId, pastikan cocok dengan region admin
+      if (
+        adminRegionId &&
+        targetUserRegionId &&
+        adminRegionId !== targetUserRegionId
+      ) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki akses untuk melihat detail verifikasi pengguna di wilayah lain',
+        );
+      }
+    }
+    // Untuk role non-admin dan non-regional (Customer / Mitra), batasi hanya miliknya sendiri
+    else if (currentUserRole !== Role.admin) {
       const ownerUserId = String(verification.userId || verification.user?.id);
       if (ownerUserId !== currentUserId) {
         throw new ForbiddenException(

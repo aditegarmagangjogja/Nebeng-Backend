@@ -15,6 +15,26 @@
         ]
       }
     },
+    "/api/uploads/file": {
+      "post": {
+        "operationId": "UploadController_uploadFile",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload file biner umum (SIM, SKCK, STNK, Face)",
+        "tags": [
+          "Uploads"
+        ]
+      }
+    },
     "/api/users/me": {
       "patch": {
         "operationId": "UserController_updateMyProfile",
@@ -660,6 +680,26 @@
           }
         ],
         "summary": "Melihat seluruh daftar antrean verifikasi",
+        "tags": [
+          "Verifications"
+        ]
+      }
+    },
+    "/api/verifications/my-status": {
+      "get": {
+        "operationId": "VerificationController_getMyVerificationStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Status verifikasi berhasil diambil"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat status pengajuan verifikasi milik sendiri",
         "tags": [
           "Verifications"
         ]
@@ -2611,13 +2651,18 @@
               "mitra"
             ],
             "default": "customer"
+          },
+          "regionId": {
+            "type": "string",
+            "example": "Surakarta"
           }
         },
         "required": [
           "name",
           "email",
           "phone",
-          "password"
+          "password",
+          "regionId"
         ]
       },
       "LoginDto": {

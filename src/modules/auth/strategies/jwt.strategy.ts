@@ -21,8 +21,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly configService: ConfigService,
     private readonly userRepository: UserRepository,
   ) {
-    const secret =
-      configService.get<string>('JWT_SECRET') || 'nebeng_secret_key';
+    const secret = configService.get<string>('JWT_SECRET');
+    if (!secret) {
+      throw new Error(
+        'FATAL ERROR: JWT_SECRET belum didefinisikan di environment variables.',
+      );
+    }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
@@ -39,7 +43,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     if (user.status === UserStatus.suspended) {
-      throw new ForbiddenException('Akun anda sedang ditanguhkan (Suspended)');
+      throw new ForbiddenException('Akun anda sedang ditangguhkan (Suspended)');
     }
 
     if (user.status === UserStatus.blocked) {
