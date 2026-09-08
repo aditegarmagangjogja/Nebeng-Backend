@@ -13,6 +13,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -36,6 +37,7 @@ import { UpdateUserMeDto } from './dto/update-user-me.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { extname } from 'path';
 import { diskStorage } from 'multer';
+import { GetUser } from '../../common/decorators/get-user.decorators';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -112,21 +114,37 @@ export class UserController {
     status: 409,
     description: 'Email atau Nomor HP sudah terdaftar',
   })
-  create(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async create(
+    @GetUser() currentUser: any,
+    @Body() createUserDto: CreateUserDto,
+  ): Promise<UserResponseDto> {
+    if (
+      currentUser?.role === Role.regional ||
+      currentUser?.role === 'regional'
+    ) {
+      if (currentUser.regionId) {
+        createUserDto.regionId = currentUser.regionId.toString();
+      }
+    }
     return this.userService.create(createUserDto);
   }
 
+  // src/modules/users/users.controller.ts
   @Get()
   @Roles(Role.admin, Role.regional, Role.operator)
-  @ApiOperation({ summary: 'Mendapatkan semua daftar pengguna' })
+  @ApiOperation({
+    summary: 'Mendapatkan semua daftar pengguna (dengan Paginasi)',
+  })
   @ApiResponse({
     status: 200,
     description: 'Daftar pengguna berhasil diambil',
-    type: [UserResponseDto],
   })
-  async findAll(): Promise<UserResponseDto[]> {
-    const result = await this.userService.findAll();
-    return result.data;
+  async findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+    const parsedPage = page ? parseInt(page, 10) : 1;
+    const parsedLimit = limit ? parseInt(limit, 10) : 50;
+
+    // Mengembalikan objek { data, meta } agar paginasi frontend bekerja sempurna
+    return this.userService.findAll(parsedPage, parsedLimit);
   }
 
   @Post('me/avatar')

@@ -211,20 +211,27 @@
       },
       "get": {
         "operationId": "UserController_findAll",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Daftar pengguna berhasil diambil",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/UserResponseDto"
-                  }
-                }
-              }
-            }
+            "description": "Daftar pengguna berhasil diambil"
           }
         },
         "security": [
@@ -232,7 +239,7 @@
             "bearer": []
           }
         ],
-        "summary": "Mendapatkan semua daftar pengguna",
+        "summary": "Mendapatkan semua daftar pengguna (dengan Paginasi)",
         "tags": [
           "Users"
         ]
@@ -1591,6 +1598,56 @@
         ]
       }
     },
+    "/api/payments": {
+      "get": {
+        "operationId": "PaymentsController_getPayments",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Opsional untuk superadmin",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar transaksi berhasil diambil"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat daftar transaksi wilayah (admin & regional) ",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/payments/operator-summary": {
+      "get": {
+        "operationId": "PaymentsController_getOperatorSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat rekapitulasi finansial pos untuk Operator",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
     "/api/checkpoints/scan": {
       "post": {
         "operationId": "CheckpointsController_scanCheckpoint",
@@ -1968,7 +2025,26 @@
     "/api/admin/escrow/ledger": {
       "get": {
         "operationId": "AdminController_getEscrowLedger",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Nomor halaman (default: 1)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (default: 20)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Buku besar Escrow ditemukan"
@@ -2059,12 +2135,6 @@
         "responses": {
           "200": {
             "description": "Status tata kelola user berhasil diperbarui"
-          },
-          "400": {
-            "description": "Tidak dapat mengubah status sendiri"
-          },
-          "404": {
-            "description": "User sasaran tidak ditemukan"
           }
         },
         "security": [
@@ -2134,9 +2204,6 @@
         "responses": {
           "200": {
             "description": "Tarif Rp/Km wilayah berhasil diperbarui"
-          },
-          "404": {
-            "description": "Wilayah tidak ditemukan"
           }
         },
         "security": [
@@ -2164,7 +2231,7 @@
             "bearer": []
           }
         ],
-        "summary": "Pengaturan kelipatan nominal Poin Reward global (Hanya Superadmin)",
+        "summary": "Pengaturan kelipatan Poin Reward global (Hanya Superadmin)",
         "tags": [
           "Admin Governance"
         ]

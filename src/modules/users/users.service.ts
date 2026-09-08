@@ -46,11 +46,6 @@ export class UsersService {
       const region = await this.userRepository.findRegionById(
         createUserDto.regionId,
       );
-      if (!region) {
-        throw new NotFoundException(
-          `Region dengan ID ${createUserDto.regionId} tidak ditemukan`,
-        );
-      }
     }
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
@@ -62,9 +57,7 @@ export class UsersService {
       password: hashedPassword,
       role: createUserDto.role,
       status: createUserDto.status,
-      region: createUserDto.regionId
-        ? { connect: { id: BigInt(createUserDto.regionId) } }
-        : undefined,
+      region: { connect: { id: BigInt(createUserDto.regionId) } },
     });
 
     return UserMapper.toResponse(newUser);

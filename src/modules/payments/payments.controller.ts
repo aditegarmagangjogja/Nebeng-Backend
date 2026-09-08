@@ -1,7 +1,8 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Query } from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -37,5 +38,40 @@ export class PaymentsController {
     @Body() dto: CheckoutPaymentDto,
   ) {
     return this.paymentsService.checkoutPayment(String(userId), dto);
+  }
+
+  @Get()
+  @Roles(Role.admin, Role.regional)
+  @ApiOperation({
+    summary: 'Melihat daftar transaksi wilayah (admin & regional) ',
+  })
+  @ApiQuery({
+    name: 'regionId',
+    required: false,
+    description: 'Opsional untuk superadmin',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Daftar transaksi berhasil diambil',
+  })
+  async getPayments(
+    @GetUser() currentUser: any,
+    @Query('regionId') queryRegionId?: string,
+  ) {
+    const targetRegionId =
+      currentUser.role === Role.regional || currentUser.role === 'regional'
+        ? currentUser.regionId.toString()
+        : queryRegionId;
+
+    return this.paymentsService.getPaymentsByRegion(targetRegionId);
+  }
+
+  @Get('operator-summary')
+  @Roles(Role.operator, Role.regional, Role.admin)
+  @ApiOperation({
+    summary: 'Melihat rekapitulasi finansial pos untuk Operator',
+  })
+  async getOperatorSummary(@GetUser() currentUser: any) {
+    return this.paymentsService.getPaymentsByOperator(String(currentUser.id));
   }
 }

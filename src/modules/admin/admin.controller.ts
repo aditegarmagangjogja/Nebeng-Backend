@@ -1,3 +1,4 @@
+// src/modules/admin/admin.controller.ts
 import {
   Body,
   Controller,
@@ -65,9 +66,24 @@ export class AdminController {
   @ApiOperation({
     summary: 'Melihat buku besar audit Escrow (Superadmin Only)',
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    description: 'Nomor halaman (default: 1)',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    description: 'Jumlah data per halaman (default: 20)',
+  })
   @ApiResponse({ status: 200, description: 'Buku besar Escrow ditemukan' })
-  async getEscrowLedger() {
-    return this.adminService.getEscrowLedger();
+  async getEscrowLedger(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedPage = page ? parseInt(page, 10) : 1;
+    const parsedLimit = limit ? parseInt(limit, 10) : 20;
+    return this.adminService.getEscrowLedger(parsedPage, parsedLimit);
   }
 
   @Get('settings/pricing-policy')
@@ -102,11 +118,6 @@ export class AdminController {
     status: 200,
     description: 'Status tata kelola user berhasil diperbarui',
   })
-  @ApiResponse({
-    status: 400,
-    description: 'Tidak dapat mengubah status sendiri',
-  })
-  @ApiResponse({ status: 404, description: 'User sasaran tidak ditemukan' })
   async updateUserGovernance(
     @GetUser() user: any,
     @Param('id') targetUserId: string,
@@ -137,7 +148,6 @@ export class AdminController {
     status: 200,
     description: 'Tarif Rp/Km wilayah berhasil diperbarui',
   })
-  @ApiResponse({ status: 404, description: 'Wilayah tidak ditemukan' })
   async updateRegionRate(
     @GetUser() user: any,
     @Param('id') regionId: string,
@@ -149,8 +159,7 @@ export class AdminController {
   @Patch('settings/rewards')
   @Roles(Role.admin)
   @ApiOperation({
-    summary:
-      'Pengaturan kelipatan nominal Poin Reward global (Hanya Superadmin)',
+    summary: 'Pengaturan kelipatan Poin Reward global (Hanya Superadmin)',
   })
   @ApiResponse({
     status: 200,
