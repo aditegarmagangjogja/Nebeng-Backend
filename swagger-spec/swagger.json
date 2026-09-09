@@ -71,6 +71,41 @@
           "Users"
         ]
       },
+      "put": {
+        "operationId": "UserController_updateMyProfilePut",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserMeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memperbarui profil dasar akun sendiri (PUT)",
+        "tags": [
+          "Users"
+        ]
+      },
       "delete": {
         "operationId": "UserController_removeMyAccount",
         "parameters": [],
@@ -2371,6 +2406,10 @@
             "type": "string",
             "example": "1029391032211"
           },
+          "nik": {
+            "type": "object",
+            "example": "3374123456789001"
+          },
           "role": {
             "type": "string",
             "enum": [
@@ -2730,6 +2769,22 @@
             "items": {
               "$ref": "#/components/schemas/VerifiactionFileDto"
             }
+          },
+          "ktpNumber": {
+            "type": "string",
+            "example": "3374123456789001"
+          },
+          "fullNameKtp": {
+            "type": "string",
+            "example": "Budi Santoso"
+          },
+          "addressKtp": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 12, Yogyakarta"
+          },
+          "faceImageUrl": {
+            "type": "string",
+            "example": "/uploads/verifications/face-123.jpg"
           }
         },
         "required": [

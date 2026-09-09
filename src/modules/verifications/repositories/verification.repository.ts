@@ -33,8 +33,41 @@ export class VerificationRepository {
     userId: bigint;
     type: VerificationType;
     files: { filePath: string; fileType: string }[];
+    profileData?: {
+      ktpNumber?: string;
+      fullNameKtp?: string;
+      addressKtp?: string;
+      faceImageUrl?: string;
+    };
   }) {
     return this.prisma.$transaction(async (tx) => {
+      if (data.profileData && Object.keys(data.profileData).length > 0) {
+        await tx.userProfile.upsert({
+          where: { userId: data.userId },
+          update: {
+            ...(data.profileData.ktpNumber
+              ? { ktpNumber: data.profileData.ktpNumber }
+              : {}),
+            ...(data.profileData.fullNameKtp
+              ? { fullNameKtp: data.profileData.fullNameKtp }
+              : {}),
+            ...(data.profileData.addressKtp
+              ? { addressKtp: data.profileData.addressKtp }
+              : {}),
+            ...(data.profileData.faceImageUrl
+              ? { faceImageUrl: data.profileData.faceImageUrl }
+              : {}),
+          },
+          create: {
+            userId: data.userId,
+            ktpNumber: data.profileData.ktpNumber || null,
+            fullNameKtp: data.profileData.fullNameKtp || null,
+            addressKtp: data.profileData.addressKtp || null,
+            faceImageUrl: data.profileData.faceImageUrl || null,
+          },
+        });
+      }
+
       const verification = await tx.verification.create({
         data: {
           userId: data.userId,

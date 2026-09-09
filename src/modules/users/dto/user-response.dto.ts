@@ -21,6 +21,9 @@ export class UserResponseDto {
   @ApiProperty({ example: '1029391032211' })
   phone!: string;
 
+  @ApiPropertyOptional({ example: '3374123456789001' })
+  nik?: string | null;
+
   @ApiProperty({ enum: Role })
   role!: Role;
 

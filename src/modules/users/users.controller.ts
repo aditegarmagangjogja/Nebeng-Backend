@@ -6,6 +6,7 @@ import {
   Patch,
   Request,
   Param,
+  Put,
   Delete,
   HttpCode,
   HttpStatus,
@@ -69,6 +70,18 @@ export class UserController {
   ): Promise<UserResponseDto> {
     const userId = req.user.id || req.user.sub;
     return this.userService.updateProfileDetail(String(userId), dto);
+  }
+
+  @Put('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Memperbarui profil dasar akun sendiri (PUT)' })
+  @ApiResponse({ status: 200, type: UserResponseDto })
+  updateMyProfilePut(
+    @Request() req: any,
+    @Body() updateUserMeDto: UpdateUserMeDto,
+  ): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.update(String(userId), updateUserMeDto);
   }
 
   @Delete('me')

@@ -54,6 +54,12 @@ export class VerificationService {
       userId: userBigIntId,
       type: dto.type,
       files: dto.files,
+      profileData: {
+        ktpNumber: dto.ktpNumber,
+        fullNameKtp: dto.fullNameKtp,
+        addressKtp: dto.addressKtp,
+        faceImageUrl: dto.faceImageUrl,
+      },
     });
 
     return VerificationMapper.toResponse(verification);

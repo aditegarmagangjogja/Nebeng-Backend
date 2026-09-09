@@ -32,6 +32,17 @@ export class UserRepository {
     });
   }
 
+  async update(id: string, data: Prisma.UserUpdateInput): Promise<any> {
+    const parseId = this.safeParseBigInt(id);
+    if (!parseId) throw new Error('Invalid ID format');
+
+    return this.prisma.user.update({
+      where: { id: parseId },
+      data,
+      include: { profile: true, region: true },
+    });
+  }
+
   async findByEmail(email: string): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: { email: email.toLocaleLowerCase().trim() },
@@ -77,17 +88,6 @@ export class UserRepository {
     ]);
 
     return { users, total };
-  }
-
-  async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
-    const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
-
-    return this.prisma.user.update({
-      where: { id: parseId },
-      data,
-      include: { profile: true, region: true },
-    });
   }
 
   async upsertProfile(userIdStr: string, profileData: any) {
