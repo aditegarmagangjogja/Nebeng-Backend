@@ -28,7 +28,11 @@ export class UserRepository {
 
     return this.prisma.user.findUnique({
       where: { id: parseId },
-      include: { profile: true, region: true },
+      include: {
+        profile: true,
+        region: true,
+        reviewsReceived: { select: { rating: true } },
+      },
     });
   }
 

@@ -123,6 +123,24 @@
         "tags": [
           "Users"
         ]
+      },
+      "get": {
+        "operationId": "UserController_getMyProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan profil akun yang sedang login",
+        "tags": [
+          "Users"
+        ]
       }
     },
     "/api/users/me/profile": {
@@ -2451,6 +2469,12 @@
             "format": "date-time",
             "type": "string"
           },
+          "rating": {
+            "type": "object"
+          },
+          "totalReviews": {
+            "type": "number"
+          },
           "updatedAt": {
             "format": "date-time",
             "type": "string"
@@ -2466,6 +2490,8 @@
           "statusVerification",
           "rewardPoints",
           "createdAt",
+          "rating",
+          "totalReviews",
           "updatedAt"
         ]
       },

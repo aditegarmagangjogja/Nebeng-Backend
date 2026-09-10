@@ -24,7 +24,10 @@ export class CheckpointsService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private safeParseBigInt(id: string): bigint | null {
+  private safeParseBigInt(
+    id: string | number | undefined | null,
+  ): bigint | null {
+    if (!id) return null;
     try {
       return BigInt(id);
     } catch {
@@ -32,25 +35,43 @@ export class CheckpointsService {
     }
   }
 
-  async scanCheckpoint(currentUser: any, dto: ScanCheckpointDto) {
+  private async resolvePosId(
+    currentUser: any,
+    providedPosId?: string,
+  ): Promise<string> {
     const operatorUserIdStr = String(currentUser.id);
-    if (currentUser.role === Role.regional || currentUser.role === 'regional') {
-      const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
-      if (parsedOperatorId) {
-        const assignedPos = await this.prisma.pickupPoint.findFirst({
-          where: {
-            id: this.safeParseBigInt(dto.posId) || BigInt(0),
-            operatorId: parsedOperatorId,
-          },
-        });
+    const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
 
-        if (!assignedPos) {
+    const assignedPos = await this.prisma.pickupPoint.findFirst({
+      where: { operatorId: parsedOperatorId },
+    });
+
+    if (providedPosId) {
+      if (
+        currentUser.role === Role.operator ||
+        currentUser.role === Role.regional
+      ) {
+        if (!assignedPos || assignedPos.id.toString() !== providedPosId) {
           throw new ForbiddenException(
             'Anda tidak memiliki otoritas bertugas di Pos Checkpoint ini.',
           );
         }
       }
+      return providedPosId;
     }
+
+    if (assignedPos) {
+      return assignedPos.id.toString();
+    }
+
+    throw new BadRequestException(
+      'ID Pos tidak ditemukan. Pastikan Anda sudah ditugaskan ke sebuah Pos Checkpoint.',
+    );
+  }
+
+  async scanCheckpoint(currentUser: any, dto: ScanCheckpointDto) {
+    const targetPosId = await this.resolvePosId(currentUser, dto.posId);
+    const operatorUserIdStr = String(currentUser.id);
 
     const trip = await this.checkpointsRepository.findTripByQr(dto.qrCodeTrip);
     if (!trip) {
@@ -81,7 +102,7 @@ export class CheckpointsService {
         );
       }
 
-      if (trip.originPointId.toString() !== dto.posId) {
+      if (trip.originPointId.toString() !== targetPosId) {
         throw new BadRequestException(
           'Proses Check-in Origin harus dilakukan di Pos Asal yang sesuai.',
         );
@@ -90,7 +111,7 @@ export class CheckpointsService {
       const log = await this.checkpointsRepository.processCheckinOrigin(
         trip.id,
         order.id,
-        dto.posId,
+        targetPosId,
         operatorUserIdStr,
         dto.securitySealQr,
       );
@@ -109,12 +130,13 @@ export class CheckpointsService {
         );
       }
 
-      if (trip.destinationPointId.toString() !== dto.posId) {
+      if (trip.destinationPointId.toString() !== targetPosId) {
         throw new BadRequestException(
           'Proses Check-in Destination harus dilakukan di Pos Tujuan yang sesuai.',
         );
       }
 
+      // Validasi OTP hanya wajib jika order bertipe parcel/barang
       if (order.type === OrderType.parcel) {
         if (!dto.otpClaim) {
           throw new BadRequestException(
@@ -145,7 +167,7 @@ export class CheckpointsService {
         await this.checkpointsRepository.processCheckinDestinationAndReleaseEscrow(
           trip.id,
           order.id,
-          dto.posId,
+          targetPosId,
           operatorUserIdStr,
           trip.mitraId,
           order.customerId,
@@ -155,38 +177,22 @@ export class CheckpointsService {
 
       return {
         message:
-          'Check-in Pos Tujuan & Penyerahan berhasil. Transaksi Selesai, Dana Escrow telah dicairkan ke Wallet Mitra, dan Poin Reward berhasil ditambahkan.',
+          order.type === OrderType.parcel
+            ? 'Check-in Pos Tujuan & Penyerahan Barang berhasil. Dana Escrow dicairkan.'
+            : 'Check-in Pos Tujuan Penumpang berhasil. Transaksi Selesai & Dana Escrow dicairkan ke Wallet Mitra.',
         checkpoint: CheckpointMapper.toResponse(log),
       };
     }
-
-    throw new BadRequestException('Jenis Scan Type tidak valid.');
   }
 
   async manualForceReleaseByOperator(
     currentUser: any,
     qrCodeTicket: string,
-    posId: string,
+    posId?: string,
     otpClaim?: string,
   ) {
+    const targetPosId = await this.resolvePosId(currentUser, posId);
     const operatorUserIdStr = String(currentUser.id);
-
-    const assignedPos = await this.prisma.pickupPoint.findFirst({
-      where: {
-        id: this.safeParseBigInt(posId) || BigInt(0),
-        operatorId: this.safeParseBigInt(operatorUserIdStr),
-      },
-    });
-
-    if (
-      !assignedPos &&
-      currentUser.role !== Role.admin &&
-      currentUser.role !== Role.regional
-    ) {
-      throw new ForbiddenException(
-        'Anda tidak memiliki otoritas bertugas di Pos ini.',
-      );
-    }
 
     const order = await this.checkpointsRepository.findOrderByQr(qrCodeTicket);
     if (!order) {
@@ -232,7 +238,7 @@ export class CheckpointsService {
       await this.checkpointsRepository.processManualForceCompleteAndRelease(
         trip.id,
         order.id,
-        posId,
+        targetPosId,
         operatorUserIdStr,
         trip.mitraId,
         order.customerId,

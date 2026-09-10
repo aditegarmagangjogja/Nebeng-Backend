@@ -21,8 +21,8 @@ export class CreateReviewDto {
     description: 'ID user yang dinilai',
     example: '2',
   })
-  @IsNotEmpty({ message: 'reveiwId tidak boleh kosong' })
-  @IsString({ message: 'reveiwID harus berupa string' })
+  @IsNotEmpty({ message: 'revieweeId tidak boleh kosong' })
+  @IsString({ message: 'revieweeId harus berupa string' })
   revieweeId!: string;
 
   @ApiProperty({

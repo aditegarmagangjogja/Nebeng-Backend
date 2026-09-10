@@ -24,8 +24,8 @@ export class ScanCheckpointDto {
     description: 'ID pos resmi tempat operator bertugas',
   })
   @IsString()
-  @IsNotEmpty()
-  posId!: string;
+  @IsOptional()
+  posId?: string;
 
   @ApiProperty({ enum: ScanType, example: ScanType.checkin_origin })
   @IsEnum(ScanType)

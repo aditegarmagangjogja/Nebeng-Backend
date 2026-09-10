@@ -43,5 +43,11 @@ export class UserResponseDto {
   createdAt!: Date;
 
   @ApiProperty()
+  rating?: number | null;
+
+  @ApiProperty()
+  totalReviews?: number;
+
+  @ApiProperty()
   updatedAt!: Date;
 }

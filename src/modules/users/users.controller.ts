@@ -158,6 +158,14 @@ export class UserController {
     return this.userService.findAll(parsedPage, parsedLimit);
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Mendapatkan profil akun yang sedang login' })
+  async getMyProfile(@Request() req: any): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.findOne(String(userId));
+  }
+
   @Post('me/avatar')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
