@@ -2348,6 +2348,51 @@
           }
         }
       },
+      "VehicleSummaryDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "501"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "motor",
+              "mobil"
+            ]
+          },
+          "model": {
+            "type": "string",
+            "example": "Beat"
+          },
+          "plateNumber": {
+            "type": "string",
+            "example": "AD1234ABC"
+          },
+          "color": {
+            "type": "string",
+            "example": "Hitam"
+          },
+          "capacitySeats": {
+            "type": "number",
+            "example": 1
+          },
+          "maxWeightCapacityKg": {
+            "type": "number",
+            "example": 15
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "model",
+          "plateNumber",
+          "color",
+          "capacitySeats",
+          "maxWeightCapacityKg"
+        ]
+      },
       "UserResponseDto": {
         "type": "object",
         "properties": {
@@ -2407,6 +2452,12 @@
           "rewardPoints": {
             "type": "number",
             "example": 0
+          },
+          "vehicles": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VehicleSummaryDto"
+            }
           },
           "createdAt": {
             "format": "date-time",

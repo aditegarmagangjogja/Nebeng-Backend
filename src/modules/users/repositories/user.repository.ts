@@ -28,7 +28,11 @@ export class UserRepository {
 
     return this.prisma.user.findUnique({
       where: { id: parseId },
-      include: { profile: true, region: true },
+      include: {
+        profile: true,
+        region: true,
+        vehicles: { orderBy: { createdAt: 'desc' } },
+      },
     });
   }
 
@@ -53,7 +57,6 @@ export class UserRepository {
     });
   }
 
-  // Diperbarui dengan Pagination untuk mencegah lag & beban memori berlebih
   async findAll(
     page: number = 1,
     limit: number = 50,
@@ -70,7 +73,11 @@ export class UserRepository {
         where,
         skip,
         take: limit,
-        include: { profile: true, region: true },
+        include: {
+          profile: true,
+          region: true,
+          vehicles: { orderBy: { createdAt: 'desc' } },
+        },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.user.count({ where }),
@@ -86,7 +93,11 @@ export class UserRepository {
     return this.prisma.user.update({
       where: { id: parseId },
       data,
-      include: { profile: true, region: true },
+      include: {
+        profile: true,
+        region: true,
+        vehicles: { orderBy: { createdAt: 'desc' } },
+      },
     });
   }
 

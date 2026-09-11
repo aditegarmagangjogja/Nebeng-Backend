@@ -3,7 +3,31 @@ import {
   Role,
   UserStatus,
   VerificationStatus,
+  VehicleType,
 } from '../../../generated/prisma/enums';
+
+export class VehicleSummaryDto {
+  @ApiProperty({ example: '501' })
+  id!: string;
+
+  @ApiProperty({ enum: VehicleType })
+  type!: VehicleType;
+
+  @ApiProperty({ example: 'Beat' })
+  model!: string;
+
+  @ApiProperty({ example: 'AD1234ABC' })
+  plateNumber!: string;
+
+  @ApiProperty({ example: 'Hitam' })
+  color!: string;
+
+  @ApiProperty({ example: 1 })
+  capacitySeats!: number;
+
+  @ApiProperty({ example: 15 })
+  maxWeightCapacityKg!: number;
+}
 
 export class UserResponseDto {
   @ApiProperty({ example: '1029103840' })
@@ -35,6 +59,9 @@ export class UserResponseDto {
 
   @ApiProperty({ example: 0 })
   rewardPoints!: number;
+
+  @ApiPropertyOptional({ type: [VehicleSummaryDto] })
+  vehicles?: VehicleSummaryDto[];
 
   @ApiProperty()
   createdAt!: Date;
