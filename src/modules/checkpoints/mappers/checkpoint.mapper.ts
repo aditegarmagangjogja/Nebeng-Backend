@@ -22,7 +22,7 @@ export class CheckpointMapper {
       order: log.order
         ? {
             id: log.order.id.toString(),
-            qrCodeTiket: log.order.qrCodeTiket,
+            qrCodeTicket: log.order.qrCodeTicket,
             status: log.order.status,
             escrowStatus: log.order.escrowStatus,
           }

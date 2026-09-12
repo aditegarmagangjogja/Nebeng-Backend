@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -47,14 +46,12 @@ export class CheckpointsService {
     });
 
     if (providedPosId) {
-      if (
-        currentUser.role === Role.operator ||
-        currentUser.role === Role.regional
-      ) {
-        if (!assignedPos || assignedPos.id.toString() !== providedPosId) {
-          throw new ForbiddenException(
-            'Anda tidak memiliki otoritas bertugas di Pos Checkpoint ini.',
-          );
+      if (currentUser.role === Role.operator) {
+        const targetPos = await this.prisma.pickupPoint.findUnique({
+          where: { id: BigInt(providedPosId) },
+        });
+        if (!targetPos) {
+          throw new NotFoundException('Pos Checkpoint tidak ditemukan.');
         }
       }
       return providedPosId;
