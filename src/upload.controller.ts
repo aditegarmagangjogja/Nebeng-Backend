@@ -67,7 +67,6 @@ export class UploadController {
     if (!file) {
       throw new BadRequestException('File tidak ditemukan');
     }
-    // Mengembalikan relative path yang bisa diakses via static assets /uploads/...
     return {
       filePath: `/uploads/verifications/${file.filename}`,
       fileType: file.mimetype,

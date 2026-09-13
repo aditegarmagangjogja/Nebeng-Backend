@@ -1,4 +1,3 @@
-// src/modules/admin/admin.controller.ts
 import {
   Body,
   Controller,

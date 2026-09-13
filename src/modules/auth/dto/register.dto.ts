@@ -10,7 +10,6 @@ import {
   MinLength,
 } from 'class-validator';
 
-// Enum khusus pendaftaran publik (Tanpa Role Admin & Operasional)
 export enum PublicRole {
   customer = 'customer',
   mitra = 'mitra',

@@ -1178,6 +1178,33 @@
         "tags": [
           "Kendaraan"
         ]
+      },
+      "get": {
+        "operationId": "VehiclesController_getAllVehicles",
+        "parameters": [
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar kendaraan ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah",
+        "tags": [
+          "Kendaraan"
+        ]
       }
     },
     "/api/vehicles/me": {

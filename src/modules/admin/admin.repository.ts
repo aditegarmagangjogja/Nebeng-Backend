@@ -90,7 +90,6 @@ export class AdminRepository {
   async getAllPricingSettings() {
     const settings = await this.prisma.pricingSetting.findMany();
 
-    // Konversi BigInt ke Number / String agar aman dikirim ke JSON frontend
     return settings.map((setting) => ({
       id: setting.id.toString(),
       serviceType: setting.serviceType,
@@ -104,7 +103,6 @@ export class AdminRepository {
   }
 
   async updatePricingPolicy(dto: UpdatePricingPolicyDto) {
-    // 1. Update atau Create tarif untuk Motor (size = null)
     const existingMotor = await this.prisma.pricingSetting.findFirst({
       where: { serviceType: ServiceType.motor, size: null },
     });
@@ -115,7 +113,7 @@ export class AdminRepository {
         data: {
           baseFare: dto.motorBaseFare,
           farePerKm: dto.motorPerKm,
-          farePerKg: null, // Membersihkan kolom farePerKg agar tidak tercampur
+          farePerKg: null,
           maxWeightKg: null,
           adminFeePercentage: dto.rideFeePercent,
         },
@@ -134,7 +132,6 @@ export class AdminRepository {
       });
     }
 
-    // 2. Update atau Create tarif untuk Mobil (size = null)
     const existingMobil = await this.prisma.pricingSetting.findFirst({
       where: { serviceType: ServiceType.mobil, size: null },
     });
@@ -145,7 +142,7 @@ export class AdminRepository {
         data: {
           baseFare: dto.carBaseFare,
           farePerKm: dto.carPerKm,
-          farePerKg: null, // Membersihkan kolom farePerKg agar tidak tercampur
+          farePerKg: null,
           maxWeightKg: null,
           adminFeePercentage: dto.rideFeePercent,
         },
@@ -164,7 +161,6 @@ export class AdminRepository {
       });
     }
 
-    // Pemetaan string dari DTO ke Prisma Enum ParcelSize yang valid
     const sizeMapping: Record<string, ParcelSize> = {
       XXS: ParcelSize.xxs,
       XS: ParcelSize.xs,
@@ -174,12 +170,10 @@ export class AdminRepository {
       XL: ParcelSize.xl,
     };
 
-    // 3. Bersihkan data lama khusus serviceType 'barang' agar tidak terjadi duplikasi atau tertukar
     await this.prisma.pricingSetting.deleteMany({
       where: { serviceType: ServiceType.barang },
     });
 
-    // 4. Masukkan kembali matriks paket secara bersih, berurutan, dan menggunakan farePerKm
     const parcelDataToCreate = dto.parcelMatrix.map((item) => {
       const parcelSizeEnum = sizeMapping[item.size];
 
@@ -193,9 +187,9 @@ export class AdminRepository {
         serviceType: ServiceType.barang,
         size: parcelSizeEnum,
         baseFare: item.baseRate,
-        farePerKm: 2000, // Menggunakan farePerKm untuk pengiriman barang
-        farePerKg: null, // Tidak menggunakan tarif per kg
-        maxWeightKg: item.maxWeightKg, // Batas berat maksimum paket per ukuran
+        farePerKm: 2000,
+        farePerKg: null,
+        maxWeightKg: item.maxWeightKg,
         adminFeePercentage: dto.parcelFeePercent,
       };
     });
@@ -281,7 +275,7 @@ export class AdminRepository {
         },
         orderBy: { createdAt: 'desc' },
         skip: skip,
-        take: limit, // Menggunakan limit dinamis untuk pagination
+        take: limit,
       }),
       this.prisma.walletTransaction.count({
         where: {

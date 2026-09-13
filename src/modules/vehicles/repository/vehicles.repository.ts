@@ -40,6 +40,18 @@ export class VehiclesRepository {
     });
   }
 
+  async findAll(regionId?: string) {
+    const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
+    if (regionId && !parsedRegionId) return [];
+
+    return this.prisma.vehicle.findMany({
+      where: parsedRegionId
+        ? { user: { regionId: parsedRegionId } }
+        : undefined,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async findById(id: string) {
     const parsedId = this.safeParseBigInt(id);
     if (!parsedId) return null;

@@ -14,19 +14,16 @@ async function bootstrap() {
     return this.toString();
   };
 
-  // Ubah tipe ke NestExpressApplication agar mendukung useStaticAssets
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors();
   app.setGlobalPrefix('api');
 
-  // Pastikan folder fisik untuk upload avatar otomatis dibuat di luar folder src (root project)
   const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  // Konfigurasi agar folder uploads dapat diakses secara publik via URL (contoh: /uploads/avatars/...)
   app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
     prefix: '/uploads',
   });
