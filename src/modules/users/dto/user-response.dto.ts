@@ -39,6 +39,15 @@ export class UserResponseDto {
   @ApiProperty({ example: 0 })
   rewardPoints!: number;
 
+  @ApiPropertyOptional({ example: 'BCA' })
+  bankName?: string | null;
+
+  @ApiPropertyOptional({ example: '1234567890' })
+  bankAccountNumber?: string | null;
+
+  @ApiPropertyOptional({ example: 'Budi Santoso' })
+  bankAccountHolder?: string | null;
+
   @ApiProperty()
   createdAt!: Date;
 

@@ -32,6 +32,9 @@ export class UserMapper {
       rewardPoints: user.rewardPoints,
       rating: calculatedRating,
       totalReviews: reviewCount,
+      bankName: user.profile?.bankName || null,
+      bankAccountNumber: user.profile?.bankAccountNumber || null,
+      bankAccountHolder: user.profile?.bankAccountHolder || null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

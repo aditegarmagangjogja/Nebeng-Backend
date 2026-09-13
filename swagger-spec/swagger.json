@@ -2492,6 +2492,18 @@
             "type": "number",
             "example": 0
           },
+          "bankName": {
+            "type": "object",
+            "example": "BCA"
+          },
+          "bankAccountNumber": {
+            "type": "object",
+            "example": "1234567890"
+          },
+          "bankAccountHolder": {
+            "type": "object",
+            "example": "Budi Santoso"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"

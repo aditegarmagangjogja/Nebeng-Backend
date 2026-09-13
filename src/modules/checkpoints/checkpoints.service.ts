@@ -11,7 +11,6 @@ import {
   EscrowStatus,
   OrderStatus,
   OrderType,
-  Role,
   ScanType,
   ServiceType,
 } from '../../generated/prisma/enums';
@@ -45,24 +44,30 @@ export class CheckpointsService {
       where: { operatorId: parsedOperatorId },
     });
 
-    if (providedPosId) {
-      if (currentUser.role === Role.operator) {
-        const targetPos = await this.prisma.pickupPoint.findUnique({
-          where: { id: BigInt(providedPosId) },
-        });
-        if (!targetPos) {
-          throw new NotFoundException('Pos Checkpoint tidak ditemukan.');
-        }
-      }
-      return providedPosId;
-    }
-
     if (assignedPos) {
       return assignedPos.id.toString();
     }
 
+    const fallbackPos = await this.prisma.pickupPoint.findFirst({
+      where: { isActive: true },
+      orderBy: { id: 'asc' },
+    });
+
+    if (fallbackPos) {
+      return fallbackPos.id.toString();
+    }
+
+    if (providedPosId) {
+      const targetPos = await this.prisma.pickupPoint.findUnique({
+        where: { id: BigInt(providedPosId) },
+      });
+      if (targetPos) {
+        return targetPos.id.toString();
+      }
+    }
+
     throw new BadRequestException(
-      'ID Pos tidak ditemukan. Pastikan Anda sudah ditugaskan ke sebuah Pos Checkpoint.',
+      'ID Pos tidak ditemukan. Belum ada Pos Checkpoint aktif yang terdaftar di database.',
     );
   }
 
