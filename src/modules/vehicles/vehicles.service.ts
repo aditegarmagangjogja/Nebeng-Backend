@@ -59,9 +59,25 @@ export class VehicleService {
     return vehicles.map(VehicleMapper.toResponse);
   }
 
-  async getAllVehicles(regionId?: string) {
-    const vehicles = await this.vehiclesRepository.findAll(regionId);
-    return vehicles.map(VehicleMapper.toResponse);
+  async getAllVehicles(
+    regionId?: string,
+    page: number = 1,
+    limit: number = 50,
+  ) {
+    const { vehicles, total } = await this.vehiclesRepository.findAll(
+      regionId,
+      page,
+      limit,
+    );
+    return {
+      data: vehicles.map(VehicleMapper.toResponse),
+      meta: {
+        totalData: total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit) || 1,
+        limit,
+      },
+    };
   }
 
   async getVehicleById(idStr: string) {

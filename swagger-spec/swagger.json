@@ -1189,6 +1189,22 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1201,7 +1217,7 @@
             "bearer": []
           }
         ],
-        "summary": "Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah",
+        "summary": "Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah & paginasi",
         "tags": [
           "Kendaraan"
         ]
@@ -1374,6 +1390,26 @@
         "operationId": "TripsController_getTrips",
         "parameters": [
           {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
             "name": "originPointId",
             "required": false,
             "in": "query",
@@ -1388,6 +1424,16 @@
             "in": "query",
             "schema": {
               "example": "20",
+              "type": "string"
+            }
+          },
+          {
+            "name": "posId",
+            "required": false,
+            "in": "query",
+            "description": "Filter trip masuk/keluar pos ini",
+            "schema": {
+              "example": "10",
               "type": "string"
             }
           },
@@ -1435,6 +1481,112 @@
           }
         },
         "summary": "Pencarian & Listing Trip (Publik / Customer)",
+        "tags": [
+          "Trips"
+        ]
+      }
+    },
+    "/api/trips/me": {
+      "get": {
+        "operationId": "TripsController_getMyTrips",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "originPointId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "10",
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationPointId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "20",
+              "type": "string"
+            }
+          },
+          {
+            "name": "posId",
+            "required": false,
+            "in": "query",
+            "description": "Filter trip masuk/keluar pos ini",
+            "schema": {
+              "example": "10",
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": "2026-08-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "vehicleType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil"
+              ]
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "in_origin_pos",
+                "in_transit",
+                "arrived_dest_pos",
+                "completed",
+                "cancelled"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar trip mitra berhasil diambil"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar Trip milik Mitra yang sedang login",
         "tags": [
           "Trips"
         ]

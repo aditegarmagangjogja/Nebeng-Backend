@@ -16,12 +16,14 @@ import {
   VerificationStatus,
 } from '../../generated/prisma/enums';
 import { randomBytes } from 'crypto';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class TripsService {
   constructor(
     private readonly tripsRepository: TripsRepository,
     private readonly vehiclesRepository: VehiclesRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   private async generateUniqueTripQr(): Promise<string> {
@@ -44,7 +46,7 @@ export class TripsService {
     try {
       return BigInt(id);
     } catch {
-      throw new BadRequestException('Format ID tidak valid');
+      throw new BadRequestException(`Format ID '${id}' tidak valid`);
     }
   }
 
@@ -96,7 +98,7 @@ export class TripsService {
 
     if (conflictingTrip) {
       throw new BadRequestException(
-        'Kendaraan ini sudah dijadwalkan pada trip lain di tanggal yang sama. Satu kendaraan tidak dapat digunakan untuk dua perjalanan bersamaan.',
+        'Kendaraan ini sedang aktif dalam trip lain atau sudah dijadwalkan pada tanggal yang sama.',
       );
     }
 
@@ -113,6 +115,11 @@ export class TripsService {
 
     const qrCodeTrip = await this.generateUniqueTripQr();
 
+    let parsedDepartureTime = new Date(dto.departureTime);
+    if (isNaN(parsedDepartureTime.getTime())) {
+      parsedDepartureTime = new Date(`1970-01-01T${dto.departureTime}Z`);
+    }
+
     const tripData = {
       mitraId: this.safeParseBigInt(parsedUserId),
       vehicleId: parsedVehicleId,
@@ -120,7 +127,7 @@ export class TripsService {
       destinationPointId: this.safeParseBigInt(dto.destinationPointId),
       vehicleType: vehicle.type,
       departureDate: targetDepartureDate,
-      departureTime: new Date(dto.departureTime),
+      departureTime: parsedDepartureTime,
       price: dto.price,
       seatTotal,
       seatAvailable: seatTotal,
@@ -134,7 +141,7 @@ export class TripsService {
     return TripMapper.toResponse(trip);
   }
 
-  async getTrips(query: QueryTripDto) {
+  async getTrips(query: QueryTripDto, currentUserIdStr?: string) {
     const filters: any = {};
 
     if (query.originPointId) {
@@ -145,18 +152,102 @@ export class TripsService {
         query.destinationPointId,
       );
     }
+
+    if (query.posId) {
+      const posIdBigInt = this.safeParseBigInt(query.posId);
+      filters.OR = [
+        { originPointId: posIdBigInt },
+        { destinationPointId: posIdBigInt },
+      ];
+    }
+
     if (query.status) {
       filters.status = query.status;
     }
     if (query.vehicleType) {
       filters.vehicleType = query.vehicleType;
     }
+
     if (query.date) {
-      filters.departureDate = new Date(query.date);
+      const startOfDay = new Date(query.date);
+      startOfDay.setUTCHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(query.date);
+      endOfDay.setUTCHours(23, 59, 59, 999);
+
+      filters.departureDate = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
     }
 
-    const trips = await this.tripsRepository.findAll(filters);
-    return TripMapper.toResponseList(trips);
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    const { data: trips, total } = await this.tripsRepository.findAll(
+      filters,
+      page,
+      limit,
+    );
+    const bookedTripIds = new Set<string>();
+
+    if (currentUserIdStr) {
+      const userOrders = await this.prisma.order.findMany({
+        where: {
+          customerId: this.safeParseBigInt(currentUserIdStr),
+          status: { notIn: ['cancelled'] },
+        },
+        select: { tripId: true },
+      });
+      userOrders.forEach((o) => bookedTripIds.add(o.tripId.toString()));
+    }
+    const mappedTrips = TripMapper.toResponseList(trips) as any[];
+    const responseList = mappedTrips.map((trip) => ({
+      ...trip,
+      isBookedByMe: bookedTripIds.has(trip.id),
+    }));
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      data: responseList,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+      },
+    };
+  }
+
+  async getTripsByMitra(mitraIdStr: string, query: QueryTripDto) {
+    const parsedMitraId = this.safeParseBigInt(mitraIdStr);
+
+    const filters: any = {
+      mitraId: parsedMitraId,
+    };
+
+    if (query.status) {
+      filters.status = query.status;
+    }
+
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    const { data: trips, total } = await this.tripsRepository.findAll(
+      filters,
+      page,
+      limit,
+    );
+
+    return {
+      data: TripMapper.toResponseList(trips),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getTripById(idStr: string) {

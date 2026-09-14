@@ -56,7 +56,8 @@ export class TripMapper {
     };
   }
 
-  static toResponseList(trips: any[]) {
+  static toResponseList(trips: any[]): any[] {
+    if (!Array.isArray(trips)) return [];
     return trips.map((t) => this.toResponse(t));
   }
 }

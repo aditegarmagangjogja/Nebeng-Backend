@@ -42,6 +42,14 @@ export class OrdersService {
     return qrCodeTiket;
   }
 
+  private safeParseBigInt(id: string): bigint {
+    try {
+      return BigInt(id);
+    } catch {
+      throw new BadRequestException(`Format ID '${id}' tidak valid`);
+    }
+  }
+
   private generateOtp(): string {
     return randomInt(100000, 999999).toString();
   }
@@ -61,6 +69,22 @@ export class OrdersService {
     if (trip.status !== TripStatus.scheduled) {
       throw new BadRequestException(
         'Trip ini sudah tidak menerima pemesanan baru.',
+      );
+    }
+
+    const existingActiveOrder = await this.prisma.order.findFirst({
+      where: {
+        tripId: this.safeParseBigInt(dto.tripId),
+        customerId: this.safeParseBigInt(customerIdStr),
+        status: {
+          in: ['pending_payment', 'paid', 'checked_in_origin', 'in_transit'],
+        },
+      },
+    });
+
+    if (existingActiveOrder) {
+      throw new BadRequestException(
+        'Anda sudah memiliki pesanan aktif pada jadwal trip ini.',
       );
     }
 

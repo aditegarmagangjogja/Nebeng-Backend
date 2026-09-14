@@ -30,32 +30,49 @@ export class TripsRepository {
   }
 
   async findConflictingTrip(vehicleId: bigint, departureDate: Date) {
+    const startOfDay = new Date(departureDate);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(departureDate);
+    endOfDay.setUTCHours(23, 59, 59, 999);
+
     return this.prisma.trip.findFirst({
       where: {
         vehicleId,
-        departureDate,
-        status: {
-          in: ['scheduled', 'in_transit'],
-        },
+        OR: [
+          { status: 'in_transit' },
+          {
+            status: 'scheduled',
+            departureDate: {
+              gte: startOfDay,
+              lte: endOfDay,
+            },
+          },
+        ],
       },
     });
   }
 
-  async findAll(filters: any) {
-    return this.prisma.trip.findMany({
-      where: filters,
-      include: {
-        mitra: true,
-        vehicle: true,
-        originPoint: {
-          include: { region: true },
+  async findAll(filters: any, page: number = 1, limit: number = 10) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.trip.findMany({
+        where: filters,
+        skip,
+        take: limit,
+        include: {
+          mitra: true,
+          vehicle: true,
+          originPoint: { include: { region: true } },
+          destinationPoint: { include: { region: true } },
         },
-        destinationPoint: {
-          include: { region: true },
-        },
-      },
-      orderBy: [{ departureDate: 'asc' }, { departureTime: 'asc' }],
-    });
+        orderBy: [{ departureDate: 'asc' }, { departureTime: 'asc' }],
+      }),
+      this.prisma.trip.count({ where: filters }),
+    ]);
+
+    return { data, total };
   }
 
   async findById(id: string) {

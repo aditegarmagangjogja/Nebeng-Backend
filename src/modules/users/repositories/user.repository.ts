@@ -38,7 +38,8 @@ export class UserRepository {
 
   async update(id: string, data: Prisma.UserUpdateInput): Promise<any> {
     const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
+    if (!parseId)
+      throw new BadRequestException('Format ID pengguna tidak valid');
 
     return this.prisma.user.update({
       where: { id: parseId },
@@ -48,12 +49,14 @@ export class UserRepository {
   }
 
   async findByEmail(email: string): Promise<User | null> {
+    if (!email) return null;
     return this.prisma.user.findUnique({
       where: { email: email.toLocaleLowerCase().trim() },
     });
   }
 
   async findByPhone(phone: string): Promise<User | null> {
+    if (!phone) return null;
     return this.prisma.user.findUnique({
       where: { phone: phone.trim() },
     });
@@ -68,12 +71,14 @@ export class UserRepository {
     });
   }
 
-  // Diperbarui dengan Pagination untuk mencegah lag & beban memori berlebih
   async findAll(
     page: number = 1,
-    limit: number = 50,
+    limit: number = 30,
   ): Promise<{ users: any[]; total: number }> {
-    const skip = (page - 1) * limit;
+    const pageNum = Math.min(1, page);
+    const limitNum = Math.min(100, Math.max(1, limit));
+    const skip = (pageNum - 1) * limitNum;
+
     const where = {
       status: {
         not: UserStatus.deleted,
@@ -84,7 +89,7 @@ export class UserRepository {
       this.prisma.user.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         include: { profile: true, region: true },
         orderBy: { createdAt: 'desc' },
       }),
@@ -113,7 +118,7 @@ export class UserRepository {
     refreshToken: string | null,
   ): Promise<User> {
     const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
+    if (!parseId) throw new BadRequestException('Format ID tidak valid');
 
     return this.prisma.user.update({
       where: { id: parseId },
@@ -123,7 +128,7 @@ export class UserRepository {
 
   async updatePin(id: string, pinHash: string): Promise<User> {
     const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
+    if (!parseId) throw new BadRequestException('Format ID tidak valid');
 
     return this.prisma.user.update({
       where: { id: parseId },
@@ -163,7 +168,7 @@ export class UserRepository {
 
   async anonymize(id: string, anonymousId: string): Promise<User> {
     const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
+    if (!parseId) throw new BadRequestException('Format ID tidak valid');
 
     return this.prisma.$transaction(async (tx) => {
       await tx.userProfile.deleteMany({

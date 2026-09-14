@@ -63,11 +63,21 @@ export class VehiclesController {
   @Roles(Role.admin, Role.regional)
   @ApiOperation({
     summary:
-      'Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah',
+      'Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah & paginasi',
   })
   @ApiResponse({ status: 200, description: 'Daftar kendaraan ditemukan' })
-  async getAllVehicles(@Query('regionId') regionId?: string) {
-    return this.vehiclesService.getAllVehicles(regionId);
+  async getAllVehicles(
+    @Query('regionId') regionId?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const parsedPage = page ? parseInt(page, 10) : 1;
+    const parsedLimit = limit ? parseInt(limit, 10) : 50;
+    return this.vehiclesService.getAllVehicles(
+      regionId,
+      parsedPage,
+      parsedLimit,
+    );
   }
 
   @Get(':id')
