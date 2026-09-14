@@ -59,6 +59,11 @@ export class VehicleService {
     return vehicles.map(VehicleMapper.toResponse);
   }
 
+  async getAllVehicles(regionId?: string) {
+    const vehicles = await this.vehiclesRepository.findAll(regionId);
+    return vehicles.map(VehicleMapper.toResponse);
+  }
+
   async getVehicleById(idStr: string) {
     const vehicle = await this.vehiclesRepository.findById(idStr);
     if (!vehicle) {

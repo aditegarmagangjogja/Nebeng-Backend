@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -56,6 +57,17 @@ export class VehiclesController {
   @ApiResponse({ status: 200, description: 'Daftar kendaraan ditemukan' })
   async getMyVehicles(@GetUser('id') userId: string) {
     return this.vehiclesService.getMyVehicles(String(userId));
+  }
+
+  @Get()
+  @Roles(Role.admin, Role.regional)
+  @ApiOperation({
+    summary:
+      'Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah',
+  })
+  @ApiResponse({ status: 200, description: 'Daftar kendaraan ditemukan' })
+  async getAllVehicles(@Query('regionId') regionId?: string) {
+    return this.vehiclesService.getAllVehicles(regionId);
   }
 
   @Get(':id')
