@@ -58,12 +58,7 @@ export class PaymentsController {
     @GetUser() currentUser: any,
     @Query('regionId') queryRegionId?: string,
   ) {
-    const targetRegionId =
-      currentUser.role === Role.regional || currentUser.role === 'regional'
-        ? currentUser.regionId.toString()
-        : queryRegionId;
-
-    return this.paymentsService.getPaymentsByRegion(targetRegionId);
+    return this.paymentsService.getPaymentsByRegion(currentUser, queryRegionId);
   }
 
   @Get('operator-summary')

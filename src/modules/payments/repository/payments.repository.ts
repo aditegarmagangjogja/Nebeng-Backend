@@ -24,7 +24,8 @@ export class PaymentsRepository {
     mitraUserIdStr: string,
     paymentGateway: string,
     transactionId: string,
-    amount: number,
+    totalAmount: number,
+    netMitraAmount: number,
   ) {
     const parsedOrderId = this.safeParseBigInt(orderIdStr);
     const parsedMitraId = this.safeParseBigInt(mitraUserIdStr);
@@ -53,7 +54,7 @@ export class PaymentsRepository {
           orderId: parsedOrderId,
           paymentGateway,
           transactionId,
-          amount,
+          amount: totalAmount,
           status: PaymentStatus.success,
         },
       });
@@ -83,10 +84,11 @@ export class PaymentsRepository {
         });
       }
 
+      // Menambahkan nilai bersih (setelah potongan admin) ke escrow balance Mitra
       const updatedWallet = await tx.wallet.update({
         where: { id: wallet.id },
         data: {
-          heldEscrowBalance: { increment: amount },
+          heldEscrowBalance: { increment: netMitraAmount },
         },
       });
 
@@ -94,9 +96,9 @@ export class PaymentsRepository {
         data: {
           walletId: updatedWallet.id,
           orderId: parsedOrderId,
-          amount,
+          amount: netMitraAmount,
           type: TransactionType.escrow_hold,
-          description: `Dana ditahan Escrow untuk Order #${orderIdStr}`,
+          description: `Dana ditahan Escrow untuk Order #${orderIdStr} (setelah pot. admin)`,
         },
       });
 
@@ -110,7 +112,6 @@ export class PaymentsRepository {
       throw new BadRequestException('Format ID Operator tidak valid');
     }
 
-    // Mencari pembayaran dari trip yang berasal dari PickupPoint yang dikelola operator ini
     return this.prisma.payment.findMany({
       where: {
         order: {

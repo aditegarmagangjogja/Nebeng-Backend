@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { TripsRepository } from './repository/trips.repository';
@@ -27,19 +28,18 @@ export class TripsService {
   ) {}
 
   private async generateUniqueTripQr(): Promise<string> {
-    let qrCodeTrip = '';
-    let isUnique = false;
-
-    while (!isUnique) {
+    const maxRetries = 10;
+    for (let i = 0; i < maxRetries; i++) {
       const hex = randomBytes(4).toString('hex').toUpperCase();
-      qrCodeTrip = `TRIP-${hex}`;
+      const qrCodeTrip = `TRIP-${hex}`;
       const existing = await this.tripsRepository.findByQrCode(qrCodeTrip);
       if (!existing) {
-        isUnique = true;
+        return qrCodeTrip;
       }
     }
-
-    return qrCodeTrip;
+    throw new InternalServerErrorException(
+      'Gagal menghasilkan Kode QR Trip unik. Silakan coba kembali.',
+    );
   }
 
   private safeParseBigInt(id: string): bigint {
@@ -48,6 +48,31 @@ export class TripsService {
     } catch {
       throw new BadRequestException(`Format ID '${id}' tidak valid`);
     }
+  }
+
+  private combineDateAndTime(
+    departureDateStr: string,
+    departureTimeStr: string,
+  ): Date {
+    const datePart = new Date(departureDateStr).toISOString().split('T')[0];
+    let timePart = departureTimeStr;
+
+    if (departureTimeStr.includes('T')) {
+      timePart = new Date(departureTimeStr)
+        .toISOString()
+        .split('T')[1]
+        .substring(0, 8);
+    } else if (departureTimeStr.endsWith('Z')) {
+      timePart = departureTimeStr.replace('Z', '');
+    }
+
+    const combined = new Date(`${datePart}T${timePart}`);
+    if (isNaN(combined.getTime())) {
+      throw new BadRequestException(
+        'Format tanggal atau jam keberangkatan tidak valid.',
+      );
+    }
+    return combined;
   }
 
   async createTrip(userIdStr: string, dto: CreateTripDto) {
@@ -88,6 +113,18 @@ export class TripsService {
       );
     }
 
+    const departureCombinedDate = this.combineDateAndTime(
+      dto.departureDate,
+      dto.departureTime,
+    );
+    const now = new Date();
+
+    if (departureCombinedDate < now) {
+      throw new BadRequestException(
+        'Waktu keberangkatan tidak boleh di masa lalu.',
+      );
+    }
+
     const parsedVehicleId = this.safeParseBigInt(dto.vehicleId);
     const targetDepartureDate = new Date(dto.departureDate);
 
@@ -111,12 +148,25 @@ export class TripsService {
       if (maxWeightKg > 15) {
         maxWeightKg = 15.0;
       }
+    } else {
+      if (seatTotal > vehicle.capacitySeats) {
+        throw new BadRequestException(
+          `Jumlah kursi (${seatTotal}) melebihi kapasitas maksimal kendaraan (${vehicle.capacitySeats} kursi).`,
+        );
+      }
+      if (maxWeightKg > Number(vehicle.maxWeightCapacityKg)) {
+        throw new BadRequestException(
+          `Kapasitas berat bagasi (${maxWeightKg} kg) melebihi batas kendaraan (${vehicle.maxWeightCapacityKg} kg).`,
+        );
+      }
     }
 
     const qrCodeTrip = await this.generateUniqueTripQr();
 
-    let parsedDepartureTime = new Date(dto.departureTime);
-    if (isNaN(parsedDepartureTime.getTime())) {
+    let parsedDepartureTime: Date;
+    if (dto.departureTime.includes('T')) {
+      parsedDepartureTime = new Date(dto.departureTime);
+    } else {
       parsedDepartureTime = new Date(`1970-01-01T${dto.departureTime}Z`);
     }
 
@@ -134,6 +184,7 @@ export class TripsService {
       maxWeightCapacityKg: maxWeightKg,
       remainingWeightCapacityKg: maxWeightKg,
       qrCodeTrip,
+      serviceType: dto.serviceType,
       status: TripStatus.scheduled,
     };
 
@@ -143,6 +194,48 @@ export class TripsService {
 
   async getTrips(query: QueryTripDto, currentUserIdStr?: string) {
     const filters: any = {};
+
+    filters.status = query.status ?? TripStatus.scheduled;
+
+    if (query.date) {
+      const cleanDateStr = query.date.split('T')[0];
+      const startOfDay = new Date(`${cleanDateStr}T00:00:00.000Z`);
+      const endOfDay = new Date(`${cleanDateStr}T23:59:59.999Z`);
+
+      filters.departureDate = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
+    } else {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const startOfToday = new Date(`${todayStr}T00:00:00.000Z`);
+      filters.departureDate = { gte: startOfToday };
+    }
+
+    if (query.search) {
+      filters.OR = [
+        {
+          originPoint: {
+            name: { contains: query.search, mode: 'insensitive' },
+          },
+        },
+        {
+          destinationPoint: {
+            name: { contains: query.search, mode: 'insensitive' },
+          },
+        },
+        {
+          originPoint: {
+            region: { name: { contains: query.search, mode: 'insensitive' } },
+          },
+        },
+        {
+          destinationPoint: {
+            region: { name: { contains: query.search, mode: 'insensitive' } },
+          },
+        },
+      ];
+    }
 
     if (query.originPointId) {
       filters.originPointId = this.safeParseBigInt(query.originPointId);
@@ -161,28 +254,12 @@ export class TripsService {
       ];
     }
 
-    if (query.status) {
-      filters.status = query.status;
-    }
     if (query.vehicleType) {
       filters.vehicleType = query.vehicleType;
     }
 
-    if (query.date) {
-      const startOfDay = new Date(query.date);
-      startOfDay.setUTCHours(0, 0, 0, 0);
-
-      const endOfDay = new Date(query.date);
-      endOfDay.setUTCHours(23, 59, 59, 999);
-
-      filters.departureDate = {
-        gte: startOfDay,
-        lte: endOfDay,
-      };
-    }
-
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
 
     const { data: trips, total } = await this.tripsRepository.findAll(
       filters,
@@ -201,12 +278,12 @@ export class TripsService {
       });
       userOrders.forEach((o) => bookedTripIds.add(o.tripId.toString()));
     }
+
     const mappedTrips = TripMapper.toResponseList(trips) as any[];
     const responseList = mappedTrips.map((trip) => ({
       ...trip,
       isBookedByMe: bookedTripIds.has(trip.id),
     }));
-    const totalPages = Math.ceil(total / limit);
 
     return {
       data: responseList,
@@ -214,7 +291,7 @@ export class TripsService {
         total,
         page,
         limit,
-        totalPages,
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
@@ -228,10 +305,14 @@ export class TripsService {
 
     if (query.status) {
       filters.status = query.status;
+    } else {
+      filters.status = {
+        in: ['scheduled', 'in_transit', 'completed'],
+      };
     }
 
-    const page = query.page ?? 1;
-    const limit = query.limit ?? 10;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
 
     const { data: trips, total } = await this.tripsRepository.findAll(
       filters,
@@ -282,7 +363,39 @@ export class TripsService {
           'Perubahan status Trip menjadi In-Transit atau Completed hanya dapat dilakukan via QR Checkpoint Scanner Operator Pos.',
         );
       }
+
+      if (dto.status === TripStatus.cancelled) {
+        const activeOrdersCount = await this.prisma.order.count({
+          where: {
+            tripId: this.safeParseBigInt(idStr),
+            status: { notIn: ['cancelled'] },
+          },
+        });
+
+        if (activeOrdersCount > 0) {
+          throw new BadRequestException(
+            `Tidak dapat membatalkan trip ini karena sudah ada ${activeOrdersCount} pesanan aktif dari penumpang/pengirim barang.`,
+          );
+        }
+      }
+
       updateData.status = dto.status;
+    }
+
+    const targetDateStr =
+      dto.departureDate ?? trip.departureDate.toISOString().split('T')[0];
+    const targetTimeStr = dto.departureTime ?? trip.departureTime.toISOString();
+
+    if (dto.departureDate || dto.departureTime) {
+      const combinedDate = this.combineDateAndTime(
+        targetDateStr,
+        targetTimeStr,
+      );
+      if (combinedDate < new Date()) {
+        throw new BadRequestException(
+          'Waktu keberangkatan tidak boleh diubah ke masa lalu.',
+        );
+      }
     }
 
     if (dto.departureDate) {

@@ -1,5 +1,6 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { TripStatus } from '../../../generated/prisma/enums';
 
 @Injectable()
 export class OrdersRepository {
@@ -25,42 +26,33 @@ export class OrdersRepository {
     const parseCustomerId = this.safeParseBigInt(customerId);
 
     if (!parseTripId || !parseCustomerId) {
-      throw new BadRequestException('Format id trip atau customer tidak valid');
+      throw new BadRequestException(
+        'Format ID trip atau customer tidak valid.',
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const trip = await tx.trip.findUnique({
-        where: { id: parseTripId },
-        select: {
-          id: true,
-          seatAvailable: true,
-          remainingWeightCapacityKg: true,
-          status: true,
+      // 1. Conditional Atomic Decrement (Atomic Guard)
+      const updateTripResult = await tx.trip.updateMany({
+        where: {
+          id: parseTripId,
+          status: TripStatus.scheduled,
+          seatAvailable: { gte: seatsToDeduct },
+          remainingWeightCapacityKg: { gte: weightToDeduct },
+        },
+        data: {
+          seatAvailable: { decrement: seatsToDeduct },
+          remainingWeightCapacityKg: { decrement: weightToDeduct },
         },
       });
 
-      if (!trip) {
-        throw new BadRequestException('Jadwal trip tidak ditemukan.');
-      }
-
-      if (trip.status !== 'scheduled') {
+      if (updateTripResult.count === 0) {
         throw new BadRequestException(
-          'Pemesanan ditutup. Trip sudah berjalan atau selesai.',
+          'Pemesanan gagal: Sisa kursi/kapasitas bagasi tidak mencukupi atau status trip sudah tidak aktif.',
         );
       }
 
-      if (trip.seatAvailable < seatsToDeduct) {
-        throw new BadRequestException(
-          'Maaf, sisa kursi pada perjalanan ini sudah habis / tidak mencukupi.',
-        );
-      }
-
-      if (Number(trip.remainingWeightCapacityKg) < weightToDeduct) {
-        throw new BadRequestException(
-          'Maaf, kapasitas sisa berat muatan pada trip ini tidak mencukupi.',
-        );
-      }
-
+      // 2. Buat Order Baru
       const createdOrder = await tx.order.create({
         data: {
           tripId: parseTripId,
@@ -77,6 +69,7 @@ export class OrdersRepository {
         },
       });
 
+      // 3. Masukkan Item jika ada (Order Parcel)
       if (itemsData && itemsData.length > 0) {
         await tx.itemOrder.createMany({
           data: itemsData.map((item) => ({
@@ -93,14 +86,6 @@ export class OrdersRepository {
           })),
         });
       }
-
-      await tx.trip.update({
-        where: { id: parseTripId },
-        data: {
-          seatAvailable: { decrement: seatsToDeduct },
-          remainingWeightCapacityKg: { decrement: weightToDeduct },
-        },
-      });
 
       return tx.order.findUnique({
         where: { id: createdOrder.id },
@@ -171,7 +156,7 @@ export class OrdersRepository {
   async updateStatus(id: string, status: any, escrowStatus?: any) {
     const parseId = this.safeParseBigInt(id);
     if (!parseId) {
-      throw new BadRequestException('Format Id order tidak valid');
+      throw new BadRequestException('Format ID order tidak valid');
     }
 
     return this.prisma.order.update({

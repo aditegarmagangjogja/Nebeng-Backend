@@ -1390,31 +1390,20 @@
         "operationId": "TripsController_getTrips",
         "parameters": [
           {
-            "name": "page",
+            "name": "search",
             "required": false,
             "in": "query",
+            "description": "Kata kunci pencarian (Nama Pos / Wilayah / Region)",
             "schema": {
-              "default": 1,
-              "example": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 10,
-              "example": 10,
-              "type": "number"
+              "type": "string"
             }
           },
           {
             "name": "originPointId",
             "required": false,
             "in": "query",
+            "description": "Filter ID Pos Asal",
             "schema": {
-              "example": "10",
               "type": "string"
             }
           },
@@ -1422,8 +1411,8 @@
             "name": "destinationPointId",
             "required": false,
             "in": "query",
+            "description": "Filter ID Pos Tujuan",
             "schema": {
-              "example": "20",
               "type": "string"
             }
           },
@@ -1431,37 +1420,16 @@
             "name": "posId",
             "required": false,
             "in": "query",
-            "description": "Filter trip masuk/keluar pos ini",
+            "description": "Filter ID Pos (Asal atau Tujuan)",
             "schema": {
-              "example": "10",
               "type": "string"
-            }
-          },
-          {
-            "name": "date",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "2026-08-25",
-              "type": "string"
-            }
-          },
-          {
-            "name": "vehicleType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "motor",
-                "mobil"
-              ]
             }
           },
           {
             "name": "status",
             "required": false,
             "in": "query",
+            "description": "Filter Status Trip",
             "schema": {
               "type": "string",
               "enum": [
@@ -1471,6 +1439,63 @@
                 "arrived_dest_pos",
                 "completed",
                 "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "vehicleType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Kendaraan",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tanggal Keberangkatan (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-08-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman data (default: 1)",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (default: 10)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "serviceType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Layanan (motor, mobil, barang)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil",
+                "barang"
               ]
             }
           }
@@ -1491,31 +1516,20 @@
         "operationId": "TripsController_getMyTrips",
         "parameters": [
           {
-            "name": "page",
+            "name": "search",
             "required": false,
             "in": "query",
+            "description": "Kata kunci pencarian (Nama Pos / Wilayah / Region)",
             "schema": {
-              "default": 1,
-              "example": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 10,
-              "example": 10,
-              "type": "number"
+              "type": "string"
             }
           },
           {
             "name": "originPointId",
             "required": false,
             "in": "query",
+            "description": "Filter ID Pos Asal",
             "schema": {
-              "example": "10",
               "type": "string"
             }
           },
@@ -1523,8 +1537,8 @@
             "name": "destinationPointId",
             "required": false,
             "in": "query",
+            "description": "Filter ID Pos Tujuan",
             "schema": {
-              "example": "20",
               "type": "string"
             }
           },
@@ -1532,37 +1546,16 @@
             "name": "posId",
             "required": false,
             "in": "query",
-            "description": "Filter trip masuk/keluar pos ini",
+            "description": "Filter ID Pos (Asal atau Tujuan)",
             "schema": {
-              "example": "10",
               "type": "string"
-            }
-          },
-          {
-            "name": "date",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "example": "2026-08-25",
-              "type": "string"
-            }
-          },
-          {
-            "name": "vehicleType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "motor",
-                "mobil"
-              ]
             }
           },
           {
             "name": "status",
             "required": false,
             "in": "query",
+            "description": "Filter Status Trip",
             "schema": {
               "type": "string",
               "enum": [
@@ -1572,6 +1565,63 @@
                 "arrived_dest_pos",
                 "completed",
                 "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "vehicleType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Kendaraan",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tanggal Keberangkatan (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-08-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman data (default: 1)",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (default: 10)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "serviceType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Layanan (motor, mobil, barang)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil",
+                "barang"
               ]
             }
           }
@@ -2121,6 +2171,26 @@
           }
         ],
         "summary": "Memberikan ulasan/rating untuk trip yang sudah selesai",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/reviews/me": {
+      "get": {
+        "operationId": "ReviewsController_getMyRatingSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ringkasan ulasan mitra ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat ringkasan dan daftar ulasan mitra yang sedang login",
         "tags": [
           "Reviews"
         ]
@@ -3289,6 +3359,16 @@
             "type": "number",
             "example": 50,
             "description": "Custom max berat bagasi kg (Opsional override untuk mobil)"
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "motor",
+              "mobil",
+              "barang"
+            ],
+            "example": "mobil",
+            "description": "Tipe layanan (motor, mobil, barang)"
           }
         },
         "required": [
@@ -3299,7 +3379,8 @@
           "departureTime",
           "price",
           "totalSeats",
-          "maxWeightCapacityKg"
+          "maxWeightCapacityKg",
+          "serviceType"
         ]
       },
       "UpdateTripDto": {
@@ -3437,7 +3518,8 @@
         },
         "required": [
           "orderId",
-          "paymentGateway"
+          "paymentGateway",
+          "pin"
         ]
       },
       "ScanCheckpointDto": {

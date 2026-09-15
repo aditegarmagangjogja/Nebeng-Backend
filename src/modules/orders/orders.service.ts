@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
@@ -14,9 +15,9 @@ import {
   ParcelSize,
   ServiceType,
   TripStatus,
+  Role,
 } from '../../generated/prisma/enums';
 import { randomBytes, randomInt } from 'crypto';
-import { Role } from '../../generated/prisma/enums';
 
 @Injectable()
 export class OrdersService {
@@ -27,19 +28,18 @@ export class OrdersService {
   ) {}
 
   private async generateUniqueTicketQr(): Promise<string> {
-    let qrCodeTiket = '';
-    let isUnique = false;
-
-    while (!isUnique) {
+    const maxRetries = 10;
+    for (let i = 0; i < maxRetries; i++) {
       const hex = randomBytes(4).toString('hex').toUpperCase();
-      qrCodeTiket = `TKT-${hex}`;
+      const qrCodeTiket = `TKT-${hex}`;
       const existing = await this.ordersRepository.findByTicketQr(qrCodeTiket);
       if (!existing) {
-        isUnique = true;
+        return qrCodeTiket;
       }
     }
-
-    return qrCodeTiket;
+    throw new InternalServerErrorException(
+      'Gagal menghasilkan Kode QR Tiket unik. Silakan coba kembali.',
+    );
   }
 
   private safeParseBigInt(id: string): bigint {
@@ -54,6 +54,15 @@ export class OrdersService {
     return randomInt(100000, 999999).toString();
   }
 
+  private getTripDepartureDateTime(
+    departureDate: Date,
+    departureTime: Date,
+  ): Date {
+    const dateStr = new Date(departureDate).toISOString().split('T')[0];
+    const timeStr = new Date(departureTime).toISOString().split('T')[1];
+    return new Date(`${dateStr}T${timeStr}`);
+  }
+
   async createOrder(customerIdStr: string, dto: CreateOrderDto) {
     const trip = await this.tripsRepository.findById(dto.tripId);
     if (!trip) {
@@ -62,13 +71,23 @@ export class OrdersService {
 
     if (trip.mitraId.toString() === customerIdStr) {
       throw new BadRequestException(
-        'Anda tidak dapat memesan tiket pada jadwal trip milik anda sendiri',
+        'Anda tidak dapat memesan tiket pada jadwal trip milik Anda sendiri.',
       );
     }
 
     if (trip.status !== TripStatus.scheduled) {
       throw new BadRequestException(
         'Trip ini sudah tidak menerima pemesanan baru.',
+      );
+    }
+
+    const tripDepartureDateTime = this.getTripDepartureDateTime(
+      trip.departureDate,
+      trip.departureTime,
+    );
+    if (tripDepartureDateTime < new Date()) {
+      throw new BadRequestException(
+        'Tidak dapat memesan trip yang jam keberangkatannya telah lewat.',
       );
     }
 
@@ -126,6 +145,12 @@ export class OrdersService {
 
       seatsBooked = dto.seatsBooked ?? 1;
 
+      if (trip.vehicleType === 'motor' && seatsBooked > 1) {
+        throw new BadRequestException(
+          'Pemesanan trip motor hanya diperbolehkan maksimal 1 kursi.',
+        );
+      }
+
       if (trip.seatAvailable < seatsBooked) {
         throw new BadRequestException(
           `Sisa kursi tidak mencukupi. Tersedia: ${trip.seatAvailable}, Diminta: ${seatsBooked}`,
@@ -144,7 +169,6 @@ export class OrdersService {
 
       totalItemsCount = dto.items.length;
 
-      // Ambil pengaturan umum komisi parsel barang
       const defaultParcelSetting = await this.prisma.pricingSetting.findFirst({
         where: { serviceType: ServiceType.barang },
       });
@@ -156,7 +180,6 @@ export class OrdersService {
         const itemTotalWeight = item.weightPerItemKg * item.quantity;
         totalWeightKg += itemTotalWeight;
 
-        // Validasi dan ambil tarif berdasarkan ukuran matriks paket (XXS - XL)
         const sizeEnum = item.sizeEnum as unknown as ParcelSize;
         const parcelPricing = await this.prisma.pricingSetting.findFirst({
           where: {
@@ -171,7 +194,6 @@ export class OrdersService {
           );
         }
 
-        // Validasi batas berat maksimum per ukuran paket
         if (
           parcelPricing.maxWeightKg &&
           item.weightPerItemKg > Number(parcelPricing.maxWeightKg)
@@ -184,7 +206,6 @@ export class OrdersService {
         const itemBaseRate = Number(parcelPricing.baseFare);
         const itemFarePerKm = Number(parcelPricing.farePerKm) || 2000;
 
-        // Akumulasi harga per item: (Tarif Dasar Ukuran + Komponen Jarak) * Kuantitas
         const singleItemPrice = (itemBaseRate + itemFarePerKm) * item.quantity;
         totalPrice += singleItemPrice;
 
@@ -238,7 +259,7 @@ export class OrdersService {
     const currentUserId = String(currentUser.id);
     const userRole = currentUser.role;
 
-    if (userRole === Role.customer || userRole === 'customer') {
+    if (userRole === Role.customer) {
       if (order.customerId.toString() !== currentUserId) {
         throw new ForbiddenException(
           'Anda tidak berhak membatalkan pesanan ini.',
@@ -261,13 +282,22 @@ export class OrdersService {
     const weightToRestore = Number(order.totalWeightKg) || 0;
 
     return this.prisma.$transaction(async (tx) => {
-      const updatedOrder = await tx.order.update({
-        where: { id: order.id },
+      const updatedCount = await tx.order.updateMany({
+        where: {
+          id: order.id,
+          status: { notIn: ['cancelled', 'completed'] },
+        },
         data: {
           status: 'cancelled',
           escrowStatus: 'refunded',
         },
       });
+
+      if (updatedCount.count === 0) {
+        throw new BadRequestException(
+          'Gagal membatalkan pesanan. Pesanan mungkin telah dibatalkan atau diselesaikan oleh proses lain.',
+        );
+      }
 
       await tx.trip.update({
         where: { id: order.tripId },
@@ -275,6 +305,11 @@ export class OrdersService {
           seatAvailable: { increment: seatsToRestore },
           remainingWeightCapacityKg: { increment: weightToRestore },
         },
+      });
+
+      const updatedOrder = await tx.order.findUnique({
+        where: { id: order.id },
+        include: { trip: true, itemOrders: true },
       });
 
       return {
@@ -299,23 +334,23 @@ export class OrdersService {
     const currentUserId = String(currentUser.id);
     const userRole = currentUser.role;
 
-    if (userRole === Role.customer || userRole === 'customer') {
+    if (userRole === Role.customer) {
       if (order.customerId.toString() !== currentUserId) {
         throw new ForbiddenException(
-          'Anak tidak memiliki akses ke pesanan ini.',
+          'Anda tidak memiliki akses ke pesanan ini.',
         );
       }
     }
 
-    if (userRole === Role.mitra || userRole === 'mitra') {
+    if (userRole === Role.mitra) {
       if (order.trip.mitraId.toString() !== currentUserId) {
         throw new ForbiddenException(
-          'Anda hanya dapat melihat pesanan di trip milik Anda.',
+          'Anda hanya dapat melihat pesanan pada trip milik Anda.',
         );
       }
     }
 
-    if (userRole === Role.regional || userRole === 'regional') {
+    if (userRole === Role.regional) {
       const userRegionId = currentUser.regionId
         ? currentUser.regionId.toString()
         : null;

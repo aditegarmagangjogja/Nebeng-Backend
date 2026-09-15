@@ -231,6 +231,7 @@ export const TripScalarFieldEnum = {
   remainingWeightCapacityKg: 'remainingWeightCapacityKg',
   qrCodeTrip: 'qrCodeTrip',
   status: 'status',
+  serviceType: 'serviceType',
   mapsPolyline: 'mapsPolyline',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

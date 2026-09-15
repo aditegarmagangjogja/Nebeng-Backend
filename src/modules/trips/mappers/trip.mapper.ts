@@ -53,6 +53,7 @@ export class TripMapper {
             address: trip.destinationPoint.address,
           }
         : undefined,
+      serviceType: trip.serviceType,
     };
   }
 

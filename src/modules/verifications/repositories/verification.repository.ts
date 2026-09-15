@@ -85,12 +85,32 @@ export class VerificationRepository {
         },
       });
 
-      await tx.user.update({
-        where: { id: data.userId },
-        data: {
-          statusVerification: VerificationStatus.pending,
-        },
+      // Ambil seluruh verifikasi user untuk mengecek status terbaru per dokumen
+      const allUserVerifications = await tx.verification.findMany({
+        where: { userId: data.userId },
+        orderBy: { createdAt: 'desc' },
       });
+
+      const latestVerificationsMap = new Map<string, VerificationStatus>();
+      for (const v of allUserVerifications) {
+        if (!latestVerificationsMap.has(v.type)) {
+          latestVerificationsMap.set(v.type, v.status);
+        }
+      }
+
+      const hasRejected = Array.from(latestVerificationsMap.values()).some(
+        (status) => status === VerificationStatus.rejected,
+      );
+
+      // Jika tidak ada dokumen berstatus rejected pada versi terbaru, set status global ke pending
+      if (!hasRejected) {
+        await tx.user.update({
+          where: { id: data.userId },
+          data: {
+            statusVerification: VerificationStatus.pending,
+          },
+        });
+      }
 
       return verification;
     });
@@ -155,7 +175,7 @@ export class VerificationRepository {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const updatedVerfication = await tx.verification.update({
+      const updatedVerification = await tx.verification.update({
         where: { id: parseid },
         data: {
           status,
@@ -171,14 +191,11 @@ export class VerificationRepository {
         },
       });
 
-      if (status === VerificationStatus.rejected) {
-        await tx.user.update({
-          where: { id: updatedVerfication.userId },
-          data: { statusVerification: VerificationStatus.rejected },
-        });
-      } else if (status === VerificationStatus.approved) {
+      const userId = updatedVerification.userId;
+
+      if (status === VerificationStatus.approved) {
         const currentUserData = await tx.user.findUnique({
-          where: { id: updatedVerfication.userId },
+          where: { id: userId },
         });
         if (currentUserData && !currentUserData.regionId && parseAdminId) {
           const adminUser = await tx.user.findUnique({
@@ -186,40 +203,69 @@ export class VerificationRepository {
           });
           if (adminUser?.regionId) {
             await tx.user.update({
-              where: { id: updatedVerfication.userId },
+              where: { id: userId },
               data: { regionId: adminUser.regionId },
             });
           }
         }
 
         await tx.userProfile.upsert({
-          where: { userId: updatedVerfication.userId },
+          where: { userId },
           update: { isFaceVerified: true },
           create: {
-            userId: updatedVerfication.userId,
+            userId,
             isFaceVerified: true,
           },
         });
+      }
 
-        // Opsi 1: Ubah status user langsung jadi approved saat salah satu verifikasi di-approve,
-        // atau pastikan mengecek apakah SEMUA verifikasi milik user ini sudah tidak ada yang pending.
-        const remainingPending = await tx.verification.count({
-          where: {
-            userId: updatedVerfication.userId,
-            status: VerificationStatus.pending,
-          },
-        });
+      // --- LOGIKA AGREGASI STATUS GLOBAL USER BERDASARKAN DOKUMEN TERBARU ---
+      const allUserVerifications = await tx.verification.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
 
-        // Jika sudah tidak ada lagi yang pending (semua sudah di-approve/reject), aktifkan user
-        if (remainingPending === 0) {
-          await tx.user.update({
-            where: { id: updatedVerfication.userId },
-            data: { statusVerification: VerificationStatus.approved },
-          });
+      const latestVerificationsMap = new Map<string, VerificationStatus>();
+      for (const v of allUserVerifications) {
+        if (!latestVerificationsMap.has(v.type)) {
+          latestVerificationsMap.set(v.type, v.status);
         }
       }
 
-      return updatedVerfication;
+      const latestStatuses = Array.from(latestVerificationsMap.values());
+      const hasRejected = latestStatuses.some(
+        (st) => st === VerificationStatus.rejected,
+      );
+
+      // Tambahkan 'ktp' ke dalam daftar dokumen wajib
+      const requiredDocTypes = [
+        VerificationType.ktp,
+        VerificationType.sim,
+        VerificationType.skck,
+        VerificationType.stnk,
+      ];
+
+      const allRequiredApproved = requiredDocTypes.every(
+        (type) =>
+          latestVerificationsMap.get(type) === VerificationStatus.approved,
+      );
+
+      let newGlobalStatus: VerificationStatus = VerificationStatus.pending;
+
+      if (hasRejected) {
+        newGlobalStatus = VerificationStatus.rejected;
+      } else if (allRequiredApproved) {
+        newGlobalStatus = VerificationStatus.approved;
+      } else {
+        newGlobalStatus = VerificationStatus.pending;
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { statusVerification: newGlobalStatus },
+      });
+
+      return updatedVerification;
     });
   }
 

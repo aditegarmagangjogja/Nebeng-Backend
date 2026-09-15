@@ -23,6 +23,7 @@ export class VerificationService {
     }
   }
 
+  // verification.service.ts (Potongan Perbaikan submitVerification)
   async submitVerification(userId: string, dto: SumbitVerificationDto) {
     const userBigIntId = this.safeParseBigInt(userId);
 
@@ -30,26 +31,27 @@ export class VerificationService {
       throw new BadRequestException('File dokumen verifikasi wajib diunggah');
     }
 
-    const exsistingActiveVerification =
+    const existingActiveVerification =
       await this.verificationRepo.findPendingOrApprovedByUserId(
         userBigIntId,
         dto.type,
       );
 
-    if (exsistingActiveVerification) {
-      if (exsistingActiveVerification.status === VerificationStatus.pending) {
+    if (existingActiveVerification) {
+      if (existingActiveVerification.status === VerificationStatus.pending) {
         throw new ConflictException(
           `Pengajuan verifikasi ${dto.type.toUpperCase()} Anda masih dalam antrean peninjauan`,
         );
       }
 
-      if (exsistingActiveVerification.status === VerificationStatus.approved) {
+      if (existingActiveVerification.status === VerificationStatus.approved) {
         throw new ConflictException(
           `Dokumen verifikasi ${dto.type.toUpperCase()} Anda telah disetujui sebelumnya`,
         );
       }
     }
 
+    // Jika status sebelumnya REJECTED, repository akan membuat record baru / mengupdate untuk ditinjau ulang
     const verification = await this.verificationRepo.createVerification({
       userId: userBigIntId,
       type: dto.type,

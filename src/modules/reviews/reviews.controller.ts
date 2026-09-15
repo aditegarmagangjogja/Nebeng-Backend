@@ -38,6 +38,15 @@ export class ReviewsController {
     return this.reviewService.createReview(String(userId), dto);
   }
 
+  @Get('me')
+  @ApiOperation({
+    summary: 'Melihat ringkasan dan daftar ulasan mitra yang sedang login',
+  })
+  @ApiResponse({ status: 200, description: 'Ringkasan ulasan mitra ditemukan' })
+  async getMyRatingSummary(@GetUser('id') userId: string) {
+    return this.reviewService.getUserRatingSummary(String(userId));
+  }
+
   @Get('users/:userId')
   @ApiOperation({ summary: 'Melihat ringkasan dan daftar ulasan user' })
   @ApiResponse({ status: 200, description: 'Ringkasan ulasan ditemukan' })

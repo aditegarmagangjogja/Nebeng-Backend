@@ -3,12 +3,13 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PaymentsRepository } from './repository/payments.repository';
 import { OrdersRepository } from '../orders/repository/orders.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CheckoutPaymentDto } from './dto/checkout-payment.dto';
-import { OrderStatus } from '../../generated/prisma/enums';
+import { OrderStatus, Role } from '../../generated/prisma/enums';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 
@@ -48,10 +49,6 @@ export class PaymentsService {
       );
     }
 
-    if (!dto.pin) {
-      throw new BadRequestException('PIN Transaksi wajib diisi.');
-    }
-
     const isPinValid = await bcrypt.compare(dto.pin, user.pinHash);
     if (!isPinValid) {
       throw new UnauthorizedException(
@@ -76,7 +73,19 @@ export class PaymentsService {
     }
 
     const transactionId = `TRX-${randomBytes(4).toString('hex').toUpperCase()}`;
-    const amount = Number(order.totalPrice);
+    const totalPrice = Number(order.totalPrice);
+    const pricingSetting = await this.prisma.pricingSetting.findFirst({
+      where: { serviceType: order.trip.vehicleType },
+    });
+
+    const adminFeePercentage = pricingSetting?.adminFeePercentage
+      ? Number(pricingSetting.adminFeePercentage)
+      : 10;
+
+    // Perhitungan Potongan Biaya Admin
+    const adminFeeAmount = (totalPrice * adminFeePercentage) / 100;
+    const netMitraAmount = totalPrice - adminFeeAmount;
+
     const mitraUserId = order.trip.mitraId.toString();
 
     const { payment } =
@@ -85,7 +94,8 @@ export class PaymentsService {
         mitraUserId,
         dto.paymentGateway,
         transactionId,
-        amount,
+        totalPrice,
+        netMitraAmount,
       );
 
     return {
@@ -100,8 +110,19 @@ export class PaymentsService {
     };
   }
 
-  async getPaymentsByRegion(regionId?: string) {
-    const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
+  async getPaymentsByRegion(currentUser: any, regionId?: string) {
+    let parsedRegionId: bigint | null = null;
+
+    if (currentUser.role === Role.regional) {
+      if (!currentUser.regionId) {
+        throw new ForbiddenException(
+          'Akun Regional Admin ini belum dihubungkan dengan ID Wilayah manapun.',
+        );
+      }
+      parsedRegionId = this.safeParseBigInt(currentUser.regionId.toString());
+    } else if (regionId) {
+      parsedRegionId = this.safeParseBigInt(regionId);
+    }
 
     const payments = await this.prisma.payment.findMany({
       where: {

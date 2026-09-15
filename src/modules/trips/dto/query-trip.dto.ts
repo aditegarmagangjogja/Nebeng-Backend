@@ -1,53 +1,71 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsEnum, IsInt, Min, IsOptional, IsString } from 'class-validator';
-import { TripStatus, VehicleType } from '../../../generated/prisma/enums';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  TripStatus,
+  VehicleType,
+  ServiceType,
+} from '../../../generated/prisma/enums';
 
 export class QueryTripDto {
-  @ApiPropertyOptional({ example: 1, default: 1 })
+  @ApiPropertyOptional({
+    description: 'Kata kunci pencarian (Nama Pos / Wilayah / Region)',
+  })
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  page?: number = 1;
+  @IsString()
+  search?: string;
 
-  @ApiPropertyOptional({ example: 10, default: 10 })
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  @Min(1)
-  limit?: number = 10;
-
-  @ApiPropertyOptional({ example: '10' })
+  @ApiPropertyOptional({ description: 'Filter ID Pos Asal' })
   @IsOptional()
   @IsString()
   originPointId?: string;
 
-  @ApiPropertyOptional({ example: '20' })
+  @ApiPropertyOptional({ description: 'Filter ID Pos Tujuan' })
   @IsOptional()
   @IsString()
   destinationPointId?: string;
 
-  @ApiPropertyOptional({
-    example: '10',
-    description: 'Filter trip masuk/keluar pos ini',
-  })
+  @ApiPropertyOptional({ description: 'Filter ID Pos (Asal atau Tujuan)' })
   @IsOptional()
   @IsString()
   posId?: string;
 
-  @ApiPropertyOptional({ example: '2026-08-25' })
+  @ApiPropertyOptional({ enum: TripStatus, description: 'Filter Status Trip' })
   @IsOptional()
-  @IsString()
-  date?: string;
+  @IsEnum(TripStatus)
+  status?: TripStatus;
 
-  @ApiPropertyOptional({ enum: VehicleType })
+  @ApiPropertyOptional({
+    enum: VehicleType,
+    description: 'Filter Tipe Kendaraan',
+  })
   @IsOptional()
   @IsEnum(VehicleType)
   vehicleType?: VehicleType;
 
-  @ApiPropertyOptional({ enum: TripStatus })
+  @ApiPropertyOptional({
+    example: '2026-08-25',
+    description: 'Filter Tanggal Keberangkatan (YYYY-MM-DD)',
+  })
   @IsOptional()
-  @IsEnum(TripStatus)
-  status?: TripStatus;
+  @IsString()
+  date?: string;
+
+  @ApiPropertyOptional({ example: 1, description: 'Halaman data (default: 1)' })
+  @IsOptional()
+  page?: number;
+
+  @ApiPropertyOptional({
+    example: 10,
+    description: 'Jumlah data per halaman (default: 10)',
+  })
+  @IsOptional()
+  limit?: number;
+
+  @ApiPropertyOptional({
+    enum: ServiceType,
+    description: 'Filter Tipe Layanan (motor, mobil, barang)',
+  })
+  @IsOptional()
+  @IsEnum(ServiceType)
+  serviceType?: ServiceType;
 }

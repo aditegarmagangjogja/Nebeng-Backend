@@ -309,6 +309,7 @@ model Trip {
   remainingWeightCapacityKg Decimal     @map("remaining_weight_capacity_kg") @db.Decimal(8, 2)
   qrCodeTrip                String      @unique @map("qr_code_trip")
   status                    TripStatus  @default(scheduled)
+  serviceType               ServiceType @default(mobil) @map("service_type")
   mapsPolyline              String?     @map("maps_polyline") @db.Text
   createdAt                 DateTime    @default(now()) @map("created_at")
   updatedAt                 DateTime    @updatedAt @map("updated_at")
