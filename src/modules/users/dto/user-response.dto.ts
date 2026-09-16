@@ -49,6 +49,9 @@ export class UserResponseDto {
   bankAccountHolder?: string | null;
 
   @ApiProperty()
+  hasPin!: boolean;
+
+  @ApiProperty()
   createdAt!: Date;
 
   @ApiProperty()

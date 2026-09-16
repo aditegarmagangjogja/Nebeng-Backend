@@ -6,6 +6,7 @@ import {
   ApiResponse,
 } from '@nestjs/swagger';
 import { WalletsService } from './wallets.service';
+import { WithdrawWalletDto } from './withdraw-wallet.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -41,8 +42,8 @@ export class WalletsController {
   })
   async withdraw(
     @GetUser('id') userId: string,
-    @Body('amount') amount: number,
+    @Body() dto: WithdrawWalletDto,
   ) {
-    return this.walletService.requestWithdrawal(String(userId), amount);
+    return this.walletService.requestWithdrawal(String(userId), dto.amount);
   }
 }

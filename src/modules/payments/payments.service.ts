@@ -9,7 +9,7 @@ import { PaymentsRepository } from './repository/payments.repository';
 import { OrdersRepository } from '../orders/repository/orders.repository';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CheckoutPaymentDto } from './dto/checkout-payment.dto';
-import { OrderStatus, Role } from '../../generated/prisma/enums';
+import { OrderStatus, Role, ServiceType } from '../../generated/prisma/enums';
 import { randomBytes } from 'crypto';
 import * as bcrypt from 'bcrypt';
 
@@ -59,31 +59,45 @@ export class PaymentsService {
     const order = await this.ordersRepository.findById(dto.orderId);
 
     if (!order) {
-      throw new NotFoundException('Order tidak ditemukan');
+      throw new NotFoundException('Order tidak ditemukan.');
     }
 
     if (order.customerId.toString() !== userIdStr) {
-      throw new BadRequestException('Order ini bukan milik anda.');
+      throw new BadRequestException('Order ini bukan milik Anda.');
     }
 
     if (order.status !== OrderStatus.pending_payment) {
       throw new BadRequestException(
-        'Order ini tidak dalam status menunggu pembayaran',
+        'Order ini tidak dalam status menunggu pembayaran.',
       );
     }
 
     const transactionId = `TRX-${randomBytes(4).toString('hex').toUpperCase()}`;
     const totalPrice = Number(order.totalPrice);
-    const pricingSetting = await this.prisma.pricingSetting.findFirst({
-      where: { serviceType: order.trip.vehicleType },
-    });
 
-    const adminFeePercentage = pricingSetting?.adminFeePercentage
-      ? Number(pricingSetting.adminFeePercentage)
+    let adminFeePercentage = order.adminFeePercentage
+      ? Number(order.adminFeePercentage)
       : 10;
 
-    // Perhitungan Potongan Biaya Admin
-    const adminFeeAmount = (totalPrice * adminFeePercentage) / 100;
+    if (!order.adminFeePercentage) {
+      const serviceType =
+        order.type === 'passenger'
+          ? order.trip.vehicleType === 'motor'
+            ? ServiceType.motor
+            : ServiceType.mobil
+          : ServiceType.barang;
+
+      const pricingSetting = await this.prisma.pricingSetting.findFirst({
+        where: { serviceType },
+      });
+
+      if (pricingSetting?.adminFeePercentage) {
+        adminFeePercentage = Number(pricingSetting.adminFeePercentage);
+      }
+    }
+
+    // Perhitungan finansial presisi dengan pembulatan Math.round
+    const adminFeeAmount = Math.round((totalPrice * adminFeePercentage) / 100);
     const netMitraAmount = totalPrice - adminFeeAmount;
 
     const mitraUserId = order.trip.mitraId.toString();
@@ -95,6 +109,7 @@ export class PaymentsService {
         dto.paymentGateway,
         transactionId,
         totalPrice,
+        adminFeeAmount,
         netMitraAmount,
       );
 
@@ -105,6 +120,8 @@ export class PaymentsService {
         id: payment.id.toString(),
         transactionId: payment.transactionId,
         amount: Number(payment.amount),
+        adminFeeAmount,
+        netMitraAmount,
         status: payment.status,
       },
     };
@@ -149,10 +166,23 @@ export class PaymentsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return payments;
+    return payments.map((p) => ({
+      ...p,
+      id: p.id.toString(),
+      orderId: p.orderId.toString(),
+      amount: Number(p.amount),
+    }));
   }
 
   async getPaymentsByOperator(operatorUserIdStr: string) {
-    return this.paymentsRepository.getPaymentsByOperator(operatorUserIdStr);
+    const payments =
+      await this.paymentsRepository.getPaymentsByOperator(operatorUserIdStr);
+
+    return payments.map((p) => ({
+      ...p,
+      id: p.id.toString(),
+      orderId: p.orderId.toString(),
+      amount: Number(p.amount),
+    }));
   }
 }

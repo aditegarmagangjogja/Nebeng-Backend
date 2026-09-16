@@ -25,6 +25,7 @@ export class PaymentsRepository {
     paymentGateway: string,
     transactionId: string,
     totalAmount: number,
+    adminFeeAmount: number,
     netMitraAmount: number,
   ) {
     const parsedOrderId = this.safeParseBigInt(orderIdStr);
@@ -35,6 +36,7 @@ export class PaymentsRepository {
     }
 
     return this.prisma.$transaction(async (tx) => {
+      // 1. Verifikasi Status Order dengan Kunci Transaksi
       const currentOrder = await tx.order.findUnique({
         where: { id: parsedOrderId },
         select: { id: true, status: true },
@@ -49,6 +51,7 @@ export class PaymentsRepository {
         );
       }
 
+      // 2. Buat Catatan Pembayaran (Payment Record)
       const payment = await tx.payment.create({
         data: {
           orderId: parsedOrderId,
@@ -59,6 +62,7 @@ export class PaymentsRepository {
         },
       });
 
+      // 3. Perbarui Status Order Menjadi Paid & Escrow Held
       const order = await tx.order.update({
         where: { id: parsedOrderId },
         data: {
@@ -70,12 +74,13 @@ export class PaymentsRepository {
         },
       });
 
-      let wallet = await tx.wallet.findUnique({
+      // 4. Masukkan Dana Bersih Mitra ke Escrow Wallet
+      let mitraWallet = await tx.wallet.findUnique({
         where: { userId: parsedMitraId },
       });
 
-      if (!wallet) {
-        wallet = await tx.wallet.create({
+      if (!mitraWallet) {
+        mitraWallet = await tx.wallet.create({
           data: {
             userId: parsedMitraId,
             balance: 0,
@@ -84,9 +89,8 @@ export class PaymentsRepository {
         });
       }
 
-      // Menambahkan nilai bersih (setelah potongan admin) ke escrow balance Mitra
       const updatedWallet = await tx.wallet.update({
-        where: { id: wallet.id },
+        where: { id: mitraWallet.id },
         data: {
           heldEscrowBalance: { increment: netMitraAmount },
         },
@@ -98,9 +102,49 @@ export class PaymentsRepository {
           orderId: parsedOrderId,
           amount: netMitraAmount,
           type: TransactionType.escrow_hold,
-          description: `Dana ditahan Escrow untuk Order #${orderIdStr} (setelah pot. admin)`,
+          description: `Dana ditahan Escrow Order #${orderIdStr} (Net Mitra setelah potongan admin)`,
         },
       });
+
+      // 5. Penentuan Admin User Utama (System Admin Wallet)
+      const systemAdminIdEnv = process.env.SYSTEM_ADMIN_USER_ID;
+      const parsedSystemAdminId = systemAdminIdEnv
+        ? this.safeParseBigInt(systemAdminIdEnv)
+        : null;
+
+      const adminUser = parsedSystemAdminId
+        ? await tx.user.findUnique({ where: { id: parsedSystemAdminId } })
+        : await tx.user.findFirst({
+            where: { role: 'admin' },
+            orderBy: { id: 'asc' },
+          });
+
+      if (adminUser) {
+        let adminWallet = await tx.wallet.findUnique({
+          where: { userId: adminUser.id },
+        });
+
+        if (!adminWallet) {
+          adminWallet = await tx.wallet.create({
+            data: { userId: adminUser.id, balance: 0, heldEscrowBalance: 0 },
+          });
+        }
+
+        await tx.wallet.update({
+          where: { id: adminWallet.id },
+          data: { balance: { increment: adminFeeAmount } },
+        });
+
+        await tx.walletTransaction.create({
+          data: {
+            walletId: adminWallet.id,
+            orderId: parsedOrderId,
+            amount: adminFeeAmount,
+            type: TransactionType.credit,
+            description: `Pendapatan Admin Fee Order #${orderIdStr}`,
+          },
+        });
+      }
 
       return { payment, order };
     });

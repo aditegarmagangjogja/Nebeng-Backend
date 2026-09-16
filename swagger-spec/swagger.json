@@ -1865,6 +1865,16 @@
       "post": {
         "operationId": "WalletsController_withdraw",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawWalletDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Permintaan penarikan saldo berhasil"
@@ -1914,7 +1924,7 @@
             "bearer": []
           }
         ],
-        "summary": "Simulasi checkout pembayaran order (Customer Only)",
+        "summary": "Checkout pembayaran order (Customer Only)",
         "tags": [
           "Payments"
         ]
@@ -1928,7 +1938,7 @@
             "name": "regionId",
             "required": false,
             "in": "query",
-            "description": "Opsional untuk superadmin",
+            "description": "Opsional untuk Superadmin",
             "schema": {
               "type": "string"
             }
@@ -1944,7 +1954,7 @@
             "bearer": []
           }
         ],
-        "summary": "Melihat daftar transaksi wilayah (admin & regional) ",
+        "summary": "Melihat daftar transaksi wilayah (Admin & Regional)",
         "tags": [
           "Payments"
         ]
@@ -2726,6 +2736,9 @@
             "type": "object",
             "example": "Budi Santoso"
           },
+          "hasPin": {
+            "type": "boolean"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -2750,6 +2763,7 @@
           "status",
           "statusVerification",
           "rewardPoints",
+          "hasPin",
           "createdAt",
           "rating",
           "totalReviews",
@@ -3496,6 +3510,19 @@
         "required": [
           "tripId",
           "type"
+        ]
+      },
+      "WithdrawWalletDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 50000,
+            "description": "Jumlah saldo yang ingin ditarik"
+          }
+        },
+        "required": [
+          "amount"
         ]
       },
       "CheckoutPaymentDto": {

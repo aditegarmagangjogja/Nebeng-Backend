@@ -2153,6 +2153,7 @@ export const OrderScalarFieldEnum = {
   totalItemsCount: 'totalItemsCount',
   totalWeightKg: 'totalWeightKg',
   totalPrice: 'totalPrice',
+  adminFeePercentage: 'adminFeePercentage',
   qrCodeTicket: 'qrCodeTicket',
   otpClaim: 'otpClaim',
   readinessStatus: 'readinessStatus',

@@ -24,59 +24,61 @@ export class AdminRepository {
   }
 
   async getGlobalAnalytics() {
-    const defaultPricing = await this.prisma.pricingSetting.findFirst({
-      select: { adminFeePercentage: true },
+    // Ambil order yang sudah dibayar/selesai untuk perhitungan omzet dan komisi platform aktual
+    const paidOrders = await this.prisma.order.findMany({
+      where: {
+        status: {
+          in: [
+            OrderStatus.paid,
+            OrderStatus.completed,
+            OrderStatus.in_transit,
+            OrderStatus.arrived_destination,
+          ],
+        },
+      },
+      select: {
+        totalPrice: true,
+        adminFeePercentage: true,
+      },
     });
-    const commissionRate = defaultPricing
-      ? Number(defaultPricing.adminFeePercentage) / 100
-      : 0.1;
 
-    const [
-      totalPaidOrders,
-      activeTripsCount,
-      totalTransactionsCount,
-      regionalSummary,
-    ] = await Promise.all([
-      this.prisma.order.aggregate({
-        where: {
-          status: {
-            in: [
-              OrderStatus.paid,
-              OrderStatus.completed,
-              OrderStatus.in_transit,
-              OrderStatus.arrived_destination,
-            ],
-          },
-        },
-        _sum: { totalPrice: true },
-      }),
-      this.prisma.trip.count({
-        where: {
-          status: {
-            in: [
-              TripStatus.scheduled,
-              TripStatus.in_transit,
-              TripStatus.in_origin_pos,
-            ],
-          },
-        },
-      }),
-      this.prisma.order.count(),
-      this.prisma.region.findMany({
-        where: { isActive: true },
-        include: {
-          _count: {
-            select: {
-              pickupPoints: true,
-              users: true,
+    const [activeTripsCount, totalTransactionsCount, regionalSummary] =
+      await Promise.all([
+        this.prisma.trip.count({
+          where: {
+            status: {
+              in: [
+                TripStatus.scheduled,
+                TripStatus.in_transit,
+                TripStatus.in_origin_pos,
+              ],
             },
           },
-        },
-      }),
-    ]);
+        }),
+        this.prisma.order.count(),
+        this.prisma.region.findMany({
+          where: { isActive: true },
+          include: {
+            _count: {
+              select: {
+                pickupPoints: true,
+                users: true,
+              },
+            },
+          },
+        }),
+      ]);
 
-    const totalRevenue = Number(totalPaidOrders._sum.totalPrice || 0);
-    const platformCommission = totalRevenue * commissionRate;
+    // Hitung total revenue dan komisi platform persis sesuai adminFeePercentage tiap Order
+    let totalRevenue = 0;
+    let platformCommission = 0;
+
+    for (const order of paidOrders) {
+      const price = Number(order.totalPrice);
+      const feePercent = Number(order.adminFeePercentage ?? 10);
+      totalRevenue += price;
+      platformCommission += (price * feePercent) / 100;
+    }
 
     return {
       totalRevenue,
@@ -320,35 +322,11 @@ export class AdminRepository {
   }
 
   async updatePlatformCommissionRate(percentage: number) {
-    const serviceTypes = [
-      ServiceType.motor,
-      ServiceType.mobil,
-      ServiceType.barang,
-    ];
-
-    const updatePromises = serviceTypes.map(async (serviceType) => {
-      const existing = await this.prisma.pricingSetting.findFirst({
-        where: { serviceType },
-      });
-
-      if (existing) {
-        return this.prisma.pricingSetting.update({
-          where: { id: existing.id },
-          data: { adminFeePercentage: percentage },
-        });
-      }
-
-      return this.prisma.pricingSetting.create({
-        data: {
-          serviceType,
-          baseFare: 5000,
-          farePerKm: 3000,
-          adminFeePercentage: percentage,
-        },
-      });
+    // Update semua record di PricingSetting yang sudah ada
+    await this.prisma.pricingSetting.updateMany({
+      data: { adminFeePercentage: percentage },
     });
 
-    await Promise.all(updatePromises);
     return percentage;
   }
 

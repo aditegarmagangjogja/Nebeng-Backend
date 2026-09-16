@@ -4,6 +4,7 @@ import {
   VerificationStatus,
   VerificationType,
 } from '../../../generated/prisma/enums';
+import { Role } from '../../../generated/prisma/enums';
 
 @Injectable()
 export class VerificationRepository {
@@ -219,7 +220,7 @@ export class VerificationRepository {
         });
       }
 
-      // --- LOGIKA AGREGASI STATUS GLOBAL USER BERDASARKAN DOKUMEN TERBARU ---
+      // --- LOGIKA AGREGASI STATUS GLOBAL USER BERDASARKAN DOKUMEN TERBARU & ROLE ---
       const allUserVerifications = await tx.verification.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
@@ -237,13 +238,19 @@ export class VerificationRepository {
         (st) => st === VerificationStatus.rejected,
       );
 
-      // Tambahkan 'ktp' ke dalam daftar dokumen wajib
-      const requiredDocTypes = [
-        VerificationType.ktp,
-        VerificationType.sim,
-        VerificationType.skck,
-        VerificationType.stnk,
-      ];
+      // Ambil role pengguna dari relasi user yang di-include
+      const userRole = updatedVerification.user?.role;
+
+      // Tentukan dokumen wajib berdasarkan role
+      const requiredDocTypes =
+        userRole === Role.mitra
+          ? [
+              VerificationType.ktp,
+              VerificationType.sim,
+              VerificationType.skck,
+              VerificationType.stnk,
+            ]
+          : [VerificationType.ktp];
 
       const allRequiredApproved = requiredDocTypes.every(
         (type) =>

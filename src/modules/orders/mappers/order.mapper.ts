@@ -13,6 +13,9 @@ export class OrderMapper {
       totalItemsCount: Number(order.totalItemsCount),
       totalWeightKg: Number(order.totalWeightKg),
       totalPrice: Number(order.totalPrice),
+      adminFeePercentage: order.adminFeePercentage
+        ? Number(order.adminFeePercentage)
+        : 10,
       qrCodeTicket: order.qrCodeTicket,
       otpClaim: order.otpClaim ?? null,
       readinessStatus: order.readinessStatus ?? null,

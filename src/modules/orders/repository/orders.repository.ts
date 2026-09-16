@@ -60,6 +60,7 @@ export class OrdersRepository {
           type: orderData.type,
           seatsBooked: orderData.seatsBooked,
           totalItemsCount: orderData.totalItemsCount,
+          adminFeePercentage: orderData.adminFeePercentage,
           totalWeightKg: orderData.totalWeightKg,
           totalPrice: orderData.totalPrice,
           qrCodeTicket: orderData.qrCodeTicket,

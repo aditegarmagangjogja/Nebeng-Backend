@@ -337,6 +337,7 @@ model Order {
   totalItemsCount Int          @default(0) @map("total_items_count")
   totalWeightKg   Decimal      @default(0) @map("total_weight_kg") @db.Decimal(8, 2)
   totalPrice      Decimal      @map("total_price") @db.Decimal(10, 2)
+  adminFeePercentage Decimal      @default(10.00) @map("admin_fee_percentage") @db.Decimal(5, 2)
   qrCodeTicket    String       @unique @map("qr_code_ticket")
   otpClaim        String?      @map("otp_claim")
   readinessStatus String?      @map("readiness_status")

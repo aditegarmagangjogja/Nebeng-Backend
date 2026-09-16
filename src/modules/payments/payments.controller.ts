@@ -24,7 +24,7 @@ export class PaymentsController {
   @Post('checkout')
   @Roles(Role.customer)
   @ApiOperation({
-    summary: 'Simulasi checkout pembayaran order (Customer Only)',
+    summary: 'Checkout pembayaran order (Customer Only)',
   })
   @ApiResponse({ status: 201, description: 'Pembayaran berhasil dikonfirmasi' })
   @ApiResponse({
@@ -43,12 +43,12 @@ export class PaymentsController {
   @Get()
   @Roles(Role.admin, Role.regional)
   @ApiOperation({
-    summary: 'Melihat daftar transaksi wilayah (admin & regional) ',
+    summary: 'Melihat daftar transaksi wilayah (Admin & Regional)',
   })
   @ApiQuery({
     name: 'regionId',
     required: false,
-    description: 'Opsional untuk superadmin',
+    description: 'Opsional untuk Superadmin',
   })
   @ApiResponse({
     status: 200,
