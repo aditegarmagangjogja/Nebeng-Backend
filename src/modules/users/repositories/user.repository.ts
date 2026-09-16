@@ -31,6 +31,7 @@ export class UserRepository {
       include: {
         profile: true,
         region: true,
+        assignedPickupPoints: true,
         reviewsReceived: { select: { rating: true } },
       },
     });

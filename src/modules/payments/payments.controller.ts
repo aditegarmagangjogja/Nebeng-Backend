@@ -8,6 +8,7 @@ import {
 } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CheckoutPaymentDto } from './dto/checkout-payment.dto';
+import { GetOperatorSummaryQueryDto } from './dto/operator-summary.dto'; // Buat DTO ini
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -50,6 +51,8 @@ export class PaymentsController {
     required: false,
     description: 'Opsional untuk Superadmin',
   })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiResponse({
     status: 200,
     description: 'Daftar transaksi berhasil diambil',
@@ -57,8 +60,15 @@ export class PaymentsController {
   async getPayments(
     @GetUser() currentUser: any,
     @Query('regionId') queryRegionId?: string,
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10,
   ) {
-    return this.paymentsService.getPaymentsByRegion(currentUser, queryRegionId);
+    return this.paymentsService.getPaymentsByRegion(
+      currentUser,
+      queryRegionId,
+      Number(page),
+      Number(limit),
+    );
   }
 
   @Get('operator-summary')
@@ -66,7 +76,14 @@ export class PaymentsController {
   @ApiOperation({
     summary: 'Melihat rekapitulasi finansial pos untuk Operator',
   })
-  async getOperatorSummary(@GetUser() currentUser: any) {
-    return this.paymentsService.getPaymentsByOperator(String(currentUser.id));
+  async getOperatorSummary(
+    @GetUser('id') operatorUserId: string,
+    @Query() query: GetOperatorSummaryQueryDto,
+  ) {
+    return this.paymentsService.getPaymentsByOperator(
+      String(operatorUserId),
+      query.page,
+      query.limit,
+    );
   }
 }

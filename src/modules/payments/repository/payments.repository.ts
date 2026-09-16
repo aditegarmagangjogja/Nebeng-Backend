@@ -150,35 +150,56 @@ export class PaymentsRepository {
     });
   }
 
-  async getPaymentsByOperator(operatorUserIdStr: string) {
+  async getPaymentsByOperator(
+    operatorUserIdStr: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
     if (!parsedOperatorId) {
       throw new BadRequestException('Format ID Operator tidak valid');
     }
 
-    return this.prisma.payment.findMany({
-      where: {
-        order: {
-          trip: {
-            originPoint: {
-              operatorId: parsedOperatorId,
-            },
+    // 1. Ambil pos milik operator
+    const assignedPos = await this.prisma.pickupPoint.findFirst({
+      where: { operatorId: parsedOperatorId },
+    });
+
+    const skip = (page - 1) * limit;
+
+    const whereCondition = {
+      order: {
+        trip: {
+          originPoint: {
+            operatorId: parsedOperatorId,
           },
         },
       },
-      include: {
-        order: {
-          include: {
-            customer: true,
-            trip: {
-              include: {
-                originPoint: true,
+    };
+
+    // 2. Fetch transaksi & total count secara paralel
+    const [payments, totalItems] = await Promise.all([
+      this.prisma.payment.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        include: {
+          order: {
+            include: {
+              customer: true,
+              trip: {
+                include: {
+                  originPoint: true,
+                },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.payment.count({ where: whereCondition }),
+    ]);
+
+    return { payments, totalItems, assignedPos };
   }
 }

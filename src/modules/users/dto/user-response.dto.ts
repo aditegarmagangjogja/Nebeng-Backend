@@ -51,6 +51,9 @@ export class UserResponseDto {
   @ApiProperty()
   hasPin!: boolean;
 
+  @ApiPropertyOptional({ example: '10' })
+  assignedPickupPointId?: string | null;
+
   @ApiProperty()
   createdAt!: Date;
 

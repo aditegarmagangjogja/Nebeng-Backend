@@ -7,6 +7,11 @@ export class UserMapper {
     let calculatedRating: number | null = null;
     let reviewCount = 0;
 
+    const assignedPos =
+      user.assignedPickupPoints && user.assignedPickupPoints.length > 0
+        ? user.assignedPickupPoints[0].id.toString()
+        : null;
+
     if (
       user.reviewsReceived &&
       Array.isArray(user.reviewsReceived) &&
@@ -29,6 +34,7 @@ export class UserMapper {
       phone: user.phone ?? '',
       role: user.role,
       status: user.status,
+      assignedPickupPointId: assignedPos,
       statusVerification: user.statusVerification,
       nik: user.profile?.ktpNumber || user.nik || null,
       avatar: user.avatar || null,

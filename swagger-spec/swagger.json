@@ -1942,6 +1942,24 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
           }
         ],
         "responses": {
@@ -1963,7 +1981,28 @@
     "/api/payments/operator-summary": {
       "get": {
         "operationId": "PaymentsController_getOperatorSummary",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -2738,6 +2777,10 @@
           },
           "hasPin": {
             "type": "boolean"
+          },
+          "assignedPickupPointId": {
+            "type": "object",
+            "example": "10"
           },
           "createdAt": {
             "format": "date-time",

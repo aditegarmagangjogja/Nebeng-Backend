@@ -127,7 +127,13 @@ export class PaymentsService {
     };
   }
 
-  async getPaymentsByRegion(currentUser: any, regionId?: string) {
+  // payments.service.ts
+  async getPaymentsByRegion(
+    currentUser: any,
+    regionId?: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     let parsedRegionId: bigint | null = null;
 
     if (currentUser.role === Role.regional) {
@@ -141,48 +147,126 @@ export class PaymentsService {
       parsedRegionId = this.safeParseBigInt(regionId);
     }
 
-    const payments = await this.prisma.payment.findMany({
-      where: {
-        order: {
-          trip: {
-            originPoint: {
-              ...(parsedRegionId ? { regionId: parsedRegionId } : {}),
-            },
+    const skip = (page - 1) * limit;
+
+    const whereCondition = {
+      order: {
+        trip: {
+          originPoint: {
+            ...(parsedRegionId ? { regionId: parsedRegionId } : {}),
           },
         },
       },
-      include: {
-        order: {
-          include: {
-            customer: true,
-            trip: {
-              include: {
-                originPoint: { include: { region: true } },
+    };
+
+    const [payments, totalItems] = await Promise.all([
+      this.prisma.payment.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        include: {
+          order: {
+            include: {
+              customer: true,
+              trip: {
+                include: {
+                  originPoint: { include: { region: true } },
+                },
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.payment.count({ where: whereCondition }),
+    ]);
 
-    return payments.map((p) => ({
+    const formattedData = payments.map((p) => ({
       ...p,
       id: p.id.toString(),
       orderId: p.orderId.toString(),
       amount: Number(p.amount),
     }));
+
+    return {
+      pagination: {
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+        limit,
+      },
+      data: formattedData,
+    };
   }
 
-  async getPaymentsByOperator(operatorUserIdStr: string) {
-    const payments =
-      await this.paymentsRepository.getPaymentsByOperator(operatorUserIdStr);
+  async getPaymentsByOperator(
+    operatorUserIdStr: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    const { payments, totalItems, assignedPos } =
+      await this.paymentsRepository.getPaymentsByOperator(
+        operatorUserIdStr,
+        page,
+        limit,
+      );
 
-    return payments.map((p) => ({
-      ...p,
+    const formattedTransactions = payments.map((p) => ({
       id: p.id.toString(),
       orderId: p.orderId.toString(),
       amount: Number(p.amount),
+      paymentGateway: p.paymentGateway,
+      transactionId: p.transactionId,
+      status: p.status,
+      createdAt: p.createdAt,
+      order: p.order
+        ? {
+            id: p.order.id.toString(),
+            type: p.order.type,
+            totalPrice: Number(p.order.totalPrice),
+            status: p.order.status,
+            customer: p.order.customer
+              ? {
+                  id: p.order.customer.id.toString(),
+                  name: p.order.customer.name,
+                  email: p.order.customer.email,
+                }
+              : null,
+            trip: p.order.trip
+              ? {
+                  id: p.order.trip.id.toString(),
+                  originPoint: p.order.trip.originPoint
+                    ? {
+                        id: p.order.trip.originPoint.id.toString(),
+                        name: p.order.trip.originPoint.name,
+                      }
+                    : null,
+                }
+              : null,
+          }
+        : null,
     }));
+
+    const totalRevenue = formattedTransactions.reduce(
+      (acc, curr) => acc + curr.amount,
+      0,
+    );
+
+    return {
+      posSummary: assignedPos
+        ? {
+            posId: assignedPos.id.toString(),
+            posName: assignedPos.name,
+            totalRevenue,
+          }
+        : null,
+      pagination: {
+        totalItems,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+        limit,
+      },
+      data: formattedTransactions,
+    };
   }
 }
