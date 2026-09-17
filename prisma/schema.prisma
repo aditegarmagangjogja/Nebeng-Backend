@@ -27,8 +27,8 @@ enum UserStatus {
   active
   suspended
   blocked
-  inactive   // Soft Delete / Akun dinonaktifkan
-  deleted    // Soft Delete / Akun dianonimkan (GDPR Compliant)
+  inactive
+  deleted
 }
 
 enum VerificationStatus {
@@ -130,6 +130,10 @@ model Region {
   code        String   @unique
   pricePerKm  Decimal  @default(3000) @db.Decimal(12, 2)
   isActive    Boolean  @default(true) @map("is_active")
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+  radiusKm    Decimal? @default(20.00) @map("radius_km") @db.Decimal(8, 2)
+  boundaryPolygon String? @map("boundary_polygon") @db.LongText
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -276,7 +280,7 @@ model PricingSetting {
   baseFare           Decimal     @map("base_fare") @db.Decimal(10, 2)
   farePerKm          Decimal     @map("fare_per_km") @db.Decimal(10, 2)
   farePerKg          Decimal?    @map("fare_per_kg") @db.Decimal(10, 2)
-  maxWeightKg        Decimal?    @map("max_weight_kg") @db.Decimal(8, 2) // Kolom baru khusus batas berat paket
+  maxWeightKg        Decimal?    @map("max_weight_kg") @db.Decimal(8, 2)
   adminFeePercentage Decimal     @map("admin_fee_percentage") @db.Decimal(5, 2)
   createdAt          DateTime    @default(now()) @map("created_at")
   updatedAt          DateTime    @updatedAt @map("updated_at")
@@ -508,7 +512,6 @@ model Conversation {
 
   messages Message[]
 
-  // PERBAIKAN: Menambahkan Unique Constraint mencegah duplikasi chat room per trip & customer
   @@unique([tripId, customerId])
   @@map("conversations")
 }

@@ -29,7 +29,6 @@ export class VerificationMapper {
             email: verification.user.email,
             phone: verification.user.phone,
             statusVerification: verification.user.statusVerification,
-            // TAMBAHKAN BARIS INI AGAR REGIONID TERSEDIA PADA OBJEK USER MAPPING
             regionId: verification.user.regionId
               ? verification.user.regionId.toString()
               : null,

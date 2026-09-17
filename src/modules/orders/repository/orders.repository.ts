@@ -32,7 +32,6 @@ export class OrdersRepository {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. Conditional Atomic Decrement (Atomic Guard)
       const updateTripResult = await tx.trip.updateMany({
         where: {
           id: parseTripId,
@@ -52,7 +51,6 @@ export class OrdersRepository {
         );
       }
 
-      // 2. Buat Order Baru
       const createdOrder = await tx.order.create({
         data: {
           tripId: parseTripId,
@@ -70,7 +68,6 @@ export class OrdersRepository {
         },
       });
 
-      // 3. Masukkan Item jika ada (Order Parcel)
       if (itemsData && itemsData.length > 0) {
         await tx.itemOrder.createMany({
           data: itemsData.map((item) => ({

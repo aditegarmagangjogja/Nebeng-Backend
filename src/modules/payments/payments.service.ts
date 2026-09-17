@@ -96,7 +96,6 @@ export class PaymentsService {
       }
     }
 
-    // Perhitungan finansial presisi dengan pembulatan Math.round
     const adminFeeAmount = Math.round((totalPrice * adminFeePercentage) / 100);
     const netMitraAmount = totalPrice - adminFeeAmount;
 
@@ -127,7 +126,6 @@ export class PaymentsService {
     };
   }
 
-  // payments.service.ts
   async getPaymentsByRegion(
     currentUser: any,
     regionId?: string,

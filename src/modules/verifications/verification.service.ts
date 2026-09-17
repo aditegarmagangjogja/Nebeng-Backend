@@ -23,7 +23,6 @@ export class VerificationService {
     }
   }
 
-  // verification.service.ts (Potongan Perbaikan submitVerification)
   async submitVerification(userId: string, dto: SumbitVerificationDto) {
     const userBigIntId = this.safeParseBigInt(userId);
 
@@ -51,7 +50,6 @@ export class VerificationService {
       }
     }
 
-    // Jika status sebelumnya REJECTED, repository akan membuat record baru / mengupdate untuk ditinjau ulang
     const verification = await this.verificationRepo.createVerification({
       userId: userBigIntId,
       type: dto.type,

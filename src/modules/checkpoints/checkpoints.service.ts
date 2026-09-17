@@ -138,7 +138,6 @@ export class CheckpointsService {
         );
       }
 
-      // Validasi OTP hanya wajib jika order bertipe parcel/barang
       if (order.type === OrderType.parcel) {
         if (!dto.otpClaim) {
           throw new BadRequestException(

@@ -34,23 +34,37 @@ export class RegionController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Tambah Region Baru (Superadmin Only)' })
+  @ApiOperation({
+    summary: 'Tambah Region Baru dengan Batas Spasial/Peta (Superadmin Only)',
+  })
   async createRegion(@Body() dto: CreateRegionDto) {
     return this.regionService.createRegion(dto);
   }
 
   @Get('regions')
   @ApiOperation({
-    summary: 'Melihat seluruh daftar Region beserta Admin Penanggung Jawab',
+    summary: 'Melihat seluruh daftar Region dengan Paginasi & Batas Spasial',
   })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
   @ApiQuery({ name: 'onlyActive', type: Boolean, required: false })
-  async findAllRegions(@Query('onlyActive') onlyActive?: string) {
+  async findAllRegions(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('onlyActive') onlyActive?: string,
+  ) {
+    const parsedPage = page && !isNaN(Number(page)) ? parseInt(page, 10) : 1;
+    const parsedLimit =
+      limit && !isNaN(Number(limit)) ? parseInt(limit, 10) : 10;
     const isActive = onlyActive === 'true' || onlyActive === '1';
-    return this.regionService.getAllRegions(isActive);
+
+    return this.regionService.getAllRegions(parsedPage, parsedLimit, isActive);
   }
 
   @Get('regions/:id')
-  @ApiOperation({ summary: 'Melihat detail Region & daftar Admin Wilayah' })
+  @ApiOperation({
+    summary: 'Melihat detail Region, Koordinat, dan Titik Pos Terikat',
+  })
   @ApiResponse({ status: 200, description: 'Region ditemukan' })
   @ApiResponse({ status: 404, description: 'Region tidak ditemukan' })
   async findOneRegion(@Param('id') id: string) {
@@ -61,7 +75,9 @@ export class RegionController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.admin)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update/Deaktivasi Region (Superadmin Only)' })
+  @ApiOperation({
+    summary: 'Update/Deaktivasi Region & Koordinat Spasial (Superadmin Only)',
+  })
   @ApiResponse({ status: 200, description: 'Region berhasil diperbarui' })
   @ApiResponse({ status: 404, description: 'Region tidak ditemukan' })
   async updateRegion(@Param('id') id: string, @Body() dto: UpdateRegionDto) {

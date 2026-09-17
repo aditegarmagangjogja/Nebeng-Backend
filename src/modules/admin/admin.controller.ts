@@ -80,8 +80,9 @@ export class AdminController {
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
-    const parsedPage = page ? parseInt(page, 10) : 1;
-    const parsedLimit = limit ? parseInt(limit, 10) : 20;
+    const parsedPage = page && !isNaN(Number(page)) ? parseInt(page, 10) : 1;
+    const parsedLimit =
+      limit && !isNaN(Number(limit)) ? parseInt(limit, 10) : 20;
     return this.adminService.getEscrowLedger(parsedPage, parsedLimit);
   }
 

@@ -36,7 +36,6 @@ export class PaymentsRepository {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      // 1. Verifikasi Status Order dengan Kunci Transaksi
       const currentOrder = await tx.order.findUnique({
         where: { id: parsedOrderId },
         select: { id: true, status: true },
@@ -51,7 +50,6 @@ export class PaymentsRepository {
         );
       }
 
-      // 2. Buat Catatan Pembayaran (Payment Record)
       const payment = await tx.payment.create({
         data: {
           orderId: parsedOrderId,
@@ -62,7 +60,6 @@ export class PaymentsRepository {
         },
       });
 
-      // 3. Perbarui Status Order Menjadi Paid & Escrow Held
       const order = await tx.order.update({
         where: { id: parsedOrderId },
         data: {
@@ -74,7 +71,6 @@ export class PaymentsRepository {
         },
       });
 
-      // 4. Masukkan Dana Bersih Mitra ke Escrow Wallet
       let mitraWallet = await tx.wallet.findUnique({
         where: { userId: parsedMitraId },
       });
@@ -106,7 +102,6 @@ export class PaymentsRepository {
         },
       });
 
-      // 5. Penentuan Admin User Utama (System Admin Wallet)
       const systemAdminIdEnv = process.env.SYSTEM_ADMIN_USER_ID;
       const parsedSystemAdminId = systemAdminIdEnv
         ? this.safeParseBigInt(systemAdminIdEnv)
@@ -160,7 +155,6 @@ export class PaymentsRepository {
       throw new BadRequestException('Format ID Operator tidak valid');
     }
 
-    // 1. Ambil pos milik operator
     const assignedPos = await this.prisma.pickupPoint.findFirst({
       where: { operatorId: parsedOperatorId },
     });
@@ -177,7 +171,6 @@ export class PaymentsRepository {
       },
     };
 
-    // 2. Fetch transaksi & total count secara paralel
     const [payments, totalItems] = await Promise.all([
       this.prisma.payment.findMany({
         where: whereCondition,

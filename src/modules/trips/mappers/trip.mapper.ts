@@ -25,7 +25,6 @@ export class TripMapper {
       mapsPolyline: trip.mapsPolyline ?? null,
       createdAt: trip.createdAt,
       updatedAt: trip.updatedAt,
-      // Relasi opsional
       mitra: trip.mitra
         ? {
             id: trip.mitra.id.toString(),

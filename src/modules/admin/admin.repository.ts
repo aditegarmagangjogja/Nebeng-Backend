@@ -24,61 +24,54 @@ export class AdminRepository {
   }
 
   async getGlobalAnalytics() {
-    // Ambil order yang sudah dibayar/selesai untuk perhitungan omzet dan komisi platform aktual
-    const paidOrders = await this.prisma.order.findMany({
-      where: {
-        status: {
-          in: [
-            OrderStatus.paid,
-            OrderStatus.completed,
-            OrderStatus.in_transit,
-            OrderStatus.arrived_destination,
-          ],
+    const [
+      paidOrdersAggregate,
+      activeTripsCount,
+      totalTransactionsCount,
+      regionalSummary,
+    ] = await Promise.all([
+      this.prisma.order.aggregate({
+        where: {
+          status: {
+            in: [
+              OrderStatus.paid,
+              OrderStatus.completed,
+              OrderStatus.in_transit,
+              OrderStatus.arrived_destination,
+            ],
+          },
         },
-      },
-      select: {
-        totalPrice: true,
-        adminFeePercentage: true,
-      },
-    });
-
-    const [activeTripsCount, totalTransactionsCount, regionalSummary] =
-      await Promise.all([
-        this.prisma.trip.count({
-          where: {
-            status: {
-              in: [
-                TripStatus.scheduled,
-                TripStatus.in_transit,
-                TripStatus.in_origin_pos,
-              ],
+        _sum: {
+          totalPrice: true,
+        },
+      }),
+      this.prisma.trip.count({
+        where: {
+          status: {
+            in: [
+              TripStatus.scheduled,
+              TripStatus.in_transit,
+              TripStatus.in_origin_pos,
+            ],
+          },
+        },
+      }),
+      this.prisma.order.count(),
+      this.prisma.region.findMany({
+        where: { isActive: true },
+        include: {
+          _count: {
+            select: {
+              pickupPoints: true,
+              users: true,
             },
           },
-        }),
-        this.prisma.order.count(),
-        this.prisma.region.findMany({
-          where: { isActive: true },
-          include: {
-            _count: {
-              select: {
-                pickupPoints: true,
-                users: true,
-              },
-            },
-          },
-        }),
-      ]);
+        },
+      }),
+    ]);
 
-    // Hitung total revenue dan komisi platform persis sesuai adminFeePercentage tiap Order
-    let totalRevenue = 0;
-    let platformCommission = 0;
-
-    for (const order of paidOrders) {
-      const price = Number(order.totalPrice);
-      const feePercent = Number(order.adminFeePercentage ?? 10);
-      totalRevenue += price;
-      platformCommission += (price * feePercent) / 100;
-    }
+    const totalRevenue = Number(paidOrdersAggregate._sum.totalPrice || 0);
+    const platformCommission = totalRevenue * 0.1;
 
     return {
       totalRevenue,
@@ -322,7 +315,6 @@ export class AdminRepository {
   }
 
   async updatePlatformCommissionRate(percentage: number) {
-    // Update semua record di PricingSetting yang sudah ada
     await this.prisma.pricingSetting.updateMany({
       data: { adminFeePercentage: percentage },
     });

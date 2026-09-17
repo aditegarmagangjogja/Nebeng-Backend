@@ -44,10 +44,7 @@ export class UserMapper {
       bankName: user.profile?.bankName || null,
       bankAccountNumber: user.profile?.bankAccountNumber || null,
       bankAccountHolder: user.profile?.bankAccountHolder || null,
-
-      // === DIESUAIKAN: Kirim status keberadaan PIN ke frontend ===
       hasPin: Boolean(user.pinHash),
-
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

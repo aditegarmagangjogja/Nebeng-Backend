@@ -96,7 +96,6 @@ export class WalletsRepository {
     const netAmount = amount - platformFee;
 
     return this.prisma.$transaction(async (tx) => {
-      // Atomic guard: Pastikan heldEscrowBalance mencukupi sebelum dikurangi
       const updateResult = await tx.wallet.updateMany({
         where: {
           id: walletId,
@@ -139,7 +138,6 @@ export class WalletsRepository {
     bankDetails: string,
   ) {
     return this.prisma.$transaction(async (tx) => {
-      // Atomic guard: Pastikan balance mencukupi sebelum dikurangi (mencegah saldo negatif)
       const updateResult = await tx.wallet.updateMany({
         where: {
           id: walletId,

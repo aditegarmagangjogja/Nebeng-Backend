@@ -64,11 +64,24 @@ export class UsersService {
     return UserMapper.toResponse(newUser);
   }
 
+  async getUserStats() {
+    return this.userRepository.countUsersByStatus();
+  }
+
   async findAll(
     page: number = 1,
-    limit: number = 50,
+    limit: number = 15,
+    search?: string,
+    status?: string,
+    role?: string,
   ): Promise<{ data: UserResponseDto[]; meta: any }> {
-    const { users, total } = await this.userRepository.findAll(page, limit);
+    const { users, total } = await this.userRepository.findAll(
+      page,
+      limit,
+      search,
+      status,
+      role,
+    );
     return {
       data: UserMapper.toResponseList(users),
       meta: {

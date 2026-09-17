@@ -98,6 +98,10 @@ export const RegionScalarFieldEnum = {
   code: 'code',
   pricePerKm: 'pricePerKm',
   isActive: 'isActive',
+  latitude: 'latitude',
+  longitude: 'longitude',
+  radiusKm: 'radiusKm',
+  boundaryPolygon: 'boundaryPolygon',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -444,9 +448,18 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
 export const RegionOrderByRelevanceFieldEnum = {
   name: 'name',
-  code: 'code'
+  code: 'code',
+  boundaryPolygon: 'boundaryPolygon'
 } as const
 
 export type RegionOrderByRelevanceFieldEnum = (typeof RegionOrderByRelevanceFieldEnum)[keyof typeof RegionOrderByRelevanceFieldEnum]
@@ -458,14 +471,6 @@ export const CityOrderByRelevanceFieldEnum = {
 } as const
 
 export type CityOrderByRelevanceFieldEnum = (typeof CityOrderByRelevanceFieldEnum)[keyof typeof CityOrderByRelevanceFieldEnum]
-
-
-export const NullsOrder = {
-  first: 'first',
-  last: 'last'
-} as const
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 
 
 export const UserOrderByRelevanceFieldEnum = {

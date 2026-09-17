@@ -86,7 +86,6 @@ export class VerificationRepository {
         },
       });
 
-      // Ambil seluruh verifikasi user untuk mengecek status terbaru per dokumen
       const allUserVerifications = await tx.verification.findMany({
         where: { userId: data.userId },
         orderBy: { createdAt: 'desc' },
@@ -103,7 +102,6 @@ export class VerificationRepository {
         (status) => status === VerificationStatus.rejected,
       );
 
-      // Jika tidak ada dokumen berstatus rejected pada versi terbaru, set status global ke pending
       if (!hasRejected) {
         await tx.user.update({
           where: { id: data.userId },
@@ -220,7 +218,6 @@ export class VerificationRepository {
         });
       }
 
-      // --- LOGIKA AGREGASI STATUS GLOBAL USER BERDASARKAN DOKUMEN TERBARU & ROLE ---
       const allUserVerifications = await tx.verification.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
@@ -237,11 +234,8 @@ export class VerificationRepository {
       const hasRejected = latestStatuses.some(
         (st) => st === VerificationStatus.rejected,
       );
-
-      // Ambil role pengguna dari relasi user yang di-include
       const userRole = updatedVerification.user?.role;
 
-      // Tentukan dokumen wajib berdasarkan role
       const requiredDocTypes =
         userRole === Role.mitra
           ? [
