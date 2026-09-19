@@ -113,9 +113,17 @@ export class OrdersRepository {
           include: {
             originPoint: true,
             destinationPoint: true,
+            mitra: true,
           },
         },
         itemOrders: true,
+        checkpointsLogs: {
+          include: {
+            pos: true,
+            scannedByUser: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

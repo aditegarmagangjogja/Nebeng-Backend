@@ -1,8 +1,15 @@
-import { Body, Controller, Get, Post, UseGuards, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseGuards,
+  Query,
+  Headers,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiOperation,
-  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -14,26 +21,24 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '../../generated/prisma/enums';
 import { GetUser } from '../../common/decorators/get-user.decorators';
+import { CreateXenditInvoiceDto } from './dto/create-xendit-invoice.dto';
 
 @ApiTags('Payments')
-@ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Controller('payments')
+@Controller('payments') // <-- Hapus @UseGuards di sini agar tidak memblokir webhook
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  /**
+   * 1. Checkout Simulasi PIN (Hanya Customer Login)
+   */
   @Post('checkout')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.customer)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Checkout pembayaran order (Customer Only)',
   })
   @ApiResponse({ status: 201, description: 'Pembayaran berhasil dikonfirmasi' })
-  @ApiResponse({
-    status: 400,
-    description:
-      'Order bukan milik Anda, PIN salah, atau status order tidak valid',
-  })
-  @ApiResponse({ status: 404, description: 'Order tidak ditemukan' })
   async checkoutPayment(
     @GetUser('id') userId: string,
     @Body() dto: CheckoutPaymentDto,
@@ -41,21 +46,50 @@ export class PaymentsController {
     return this.paymentsService.checkoutPayment(String(userId), dto);
   }
 
+  /**
+   * 2. Membuat Invoice Xendit (Hanya Customer Login)
+   */
+  @Post('xendit/create-invoice')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.customer)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Membuat link pembayaran Xendit Invoice / QRIS (Customer Only)',
+  })
+  async createXenditInvoice(
+    @GetUser('id') userId: string,
+    @Body() dto: CreateXenditInvoiceDto,
+  ) {
+    return this.paymentsService.createXenditInvoice(
+      String(userId),
+      dto.orderId,
+    );
+  }
+
+  /**
+   * 3. Webhook Callback Xendit (PUBLIK - Tidak Perlu JWT)
+   * Keamanan diverifikasi melalui header 'x-callback-token'
+   */
+  @Post('xendit-webhook')
+  @ApiOperation({
+    summary: 'Webhook callback penerima konfirmasi bayar dari Xendit',
+  })
+  async handleXenditWebhook(
+    @Headers('x-callback-token') callbackToken: string,
+    @Body() payload: any,
+  ) {
+    return this.paymentsService.handleXenditWebhook(callbackToken, payload);
+  }
+
+  /**
+   * 4. Laporan Finansial Wilayah (Admin & Regional)
+   */
   @Get()
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.admin, Role.regional)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Melihat daftar transaksi wilayah (Admin & Regional)',
-  })
-  @ApiQuery({
-    name: 'regionId',
-    required: false,
-    description: 'Opsional untuk Superadmin',
-  })
-  @ApiQuery({ name: 'page', required: false, example: 1 })
-  @ApiQuery({ name: 'limit', required: false, example: 10 })
-  @ApiResponse({
-    status: 200,
-    description: 'Daftar transaksi berhasil diambil',
   })
   async getPayments(
     @GetUser() currentUser: any,
@@ -71,8 +105,13 @@ export class PaymentsController {
     );
   }
 
+  /**
+   * 5. Rekap Finansial Pos (Operator, Regional, Admin)
+   */
   @Get('operator-summary')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.operator, Role.regional, Role.admin)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Melihat rekapitulasi finansial pos untuk Operator',
   })

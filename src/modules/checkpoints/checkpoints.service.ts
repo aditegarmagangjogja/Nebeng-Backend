@@ -14,12 +14,14 @@ import {
   ScanType,
   ServiceType,
 } from '../../generated/prisma/enums';
+import { TrackingGateway } from '../tracking/tracking.gateway';
 
 @Injectable()
 export class CheckpointsService {
   constructor(
     private readonly checkpointsRepository: CheckpointsRepository,
     private readonly prisma: PrismaService,
+    private readonly trackingGateway: TrackingGateway, // <-- Injeksi WebSocket Gateway
   ) {}
 
   private safeParseBigInt(
@@ -97,6 +99,9 @@ export class CheckpointsService {
       );
     }
 
+    // =========================================================================
+    // 1. CHECK-IN POS ASAL (ORIGIN)
+    // =========================================================================
     if (dto.scanType === ScanType.checkin_origin) {
       if (order.status !== OrderStatus.paid) {
         throw new BadRequestException(
@@ -118,6 +123,25 @@ export class CheckpointsService {
         dto.securitySealQr,
       );
 
+      // Siarkan pembaruan real-time ke Customer & Regional Admin via WebSocket
+      const originRegionId = trip.originPoint?.regionId
+        ? trip.originPoint.regionId.toString()
+        : '';
+
+      this.trackingGateway.emitCheckpointScanned(
+        trip.id.toString(),
+        originRegionId,
+        {
+          orderId: order.id.toString(),
+          tripId: trip.id.toString(),
+          scanType: 'checkin_origin',
+          status: 'in_transit',
+          newQrCode: log.order?.qrCodeTicket, // Kode QR fase Pos Tujuan yang baru dirotasi
+          message: 'Check-in Pos Asal selesai. Armada sedang dalam perjalanan.',
+          checkpoint: CheckpointMapper.toResponse(log),
+        },
+      );
+
       return {
         message:
           'Check-in Pos Asal berhasil. Status Trip dan Order kini IN_TRANSIT.',
@@ -125,6 +149,9 @@ export class CheckpointsService {
       };
     }
 
+    // =========================================================================
+    // 2. CHECK-IN POS TUJUAN (DESTINATION) & PENCAIRAN ESCROW
+    // =========================================================================
     if (dto.scanType === ScanType.checkin_destination) {
       if (order.escrowStatus !== EscrowStatus.held) {
         throw new BadRequestException(
@@ -176,6 +203,27 @@ export class CheckpointsService {
           adminFeePercentage,
         );
 
+      // Siarkan pembaruan real-time ke Customer & Regional Admin via WebSocket
+      const destRegionId = trip.destinationPoint?.regionId
+        ? trip.destinationPoint.regionId.toString()
+        : '';
+
+      this.trackingGateway.emitCheckpointScanned(
+        trip.id.toString(),
+        destRegionId,
+        {
+          orderId: order.id.toString(),
+          tripId: trip.id.toString(),
+          scanType: 'checkin_destination',
+          status: 'completed',
+          message:
+            order.type === OrderType.parcel
+              ? 'Barang telah berhasil diserah-terimakan di Pos Tujuan.'
+              : 'Penumpang telah tiba di Pos Tujuan. Perjalanan selesai.',
+          checkpoint: CheckpointMapper.toResponse(log),
+        },
+      );
+
       return {
         message:
           order.type === OrderType.parcel
@@ -186,6 +234,9 @@ export class CheckpointsService {
     }
   }
 
+  // =========================================================================
+  // 3. FORCE RELEASE MANUAL OLEH OPERATOR POS
+  // =========================================================================
   async manualForceReleaseByOperator(
     currentUser: any,
     qrCodeTicket: string,
@@ -208,6 +259,7 @@ export class CheckpointsService {
 
     const trip = await this.prisma.trip.findUnique({
       where: { id: order.tripId },
+      include: { originPoint: true, destinationPoint: true },
     });
 
     if (!trip) {
@@ -246,6 +298,24 @@ export class CheckpointsService {
         totalPriceNum,
         adminFeePercentage,
       );
+
+    // Siarkan pembaruan status force release via WebSocket
+    const destRegionId = trip.destinationPoint?.regionId
+      ? trip.destinationPoint.regionId.toString()
+      : '';
+
+    this.trackingGateway.emitCheckpointScanned(
+      trip.id.toString(),
+      destRegionId,
+      {
+        orderId: order.id.toString(),
+        tripId: trip.id.toString(),
+        scanType: 'checkin_destination',
+        status: 'completed',
+        message: 'Force Check-in manual oleh Operator Pos telah selesai.',
+        checkpoint: CheckpointMapper.toResponse(log),
+      },
+    );
 
     return {
       message:

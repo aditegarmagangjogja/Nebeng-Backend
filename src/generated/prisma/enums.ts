@@ -157,3 +157,15 @@ export const RewardType = {
 } as const
 
 export type RewardType = (typeof RewardType)[keyof typeof RewardType]
+
+
+export const RedemptionStatus = {
+  pending: 'pending',
+  processing: 'processing',
+  ready_at_pos: 'ready_at_pos',
+  completed: 'completed',
+  cancelled: 'cancelled',
+  rejected: 'rejected'
+} as const
+
+export type RedemptionStatus = (typeof RedemptionStatus)[keyof typeof RedemptionStatus]

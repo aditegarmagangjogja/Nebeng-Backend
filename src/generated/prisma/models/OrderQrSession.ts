@@ -40,7 +40,9 @@ export type OrderQrSessionMinAggregateOutputType = {
   id: bigint | null
   orderId: bigint | null
   qrToken: string | null
+  scanPhase: $Enums.ScanType | null
   isUsed: boolean | null
+  usedAt: Date | null
   expiredAt: Date | null
   createdAt: Date | null
 }
@@ -49,7 +51,9 @@ export type OrderQrSessionMaxAggregateOutputType = {
   id: bigint | null
   orderId: bigint | null
   qrToken: string | null
+  scanPhase: $Enums.ScanType | null
   isUsed: boolean | null
+  usedAt: Date | null
   expiredAt: Date | null
   createdAt: Date | null
 }
@@ -58,7 +62,9 @@ export type OrderQrSessionCountAggregateOutputType = {
   id: number
   orderId: number
   qrToken: number
+  scanPhase: number
   isUsed: number
+  usedAt: number
   expiredAt: number
   createdAt: number
   _all: number
@@ -79,7 +85,9 @@ export type OrderQrSessionMinAggregateInputType = {
   id?: true
   orderId?: true
   qrToken?: true
+  scanPhase?: true
   isUsed?: true
+  usedAt?: true
   expiredAt?: true
   createdAt?: true
 }
@@ -88,7 +96,9 @@ export type OrderQrSessionMaxAggregateInputType = {
   id?: true
   orderId?: true
   qrToken?: true
+  scanPhase?: true
   isUsed?: true
+  usedAt?: true
   expiredAt?: true
   createdAt?: true
 }
@@ -97,7 +107,9 @@ export type OrderQrSessionCountAggregateInputType = {
   id?: true
   orderId?: true
   qrToken?: true
+  scanPhase?: true
   isUsed?: true
+  usedAt?: true
   expiredAt?: true
   createdAt?: true
   _all?: true
@@ -193,7 +205,9 @@ export type OrderQrSessionGroupByOutputType = {
   id: bigint
   orderId: bigint
   qrToken: string
+  scanPhase: $Enums.ScanType | null
   isUsed: boolean
+  usedAt: Date | null
   expiredAt: Date
   createdAt: Date
   _count: OrderQrSessionCountAggregateOutputType | null
@@ -225,7 +239,9 @@ export type OrderQrSessionWhereInput = {
   id?: Prisma.BigIntFilter<"OrderQrSession"> | bigint | number
   orderId?: Prisma.BigIntFilter<"OrderQrSession"> | bigint | number
   qrToken?: Prisma.StringFilter<"OrderQrSession"> | string
+  scanPhase?: Prisma.EnumScanTypeNullableFilter<"OrderQrSession"> | $Enums.ScanType | null
   isUsed?: Prisma.BoolFilter<"OrderQrSession"> | boolean
+  usedAt?: Prisma.DateTimeNullableFilter<"OrderQrSession"> | Date | string | null
   expiredAt?: Prisma.DateTimeFilter<"OrderQrSession"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"OrderQrSession"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -235,7 +251,9 @@ export type OrderQrSessionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   qrToken?: Prisma.SortOrder
+  scanPhase?: Prisma.SortOrderInput | Prisma.SortOrder
   isUsed?: Prisma.SortOrder
+  usedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   expiredAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   order?: Prisma.OrderOrderByWithRelationInput
@@ -249,7 +267,9 @@ export type OrderQrSessionWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OrderQrSessionWhereInput | Prisma.OrderQrSessionWhereInput[]
   orderId?: Prisma.BigIntFilter<"OrderQrSession"> | bigint | number
   qrToken?: Prisma.StringFilter<"OrderQrSession"> | string
+  scanPhase?: Prisma.EnumScanTypeNullableFilter<"OrderQrSession"> | $Enums.ScanType | null
   isUsed?: Prisma.BoolFilter<"OrderQrSession"> | boolean
+  usedAt?: Prisma.DateTimeNullableFilter<"OrderQrSession"> | Date | string | null
   expiredAt?: Prisma.DateTimeFilter<"OrderQrSession"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"OrderQrSession"> | Date | string
   order?: Prisma.XOR<Prisma.OrderScalarRelationFilter, Prisma.OrderWhereInput>
@@ -259,7 +279,9 @@ export type OrderQrSessionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   qrToken?: Prisma.SortOrder
+  scanPhase?: Prisma.SortOrderInput | Prisma.SortOrder
   isUsed?: Prisma.SortOrder
+  usedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   expiredAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.OrderQrSessionCountOrderByAggregateInput
@@ -276,7 +298,9 @@ export type OrderQrSessionScalarWhereWithAggregatesInput = {
   id?: Prisma.BigIntWithAggregatesFilter<"OrderQrSession"> | bigint | number
   orderId?: Prisma.BigIntWithAggregatesFilter<"OrderQrSession"> | bigint | number
   qrToken?: Prisma.StringWithAggregatesFilter<"OrderQrSession"> | string
+  scanPhase?: Prisma.EnumScanTypeNullableWithAggregatesFilter<"OrderQrSession"> | $Enums.ScanType | null
   isUsed?: Prisma.BoolWithAggregatesFilter<"OrderQrSession"> | boolean
+  usedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrderQrSession"> | Date | string | null
   expiredAt?: Prisma.DateTimeWithAggregatesFilter<"OrderQrSession"> | Date | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"OrderQrSession"> | Date | string
 }
@@ -284,7 +308,9 @@ export type OrderQrSessionScalarWhereWithAggregatesInput = {
 export type OrderQrSessionCreateInput = {
   id?: bigint | number
   qrToken: string
+  scanPhase?: $Enums.ScanType | null
   isUsed?: boolean
+  usedAt?: Date | string | null
   expiredAt: Date | string
   createdAt?: Date | string
   order: Prisma.OrderCreateNestedOneWithoutQrSessionsInput
@@ -294,7 +320,9 @@ export type OrderQrSessionUncheckedCreateInput = {
   id?: bigint | number
   orderId: bigint | number
   qrToken: string
+  scanPhase?: $Enums.ScanType | null
   isUsed?: boolean
+  usedAt?: Date | string | null
   expiredAt: Date | string
   createdAt?: Date | string
 }
@@ -302,7 +330,9 @@ export type OrderQrSessionUncheckedCreateInput = {
 export type OrderQrSessionUpdateInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   qrToken?: Prisma.StringFieldUpdateOperationsInput | string
+  scanPhase?: Prisma.NullableEnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType | null
   isUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   order?: Prisma.OrderUpdateOneRequiredWithoutQrSessionsNestedInput
@@ -312,7 +342,9 @@ export type OrderQrSessionUncheckedUpdateInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   qrToken?: Prisma.StringFieldUpdateOperationsInput | string
+  scanPhase?: Prisma.NullableEnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType | null
   isUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -321,7 +353,9 @@ export type OrderQrSessionCreateManyInput = {
   id?: bigint | number
   orderId: bigint | number
   qrToken: string
+  scanPhase?: $Enums.ScanType | null
   isUsed?: boolean
+  usedAt?: Date | string | null
   expiredAt: Date | string
   createdAt?: Date | string
 }
@@ -329,7 +363,9 @@ export type OrderQrSessionCreateManyInput = {
 export type OrderQrSessionUpdateManyMutationInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   qrToken?: Prisma.StringFieldUpdateOperationsInput | string
+  scanPhase?: Prisma.NullableEnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType | null
   isUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -338,7 +374,9 @@ export type OrderQrSessionUncheckedUpdateManyInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   orderId?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   qrToken?: Prisma.StringFieldUpdateOperationsInput | string
+  scanPhase?: Prisma.NullableEnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType | null
   isUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -363,7 +401,9 @@ export type OrderQrSessionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   qrToken?: Prisma.SortOrder
+  scanPhase?: Prisma.SortOrder
   isUsed?: Prisma.SortOrder
+  usedAt?: Prisma.SortOrder
   expiredAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -377,7 +417,9 @@ export type OrderQrSessionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   qrToken?: Prisma.SortOrder
+  scanPhase?: Prisma.SortOrder
   isUsed?: Prisma.SortOrder
+  usedAt?: Prisma.SortOrder
   expiredAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -386,7 +428,9 @@ export type OrderQrSessionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   orderId?: Prisma.SortOrder
   qrToken?: Prisma.SortOrder
+  scanPhase?: Prisma.SortOrder
   isUsed?: Prisma.SortOrder
+  usedAt?: Prisma.SortOrder
   expiredAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -438,10 +482,20 @@ export type OrderQrSessionUncheckedUpdateManyWithoutOrderNestedInput = {
   deleteMany?: Prisma.OrderQrSessionScalarWhereInput | Prisma.OrderQrSessionScalarWhereInput[]
 }
 
+export type NullableEnumScanTypeFieldUpdateOperationsInput = {
+  set?: $Enums.ScanType | null
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type OrderQrSessionCreateWithoutOrderInput = {
   id?: bigint | number
   qrToken: string
+  scanPhase?: $Enums.ScanType | null
   isUsed?: boolean
+  usedAt?: Date | string | null
   expiredAt: Date | string
   createdAt?: Date | string
 }
@@ -449,7 +503,9 @@ export type OrderQrSessionCreateWithoutOrderInput = {
 export type OrderQrSessionUncheckedCreateWithoutOrderInput = {
   id?: bigint | number
   qrToken: string
+  scanPhase?: $Enums.ScanType | null
   isUsed?: boolean
+  usedAt?: Date | string | null
   expiredAt: Date | string
   createdAt?: Date | string
 }
@@ -487,7 +543,9 @@ export type OrderQrSessionScalarWhereInput = {
   id?: Prisma.BigIntFilter<"OrderQrSession"> | bigint | number
   orderId?: Prisma.BigIntFilter<"OrderQrSession"> | bigint | number
   qrToken?: Prisma.StringFilter<"OrderQrSession"> | string
+  scanPhase?: Prisma.EnumScanTypeNullableFilter<"OrderQrSession"> | $Enums.ScanType | null
   isUsed?: Prisma.BoolFilter<"OrderQrSession"> | boolean
+  usedAt?: Prisma.DateTimeNullableFilter<"OrderQrSession"> | Date | string | null
   expiredAt?: Prisma.DateTimeFilter<"OrderQrSession"> | Date | string
   createdAt?: Prisma.DateTimeFilter<"OrderQrSession"> | Date | string
 }
@@ -495,7 +553,9 @@ export type OrderQrSessionScalarWhereInput = {
 export type OrderQrSessionCreateManyOrderInput = {
   id?: bigint | number
   qrToken: string
+  scanPhase?: $Enums.ScanType | null
   isUsed?: boolean
+  usedAt?: Date | string | null
   expiredAt: Date | string
   createdAt?: Date | string
 }
@@ -503,7 +563,9 @@ export type OrderQrSessionCreateManyOrderInput = {
 export type OrderQrSessionUpdateWithoutOrderInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   qrToken?: Prisma.StringFieldUpdateOperationsInput | string
+  scanPhase?: Prisma.NullableEnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType | null
   isUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -511,7 +573,9 @@ export type OrderQrSessionUpdateWithoutOrderInput = {
 export type OrderQrSessionUncheckedUpdateWithoutOrderInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   qrToken?: Prisma.StringFieldUpdateOperationsInput | string
+  scanPhase?: Prisma.NullableEnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType | null
   isUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -519,7 +583,9 @@ export type OrderQrSessionUncheckedUpdateWithoutOrderInput = {
 export type OrderQrSessionUncheckedUpdateManyWithoutOrderInput = {
   id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
   qrToken?: Prisma.StringFieldUpdateOperationsInput | string
+  scanPhase?: Prisma.NullableEnumScanTypeFieldUpdateOperationsInput | $Enums.ScanType | null
   isUsed?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  usedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   expiredAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -530,7 +596,9 @@ export type OrderQrSessionSelect<ExtArgs extends runtime.Types.Extensions.Intern
   id?: boolean
   orderId?: boolean
   qrToken?: boolean
+  scanPhase?: boolean
   isUsed?: boolean
+  usedAt?: boolean
   expiredAt?: boolean
   createdAt?: boolean
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
@@ -542,12 +610,14 @@ export type OrderQrSessionSelectScalar = {
   id?: boolean
   orderId?: boolean
   qrToken?: boolean
+  scanPhase?: boolean
   isUsed?: boolean
+  usedAt?: boolean
   expiredAt?: boolean
   createdAt?: boolean
 }
 
-export type OrderQrSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "qrToken" | "isUsed" | "expiredAt" | "createdAt", ExtArgs["result"]["orderQrSession"]>
+export type OrderQrSessionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderId" | "qrToken" | "scanPhase" | "isUsed" | "usedAt" | "expiredAt" | "createdAt", ExtArgs["result"]["orderQrSession"]>
 export type OrderQrSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   order?: boolean | Prisma.OrderDefaultArgs<ExtArgs>
 }
@@ -561,7 +631,9 @@ export type $OrderQrSessionPayload<ExtArgs extends runtime.Types.Extensions.Inte
     id: bigint
     orderId: bigint
     qrToken: string
+    scanPhase: $Enums.ScanType | null
     isUsed: boolean
+    usedAt: Date | null
     expiredAt: Date
     createdAt: Date
   }, ExtArgs["result"]["orderQrSession"]>
@@ -937,7 +1009,9 @@ export interface OrderQrSessionFieldRefs {
   readonly id: Prisma.FieldRef<"OrderQrSession", 'BigInt'>
   readonly orderId: Prisma.FieldRef<"OrderQrSession", 'BigInt'>
   readonly qrToken: Prisma.FieldRef<"OrderQrSession", 'String'>
+  readonly scanPhase: Prisma.FieldRef<"OrderQrSession", 'ScanType'>
   readonly isUsed: Prisma.FieldRef<"OrderQrSession", 'Boolean'>
+  readonly usedAt: Prisma.FieldRef<"OrderQrSession", 'DateTime'>
   readonly expiredAt: Prisma.FieldRef<"OrderQrSession", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"OrderQrSession", 'DateTime'>
 }

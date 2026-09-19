@@ -267,4 +267,175 @@ export class PaymentsService {
       data: formattedTransactions,
     };
   }
+  /**
+   * 1. MEMBUAT INVOICE XENDIT (Dipanggil saat Customer klik Bayar)
+   */
+  async createXenditInvoice(currentUserIdStr: string, orderIdStr: string) {
+    const parsedOrderId = this.safeParseBigInt(orderIdStr);
+    if (!parsedOrderId) {
+      throw new BadRequestException('ID Order tidak valid.');
+    }
+
+    // Cari data order beserta customer dan trip
+    const order = await this.prisma.order.findUnique({
+      where: { id: parsedOrderId },
+      include: {
+        customer: true,
+        trip: true,
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Data pesanan tidak ditemukan.');
+    }
+
+    if (order.customerId.toString() !== currentUserIdStr) {
+      throw new ForbiddenException('Anda tidak berhak membayar pesanan ini.');
+    }
+
+    if (order.status !== OrderStatus.pending_payment) {
+      throw new BadRequestException(
+        `Pesanan tidak dapat dibayar karena status saat ini: ${order.status}`,
+      );
+    }
+
+    const secretKey = process.env.XENDIT_SECRET_KEY || 'xnd_development_dummy';
+    const amount = Number(order.totalPrice);
+    const externalId = `ORDER-${order.id.toString()}`;
+
+    // Basic Auth Xendit: format "SECRET_KEY:" di-encode base64
+    const basicAuth = Buffer.from(`${secretKey}:`).toString('base64');
+
+    try {
+      // Panggil endpoint resmi Xendit v2 Invoices
+      const response = await fetch('https://api.xendit.co/v2/invoices', {
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${basicAuth}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          external_id: externalId,
+          amount: amount,
+          payer_email: order.customer.email,
+          description: `Pembayaran Tiket Nebeng #${order.id.toString()} (${order.type.toUpperCase()})`,
+          invoice_duration: 86400, // Aktif selama 24 jam (dalam detik)
+          currency: 'IDR',
+          reminder_time: 1,
+        }),
+      });
+
+      const invoiceData = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          invoiceData.message || 'Gagal berkomunikasi dengan gateway Xendit',
+        );
+      }
+
+      // Catat record pembayaran status 'pending' di database
+      await this.prisma.payment.create({
+        data: {
+          orderId: order.id,
+          paymentGateway: 'XENDIT',
+          transactionId: invoiceData.id, // ID Invoice dari Xendit
+          amount: amount,
+          status: 'pending',
+        },
+      });
+
+      return {
+        message: 'Invoice pembayaran berhasil dibuat.',
+        invoiceUrl: invoiceData.invoice_url, // URL checkout pembayaran untuk customer
+        invoiceId: invoiceData.id,
+        expiryDate: invoiceData.expiry_date,
+        amount: amount,
+      };
+    } catch (error: any) {
+      // Fallback ramah jika key sandbox belum diisi
+      console.error('Xendit Invoice Creation Error:', error);
+      throw new BadRequestException(
+        `Gagal membuat tagihan Xendit: ${error.message}`,
+      );
+    }
+  }
+
+  /**
+   * 2. MENDENGARKAN WEBHOOK XENDIT (Dipanggil otomatis oleh server Xendit)
+   */
+  async handleXenditWebhook(callbackToken: string, payload: any) {
+    const expectedToken = process.env.XENDIT_CALLBACK_TOKEN;
+
+    // A. Verifikasi keamanan: pastikan request benar-benar dari Xendit
+    if (expectedToken && callbackToken !== expectedToken) {
+      throw new UnauthorizedException('Token verifikasi callback tidak valid.');
+    }
+
+    // Kita hanya memproses status 'PAID' (pembayaran sukses)
+    if (payload.status !== 'PAID') {
+      return { message: `Event status '${payload.status}' diabaikan.` };
+    }
+
+    // Ekstrak ID Order dari external_id (contoh: "ORDER-12" -> "12")
+    const externalId = payload.external_id as string;
+    const orderIdStr = externalId ? externalId.replace('ORDER-', '') : null;
+    if (!orderIdStr) {
+      throw new BadRequestException('Format external_id tidak dikenali.');
+    }
+
+    const parsedOrderId = this.safeParseBigInt(orderIdStr);
+    if (!parsedOrderId) {
+      throw new BadRequestException('ID Order tidak valid.');
+    }
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: parsedOrderId },
+      include: { trip: true },
+    });
+
+    if (!order) {
+      throw new NotFoundException(`Order ID ${orderIdStr} tidak ditemukan.`);
+    }
+
+    // Idempotency: Jika order sudah dibayar sebelumnya, jangan proses ulang
+    if (order.status === OrderStatus.paid) {
+      return { message: 'Order sudah berstatus PAID sebelumnya.' };
+    }
+
+    const totalPrice = Number(order.totalPrice);
+    const adminFeePercentage = Number(order.adminFeePercentage || 10);
+    const adminFeeAmount = Math.round((totalPrice * adminFeePercentage) / 100);
+    const netMitraAmount = totalPrice - adminFeeAmount;
+    const mitraUserId = order.trip.mitraId.toString();
+
+    // B. Jalankan Transaksi Atomik Kunci Escrow
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const result = await this.paymentsRepository.processCheckoutTransaction(
+      orderIdStr,
+      mitraUserId,
+      `XENDIT_${payload.payment_method || 'QRIS'}`,
+      payload.id || `TRX-${Date.now()}`,
+      totalPrice,
+      adminFeeAmount,
+      netMitraAmount,
+    );
+
+    // C. Buat sesi QR Check-in Pos Asal (ORIGIN) untuk tiket ini
+    const tokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000);
+    await this.prisma.orderQrSession.create({
+      data: {
+        orderId: order.id,
+        qrToken: order.qrCodeTicket,
+        scanPhase: 'checkin_origin',
+        isUsed: false,
+        expiredAt: tokenExpiry,
+      },
+    });
+
+    return {
+      success: true,
+      message: 'Webhook Xendit berhasil diproses. Saldo masuk ke Escrow Mitra.',
+      orderId: orderIdStr,
+    };
+  }
 }

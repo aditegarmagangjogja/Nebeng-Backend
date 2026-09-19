@@ -10,6 +10,7 @@ import {
   TransactionType,
   TripStatus,
 } from '../../../generated/prisma/enums';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class CheckpointsRepository {
@@ -46,29 +47,50 @@ export class CheckpointsRepository {
   ) {
     const parsedPosId = this.safeParseBigInt(posIdStr);
     const parsedUserId = this.safeParseBigInt(scannedByUserIdStr);
-
     if (!parsedPosId || !parsedUserId) {
       throw new BadRequestException('Format ID Pos atau ID User tidak valid');
     }
-
+    // Buat kode tiket baru yang unik khusus fase Pos Tujuan
+    const nextDestQrToken = `TKT-DEST-${randomBytes(4).toString('hex').toUpperCase()}`;
+    const now = new Date();
+    const tokenExpiry = new Date(now.getTime() + 48 * 60 * 60 * 1000); // Aktif 48 jam
     return this.prisma.$transaction(async (tx) => {
+      // 1. Update status trip menjadi in_transit
       await tx.trip.update({
         where: { id: tripId },
         data: { status: TripStatus.in_transit },
       });
-
+      // 2. Hanguskan sesi QR sebelumnya (Pos Asal)
+      await tx.orderQrSession.updateMany({
+        where: { orderId, isUsed: false },
+        data: { isUsed: true, usedAt: now },
+      });
+      // 3. Buat sesi QR baru untuk Pos Tujuan
+      await tx.orderQrSession.create({
+        data: {
+          orderId,
+          qrToken: nextDestQrToken,
+          scanPhase: ScanType.checkin_destination,
+          isUsed: false,
+          expiredAt: tokenExpiry,
+        },
+      });
+      // 4. Update order dengan kode QR tujuan baru & status in_transit
       await tx.order.update({
         where: { id: orderId },
-        data: { status: OrderStatus.checked_in_origin },
+        data: {
+          status: OrderStatus.checked_in_origin,
+          qrCodeTicket: nextDestQrToken, // Rotasi QR tiket
+        },
       });
-
+      // 5. Simpan segel fisik jika pengiriman paket barang
       if (securitySealQr) {
         await tx.itemOrder.updateMany({
           where: { orderId },
           data: { securitySealQr },
         });
       }
-
+      // 6. Catat riwayat log checkpoint
       return tx.checkpointsLog.create({
         data: {
           tripId,

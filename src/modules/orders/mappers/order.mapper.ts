@@ -48,6 +48,16 @@ export class OrderMapper {
             recipientPhone: item.recipientPhone,
           }))
         : [],
+      checkpointsLogs: order.checkpointsLogs
+        ? order.checkpointsLogs.map((log: any) => ({
+            id: log.id.toString(),
+            scanType: log.scanType,
+            posName: log.pos?.name || 'Pos Checkpoint',
+            posAddress: log.pos?.address || '',
+            operatorName: log.scannedByUser?.name || 'Petugas Pos',
+            createdAt: log.createdAt,
+          }))
+        : [],
     };
   }
 

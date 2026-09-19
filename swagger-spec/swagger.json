@@ -1973,12 +1973,6 @@
         "responses": {
           "201": {
             "description": "Pembayaran berhasil dikonfirmasi"
-          },
-          "400": {
-            "description": "Order bukan milik Anda, PIN salah, atau status order tidak valid"
-          },
-          "404": {
-            "description": "Order tidak ditemukan"
           }
         },
         "security": [
@@ -1992,41 +1986,92 @@
         ]
       }
     },
+    "/api/payments/xendit/create-invoice": {
+      "post": {
+        "operationId": "PaymentsController_createXenditInvoice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateXenditInvoiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membuat link pembayaran Xendit Invoice / QRIS (Customer Only)",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/payments/xendit-webhook": {
+      "post": {
+        "operationId": "PaymentsController_handleXenditWebhook",
+        "parameters": [
+          {
+            "name": "x-callback-token",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Webhook callback penerima konfirmasi bayar dari Xendit",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
     "/api/payments": {
       "get": {
         "operationId": "PaymentsController_getPayments",
         "parameters": [
           {
             "name": "regionId",
-            "required": false,
+            "required": true,
             "in": "query",
-            "description": "Opsional untuk Superadmin",
             "schema": {
               "type": "string"
             }
           },
           {
             "name": "page",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
-              "example": 1,
               "type": "number"
             }
           },
           {
             "name": "limit",
-            "required": false,
+            "required": true,
             "in": "query",
             "schema": {
-              "example": 10,
               "type": "number"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Daftar transaksi berhasil diambil"
+            "description": ""
           }
         },
         "security": [
@@ -2687,6 +2732,267 @@
         "summary": "Pengaturan kelipatan Poin Reward global (Hanya Superadmin)",
         "tags": [
           "Admin Governance"
+        ]
+      }
+    },
+    "/api/merchandises": {
+      "get": {
+        "operationId": "MerchandiseController_getCatalog",
+        "parameters": [
+          {
+            "name": "all",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat katalog merchandise yang tersedia",
+        "tags": [
+          "Merchandises"
+        ]
+      },
+      "post": {
+        "operationId": "MerchandiseController_createItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMerchandiseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Menambah item merchandise baru",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/item/{id}": {
+      "get": {
+        "operationId": "MerchandiseController_getItemDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat detail satu item merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/redeem": {
+      "post": {
+        "operationId": "MerchandiseController_redeem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemMerchandiseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Customer menukarkan reward points dengan merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/my-redemptions": {
+      "get": {
+        "operationId": "MerchandiseController_getMyRedemptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Customer melihat riwayat klaim merchandise miliknya",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/{id}": {
+      "patch": {
+        "operationId": "MerchandiseController_updateItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMerchandiseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Mengupdate item merchandise / stok",
+        "tags": [
+          "Merchandises"
+        ]
+      },
+      "delete": {
+        "operationId": "MerchandiseController_deleteItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Menonaktifkan item merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/admin/redemptions": {
+      "get": {
+        "operationId": "MerchandiseController_getAllRedemptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Melihat seluruh antrean klaim merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/admin/redemptions/{id}/status": {
+      "patch": {
+        "operationId": "MerchandiseController_updateRedemptionStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRedemptionStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Mengupdate status klaim dan no resi pengiriman",
+        "tags": [
+          "Merchandises"
         ]
       }
     }
@@ -3712,6 +4018,19 @@
           "pin"
         ]
       },
+      "CreateXenditInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID Order yang akan dibayar"
+          }
+        },
+        "required": [
+          "orderId"
+        ]
+      },
       "ScanCheckpointDto": {
         "type": "object",
         "properties": {
@@ -3987,6 +4306,131 @@
         },
         "required": [
           "pricePerKm"
+        ]
+      },
+      "RedeemMerchandiseDto": {
+        "type": "object",
+        "properties": {
+          "merchandiseId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID Merchandise yang ingin ditukarkan"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "Budi Santoso",
+            "description": "Nama penerima barang"
+          },
+          "recipientPhone": {
+            "type": "string",
+            "example": "081234567890",
+            "description": "Nomor telepon aktif penerima"
+          },
+          "shippingAddress": {
+            "type": "string",
+            "example": "Jl. Slamet Riyadi No. 12, Surakarta",
+            "description": "Alamat pengiriman fisik"
+          },
+          "pickupPosId": {
+            "type": "string",
+            "example": "2",
+            "description": "ID Pos Checkpoint jika memilih ambil mandiri di Pos"
+          }
+        },
+        "required": [
+          "merchandiseId",
+          "recipientName",
+          "recipientPhone"
+        ]
+      },
+      "CreateMerchandiseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Tumbler Eksklusif Nebeng",
+            "description": "Nama merchandise"
+          },
+          "description": {
+            "type": "string",
+            "example": "Tumbler stainless tahan panas/dingin 500ml",
+            "description": "Deskripsi merchandise"
+          },
+          "pointsRequired": {
+            "type": "number",
+            "example": 250,
+            "description": "Jumlah poin yang dibutuhkan"
+          },
+          "stock": {
+            "type": "number",
+            "example": 50,
+            "description": "Stok awal barang"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://cdn.nebeng.id/images/tumbler.png",
+            "description": "URL foto merchandise"
+          }
+        },
+        "required": [
+          "name",
+          "pointsRequired",
+          "stock"
+        ]
+      },
+      "UpdateMerchandiseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Tumbler Eksklusif Nebeng",
+            "description": "Nama merchandise"
+          },
+          "description": {
+            "type": "string",
+            "example": "Tumbler stainless tahan panas/dingin 500ml",
+            "description": "Deskripsi merchandise"
+          },
+          "pointsRequired": {
+            "type": "number",
+            "example": 250,
+            "description": "Jumlah poin yang dibutuhkan"
+          },
+          "stock": {
+            "type": "number",
+            "example": 50,
+            "description": "Stok awal barang"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://cdn.nebeng.id/images/tumbler.png",
+            "description": "URL foto merchandise"
+          }
+        }
+      },
+      "UpdateRedemptionStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "ready_at_pos",
+              "completed",
+              "cancelled",
+              "rejected"
+            ],
+            "example": "processing"
+          },
+          "trackingNumber": {
+            "type": "string",
+            "example": "JNE-REG-892182910",
+            "description": "Nomor resi kurir pengiriman jika dikirim via kurir"
+          }
+        },
+        "required": [
+          "status"
         ]
       }
     }
