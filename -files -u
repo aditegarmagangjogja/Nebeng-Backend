@@ -1,0 +1,9 @@
+src/generated/prisma/internal/class.ts
+src/modules/orders/repository/orders.repository.ts
+src/modules/payments/payments.controller.ts
+src/modules/payments/payments.service.ts
+src/modules/payments/repository/payments.repository.ts
+src/modules/users/mappers/user.mapper.ts
+src/modules/users/repositories/user.repository.ts
+src/modules/verifications/repositories/verification.repository.ts
+src/modules/wallets/repository/wallets.repository.ts

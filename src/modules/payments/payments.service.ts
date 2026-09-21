@@ -76,7 +76,36 @@ export class PaymentsService {
     }
 
     const transactionId = `TRX-${randomBytes(4).toString('hex').toUpperCase()}`;
+<<<<<<< Updated upstream
     const amount = Number(order.totalPrice);
+=======
+    const totalPrice = Number(order.totalPrice);
+
+    let adminFeePercentage = order.adminFeePercentage
+      ? Number(order.adminFeePercentage)
+      : 10;
+
+    if (!order.adminFeePercentage) {
+      const serviceType =
+        order.type === 'passenger'
+          ? order.trip.vehicleType === 'motor'
+            ? ServiceType.motor
+            : ServiceType.mobil
+          : ServiceType.barang;
+
+      const pricingSetting = await this.prisma.pricingSetting.findFirst({
+        where: { serviceType },
+      });
+
+      if (pricingSetting?.adminFeePercentage) {
+        adminFeePercentage = Number(pricingSetting.adminFeePercentage);
+      }
+    }
+
+    const adminFeeAmount = Math.round((totalPrice * adminFeePercentage) / 100);
+    const netMitraAmount = totalPrice - adminFeeAmount;
+
+>>>>>>> Stashed changes
     const mitraUserId = order.trip.mitraId.toString();
 
     const { payment } =
@@ -100,8 +129,18 @@ export class PaymentsService {
     };
   }
 
+<<<<<<< Updated upstream
   async getPaymentsByRegion(regionId?: string) {
     const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
+=======
+  async getPaymentsByRegion(
+    currentUser: any,
+    regionId?: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
+    let parsedRegionId: bigint | null = null;
+>>>>>>> Stashed changes
 
     const payments = await this.prisma.payment.findMany({
       where: {

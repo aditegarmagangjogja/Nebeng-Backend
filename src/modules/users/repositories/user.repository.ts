@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { Prisma, User } from '../../../generated/prisma/client';
 import { UserStatus } from '../../../generated/prisma/client';
+import { Role } from '../../../generated/prisma/client';
 
 @Injectable()
 export class UserRepository {
@@ -56,14 +57,46 @@ export class UserRepository {
   // Diperbarui dengan Pagination untuk mencegah lag & beban memori berlebih
   async findAll(
     page: number = 1,
+<<<<<<< Updated upstream
     limit: number = 50,
   ): Promise<{ users: any[]; total: number }> {
     const skip = (page - 1) * limit;
     const where = {
+=======
+    limit: number = 15,
+    search?: string,
+    status?: string,
+    role?: string,
+  ): Promise<{ users: any[]; total: number }> {
+    const pageNum = Math.max(1, page);
+    const limitNum = Math.min(100, Math.max(1, limit));
+    const skip = (pageNum - 1) * limitNum;
+
+    const where: Prisma.UserWhereInput = {
+>>>>>>> Stashed changes
       status: {
         not: UserStatus.deleted,
       },
     };
+
+    if (status && status !== 'All') {
+      where.status = status.toLowerCase() as UserStatus;
+    }
+
+    if (role) {
+      where.role = role.toLowerCase() as Role;
+    }
+
+    if (search && search.trim() !== '') {
+      const cleanSearch = search.trim();
+      const parsedId = this.safeParseBigInt(cleanSearch);
+
+      where.OR = [
+        { name: { contains: cleanSearch } },
+        { email: { contains: cleanSearch } },
+        ...(parsedId ? [{ id: parsedId }] : []),
+      ];
+    }
 
     const [users, total] = await Promise.all([
       this.prisma.user.findMany({
@@ -79,6 +112,7 @@ export class UserRepository {
     return { users, total };
   }
 
+<<<<<<< Updated upstream
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
     const parseId = this.safeParseBigInt(id);
     if (!parseId) throw new Error('Invalid ID format');
@@ -88,6 +122,24 @@ export class UserRepository {
       data,
       include: { profile: true, region: true },
     });
+=======
+  async countUsersByStatus(): Promise<{
+    active: number;
+    suspended: number;
+    blocked: number;
+    total: number;
+  }> {
+    const [active, suspended, blocked, total] = await Promise.all([
+      this.prisma.user.count({ where: { status: UserStatus.active } }),
+      this.prisma.user.count({ where: { status: UserStatus.suspended } }),
+      this.prisma.user.count({ where: { status: UserStatus.blocked } }),
+      this.prisma.user.count({
+        where: { status: { not: UserStatus.deleted } },
+      }),
+    ]);
+
+    return { active, suspended, blocked, total };
+>>>>>>> Stashed changes
   }
 
   async upsertProfile(userIdStr: string, profileData: any) {

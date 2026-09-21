@@ -76,7 +76,6 @@ export class VerificationController {
     return this.verificationService.getAllVerifications(status, targetRegionId);
   }
 
-  // Tambahkan endpoint ini di dalam class VerificationController
   @Get('my-status')
   @Roles(Role.customer, Role.mitra)
   @ApiOperation({
@@ -105,7 +104,6 @@ export class VerificationController {
     const currentUserId = String(currentUser.id);
     const currentUserRole = currentUser.role;
 
-    // PERBAIKAN: Validasi tambahan untuk Admin Regional agar tidak bisa lintas wilayah
     if (currentUserRole === Role.regional || currentUserRole === 'regional') {
       const adminRegionId = currentUser.regionId
         ? currentUser.regionId.toString()
@@ -114,7 +112,6 @@ export class VerificationController {
         ? verification.user.regionId.toString()
         : null;
 
-      // Jika user pemilik verifikasi memiliki regionId, pastikan cocok dengan region admin
       if (
         adminRegionId &&
         targetUserRegionId &&
@@ -124,9 +121,7 @@ export class VerificationController {
           'Anda tidak memiliki akses untuk melihat detail verifikasi pengguna di wilayah lain',
         );
       }
-    }
-    // Untuk role non-admin dan non-regional (Customer / Mitra), batasi hanya miliknya sendiri
-    else if (currentUserRole !== Role.admin) {
+    } else if (currentUserRole !== Role.admin) {
       const ownerUserId = String(verification.userId || verification.user?.id);
       if (ownerUserId !== currentUserId) {
         throw new ForbiddenException(

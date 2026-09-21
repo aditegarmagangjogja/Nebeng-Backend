@@ -52,6 +52,7 @@ export class VerificationRepository {
         },
       });
 
+<<<<<<< Updated upstream
       await tx.user.update({
         where: { id: data.userId },
         data: {
@@ -59,6 +60,33 @@ export class VerificationRepository {
         },
       });
 
+=======
+      const allUserVerifications = await tx.verification.findMany({
+        where: { userId: data.userId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const latestVerificationsMap = new Map<string, VerificationStatus>();
+      for (const v of allUserVerifications) {
+        if (!latestVerificationsMap.has(v.type)) {
+          latestVerificationsMap.set(v.type, v.status);
+        }
+      }
+
+      const hasRejected = Array.from(latestVerificationsMap.values()).some(
+        (status) => status === VerificationStatus.rejected,
+      );
+
+      if (!hasRejected) {
+        await tx.user.update({
+          where: { id: data.userId },
+          data: {
+            statusVerification: VerificationStatus.pending,
+          },
+        });
+      }
+
+>>>>>>> Stashed changes
       return verification;
     });
   }
@@ -168,6 +196,7 @@ export class VerificationRepository {
           },
         });
 
+<<<<<<< Updated upstream
         // Opsi 1: Ubah status user langsung jadi approved saat salah satu verifikasi di-approve,
         // atau pastikan mengecek apakah SEMUA verifikasi milik user ini sudah tidak ada yang pending.
         const remainingPending = await tx.verification.count({
@@ -176,6 +205,12 @@ export class VerificationRepository {
             status: VerificationStatus.pending,
           },
         });
+=======
+      const allUserVerifications = await tx.verification.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+      });
+>>>>>>> Stashed changes
 
         // Jika sudah tidak ada lagi yang pending (semua sudah di-approve/reject), aktifkan user
         if (remainingPending === 0) {
@@ -186,7 +221,47 @@ export class VerificationRepository {
         }
       }
 
+<<<<<<< Updated upstream
       return updatedVerfication;
+=======
+      const latestStatuses = Array.from(latestVerificationsMap.values());
+      const hasRejected = latestStatuses.some(
+        (st) => st === VerificationStatus.rejected,
+      );
+      const userRole = updatedVerification.user?.role;
+
+      const requiredDocTypes =
+        userRole === Role.mitra
+          ? [
+              VerificationType.ktp,
+              VerificationType.sim,
+              VerificationType.skck,
+              VerificationType.stnk,
+            ]
+          : [VerificationType.ktp];
+
+      const allRequiredApproved = requiredDocTypes.every(
+        (type) =>
+          latestVerificationsMap.get(type) === VerificationStatus.approved,
+      );
+
+      let newGlobalStatus: VerificationStatus = VerificationStatus.pending;
+
+      if (hasRejected) {
+        newGlobalStatus = VerificationStatus.rejected;
+      } else if (allRequiredApproved) {
+        newGlobalStatus = VerificationStatus.approved;
+      } else {
+        newGlobalStatus = VerificationStatus.pending;
+      }
+
+      await tx.user.update({
+        where: { id: userId },
+        data: { statusVerification: newGlobalStatus },
+      });
+
+      return updatedVerification;
+>>>>>>> Stashed changes
     });
   }
 

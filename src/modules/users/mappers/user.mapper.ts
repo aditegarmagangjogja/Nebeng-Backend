@@ -12,8 +12,20 @@ export class UserMapper {
       role: user.role,
       status: user.status,
       statusVerification: user.statusVerification,
+<<<<<<< Updated upstream
       avatar: user.avatar,
       rewardPoints: user.rewardPoints,
+=======
+      nik: user.profile?.ktpNumber || user.nik || null,
+      avatar: user.avatar || null,
+      rewardPoints: Number(user.rewardPoints || 0),
+      rating: calculatedRating,
+      totalReviews: reviewCount,
+      bankName: user.profile?.bankName || null,
+      bankAccountNumber: user.profile?.bankAccountNumber || null,
+      bankAccountHolder: user.profile?.bankAccountHolder || null,
+      hasPin: Boolean(user.pinHash),
+>>>>>>> Stashed changes
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

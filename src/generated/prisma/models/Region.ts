@@ -29,11 +29,17 @@ export type AggregateRegion = {
 export type RegionAvgAggregateOutputType = {
   id: number | null
   pricePerKm: runtime.Decimal | null
+  latitude: runtime.Decimal | null
+  longitude: runtime.Decimal | null
+  radiusKm: runtime.Decimal | null
 }
 
 export type RegionSumAggregateOutputType = {
   id: bigint | null
   pricePerKm: runtime.Decimal | null
+  latitude: runtime.Decimal | null
+  longitude: runtime.Decimal | null
+  radiusKm: runtime.Decimal | null
 }
 
 export type RegionMinAggregateOutputType = {
@@ -42,6 +48,10 @@ export type RegionMinAggregateOutputType = {
   code: string | null
   pricePerKm: runtime.Decimal | null
   isActive: boolean | null
+  latitude: runtime.Decimal | null
+  longitude: runtime.Decimal | null
+  radiusKm: runtime.Decimal | null
+  boundaryPolygon: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +62,10 @@ export type RegionMaxAggregateOutputType = {
   code: string | null
   pricePerKm: runtime.Decimal | null
   isActive: boolean | null
+  latitude: runtime.Decimal | null
+  longitude: runtime.Decimal | null
+  radiusKm: runtime.Decimal | null
+  boundaryPolygon: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +76,10 @@ export type RegionCountAggregateOutputType = {
   code: number
   pricePerKm: number
   isActive: number
+  latitude: number
+  longitude: number
+  radiusKm: number
+  boundaryPolygon: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -71,11 +89,17 @@ export type RegionCountAggregateOutputType = {
 export type RegionAvgAggregateInputType = {
   id?: true
   pricePerKm?: true
+  latitude?: true
+  longitude?: true
+  radiusKm?: true
 }
 
 export type RegionSumAggregateInputType = {
   id?: true
   pricePerKm?: true
+  latitude?: true
+  longitude?: true
+  radiusKm?: true
 }
 
 export type RegionMinAggregateInputType = {
@@ -84,6 +108,10 @@ export type RegionMinAggregateInputType = {
   code?: true
   pricePerKm?: true
   isActive?: true
+  latitude?: true
+  longitude?: true
+  radiusKm?: true
+  boundaryPolygon?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +122,10 @@ export type RegionMaxAggregateInputType = {
   code?: true
   pricePerKm?: true
   isActive?: true
+  latitude?: true
+  longitude?: true
+  radiusKm?: true
+  boundaryPolygon?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -104,6 +136,10 @@ export type RegionCountAggregateInputType = {
   code?: true
   pricePerKm?: true
   isActive?: true
+  latitude?: true
+  longitude?: true
+  radiusKm?: true
+  boundaryPolygon?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -201,6 +237,10 @@ export type RegionGroupByOutputType = {
   code: string
   pricePerKm: runtime.Decimal
   isActive: boolean
+  latitude: runtime.Decimal | null
+  longitude: runtime.Decimal | null
+  radiusKm: runtime.Decimal | null
+  boundaryPolygon: string | null
   createdAt: Date
   updatedAt: Date
   _count: RegionCountAggregateOutputType | null
@@ -234,6 +274,10 @@ export type RegionWhereInput = {
   code?: Prisma.StringFilter<"Region"> | string
   pricePerKm?: Prisma.DecimalFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFilter<"Region"> | boolean
+  latitude?: Prisma.DecimalNullableFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.DecimalNullableFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.DecimalNullableFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.StringNullableFilter<"Region"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Region"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Region"> | Date | string
   users?: Prisma.UserListRelationFilter
@@ -246,6 +290,10 @@ export type RegionOrderByWithRelationInput = {
   code?: Prisma.SortOrder
   pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  latitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  longitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  radiusKm?: Prisma.SortOrderInput | Prisma.SortOrder
+  boundaryPolygon?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   users?: Prisma.UserOrderByRelationAggregateInput
@@ -262,6 +310,10 @@ export type RegionWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Region"> | string
   pricePerKm?: Prisma.DecimalFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFilter<"Region"> | boolean
+  latitude?: Prisma.DecimalNullableFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.DecimalNullableFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.DecimalNullableFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.StringNullableFilter<"Region"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Region"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Region"> | Date | string
   users?: Prisma.UserListRelationFilter
@@ -274,6 +326,10 @@ export type RegionOrderByWithAggregationInput = {
   code?: Prisma.SortOrder
   pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  latitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  longitude?: Prisma.SortOrderInput | Prisma.SortOrder
+  radiusKm?: Prisma.SortOrderInput | Prisma.SortOrder
+  boundaryPolygon?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.RegionCountOrderByAggregateInput
@@ -292,6 +348,10 @@ export type RegionScalarWhereWithAggregatesInput = {
   code?: Prisma.StringWithAggregatesFilter<"Region"> | string
   pricePerKm?: Prisma.DecimalWithAggregatesFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Region"> | boolean
+  latitude?: Prisma.DecimalNullableWithAggregatesFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.DecimalNullableWithAggregatesFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.DecimalNullableWithAggregatesFilter<"Region"> | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.StringNullableWithAggregatesFilter<"Region"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Region"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Region"> | Date | string
 }
@@ -302,6 +362,10 @@ export type RegionCreateInput = {
   code: string
   pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
+  latitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutRegionInput
@@ -314,6 +378,10 @@ export type RegionUncheckedCreateInput = {
   code: string
   pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
+  latitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutRegionInput
@@ -326,6 +394,10 @@ export type RegionUpdateInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutRegionNestedInput
@@ -338,6 +410,10 @@ export type RegionUncheckedUpdateInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutRegionNestedInput
@@ -350,6 +426,10 @@ export type RegionCreateManyInput = {
   code: string
   pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
+  latitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -360,6 +440,10 @@ export type RegionUpdateManyMutationInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -370,6 +454,10 @@ export type RegionUncheckedUpdateManyInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -386,6 +474,10 @@ export type RegionCountOrderByAggregateInput = {
   code?: Prisma.SortOrder
   pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
+  radiusKm?: Prisma.SortOrder
+  boundaryPolygon?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -393,6 +485,9 @@ export type RegionCountOrderByAggregateInput = {
 export type RegionAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   pricePerKm?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
+  radiusKm?: Prisma.SortOrder
 }
 
 export type RegionMaxOrderByAggregateInput = {
@@ -401,6 +496,10 @@ export type RegionMaxOrderByAggregateInput = {
   code?: Prisma.SortOrder
   pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
+  radiusKm?: Prisma.SortOrder
+  boundaryPolygon?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -411,6 +510,10 @@ export type RegionMinOrderByAggregateInput = {
   code?: Prisma.SortOrder
   pricePerKm?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
+  radiusKm?: Prisma.SortOrder
+  boundaryPolygon?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -418,6 +521,9 @@ export type RegionMinOrderByAggregateInput = {
 export type RegionSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   pricePerKm?: Prisma.SortOrder
+  latitude?: Prisma.SortOrder
+  longitude?: Prisma.SortOrder
+  radiusKm?: Prisma.SortOrder
 }
 
 export type RegionNullableScalarRelationFilter = {
@@ -452,6 +558,18 @@ export type DecimalFieldUpdateOperationsInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type NullableDecimalFieldUpdateOperationsInput = {
+  set?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  increment?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  decrement?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  multiply?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -494,6 +612,10 @@ export type RegionCreateWithoutUsersInput = {
   code: string
   pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
+  latitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   pickupPoints?: Prisma.PickupPointCreateNestedManyWithoutRegionInput
@@ -505,6 +627,10 @@ export type RegionUncheckedCreateWithoutUsersInput = {
   code: string
   pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
+  latitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   pickupPoints?: Prisma.PickupPointUncheckedCreateNestedManyWithoutRegionInput
@@ -532,6 +658,10 @@ export type RegionUpdateWithoutUsersInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pickupPoints?: Prisma.PickupPointUpdateManyWithoutRegionNestedInput
@@ -543,6 +673,10 @@ export type RegionUncheckedUpdateWithoutUsersInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   pickupPoints?: Prisma.PickupPointUncheckedUpdateManyWithoutRegionNestedInput
@@ -554,6 +688,10 @@ export type RegionCreateWithoutPickupPointsInput = {
   code: string
   pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
+  latitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutRegionInput
@@ -565,6 +703,10 @@ export type RegionUncheckedCreateWithoutPickupPointsInput = {
   code: string
   pricePerKm?: runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: boolean
+  latitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutRegionInput
@@ -592,6 +734,10 @@ export type RegionUpdateWithoutPickupPointsInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutRegionNestedInput
@@ -603,6 +749,10 @@ export type RegionUncheckedUpdateWithoutPickupPointsInput = {
   code?: Prisma.StringFieldUpdateOperationsInput | string
   pricePerKm?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  latitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  longitude?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  radiusKm?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  boundaryPolygon?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutRegionNestedInput
@@ -654,6 +804,10 @@ export type RegionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   code?: boolean
   pricePerKm?: boolean
   isActive?: boolean
+  latitude?: boolean
+  longitude?: boolean
+  radiusKm?: boolean
+  boundaryPolygon?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   users?: boolean | Prisma.Region$usersArgs<ExtArgs>
@@ -669,11 +823,15 @@ export type RegionSelectScalar = {
   code?: boolean
   pricePerKm?: boolean
   isActive?: boolean
+  latitude?: boolean
+  longitude?: boolean
+  radiusKm?: boolean
+  boundaryPolygon?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RegionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "pricePerKm" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["region"]>
+export type RegionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "code" | "pricePerKm" | "isActive" | "latitude" | "longitude" | "radiusKm" | "boundaryPolygon" | "createdAt" | "updatedAt", ExtArgs["result"]["region"]>
 export type RegionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   users?: boolean | Prisma.Region$usersArgs<ExtArgs>
   pickupPoints?: boolean | Prisma.Region$pickupPointsArgs<ExtArgs>
@@ -692,6 +850,10 @@ export type $RegionPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     code: string
     pricePerKm: runtime.Decimal
     isActive: boolean
+    latitude: runtime.Decimal | null
+    longitude: runtime.Decimal | null
+    radiusKm: runtime.Decimal | null
+    boundaryPolygon: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["region"]>
@@ -1070,6 +1232,10 @@ export interface RegionFieldRefs {
   readonly code: Prisma.FieldRef<"Region", 'String'>
   readonly pricePerKm: Prisma.FieldRef<"Region", 'Decimal'>
   readonly isActive: Prisma.FieldRef<"Region", 'Boolean'>
+  readonly latitude: Prisma.FieldRef<"Region", 'Decimal'>
+  readonly longitude: Prisma.FieldRef<"Region", 'Decimal'>
+  readonly radiusKm: Prisma.FieldRef<"Region", 'Decimal'>
+  readonly boundaryPolygon: Prisma.FieldRef<"Region", 'String'>
   readonly createdAt: Prisma.FieldRef<"Region", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Region", 'DateTime'>
 }

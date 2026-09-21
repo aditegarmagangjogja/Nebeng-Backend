@@ -25,9 +25,20 @@ export class RegionService {
     return RegionMapper.toRegionResponse(region);
   }
 
-  async getAllRegions(onlyActive = false) {
-    const regions = await this.regionRepo.findAllRegions(onlyActive);
-    return regions.map(RegionMapper.toRegionResponse);
+  async getAllRegions(
+    page: number = 1,
+    limit: number = 10,
+    onlyActive = false,
+  ) {
+    const result = await this.regionRepo.findAllRegions(
+      page,
+      limit,
+      onlyActive,
+    );
+    return {
+      data: result.data.map(RegionMapper.toRegionResponse),
+      pagination: result.pagination,
+    };
   }
 
   async getRegionById(id: string) {

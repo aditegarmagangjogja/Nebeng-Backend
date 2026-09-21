@@ -14,11 +14,24 @@ export class RegionRepository {
     }
   }
 
-  async createRegion(data: { name: string; code: string }) {
+  async createRegion(data: {
+    name: string;
+    code: string;
+    latitude?: number;
+    longitude?: number;
+    radiusKm?: number;
+    boundaryPolygon?: any;
+  }) {
     return this.prisma.region.create({
       data: {
         name: data.name.trim(),
         code: data.code.toUpperCase().trim(),
+        latitude: data.latitude ?? null,
+        longitude: data.longitude ?? null,
+        radiusKm: data.radiusKm ?? 20.0,
+        boundaryPolygon: data.boundaryPolygon
+          ? JSON.stringify(data.boundaryPolygon)
+          : null,
       },
       include: {
         users: {
@@ -47,7 +60,13 @@ export class RegionRepository {
           },
         },
         pickupPoints: {
-          select: { id: true, name: true, isActive: true },
+          select: {
+            id: true,
+            name: true,
+            isActive: true,
+            latitude: true,
+            longitude: true,
+          },
         },
       },
     });
@@ -59,22 +78,52 @@ export class RegionRepository {
     });
   }
 
-  async findAllRegions(onlyActive = false) {
-    return this.prisma.region.findMany({
-      where: onlyActive ? { isActive: true } : {},
-      include: {
-        users: {
-          where: { role: 'regional', status: UserStatus.active },
-          select: { id: true, name: true, email: true, phone: true },
+  async findAllRegions(
+    page: number = 1,
+    limit: number = 10,
+    onlyActive = false,
+  ) {
+    const skip = (page - 1) * limit;
+    const whereCondition = onlyActive ? { isActive: true } : {};
+
+    const [data, totalData] = await Promise.all([
+      this.prisma.region.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        include: {
+          users: {
+            where: { role: 'regional', status: UserStatus.active },
+            select: { id: true, name: true, email: true, phone: true },
+          },
         },
+        orderBy: { name: 'asc' },
+      }),
+      this.prisma.region.count({ where: whereCondition }),
+    ]);
+
+    return {
+      data,
+      pagination: {
+        currentPage: page,
+        limit,
+        totalData,
+        totalPages: Math.ceil(totalData / limit) || 1,
       },
-      orderBy: { name: 'asc' },
-    });
+    };
   }
 
   async updateRegion(
     id: string,
-    data: { name?: string; code?: string; isActive?: boolean },
+    data: {
+      name?: string;
+      code?: string;
+      isActive?: boolean;
+      latitude?: number;
+      longitude?: number;
+      radiusKm?: number;
+      boundaryPolygon?: any;
+    },
   ) {
     const parseId = this.safeParseBigInt(id);
     if (!parseId) {
@@ -87,6 +136,14 @@ export class RegionRepository {
         ...(data.name && { name: data.name.trim() }),
         ...(data.code && { code: data.code.toUpperCase().trim() }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
+        ...(data.latitude !== undefined && { latitude: data.latitude }),
+        ...(data.longitude !== undefined && { longitude: data.longitude }),
+        ...(data.radiusKm !== undefined && { radiusKm: data.radiusKm }),
+        ...(data.boundaryPolygon !== undefined && {
+          boundaryPolygon: data.boundaryPolygon
+            ? JSON.stringify(data.boundaryPolygon)
+            : null,
+        }),
       },
       include: {
         users: {

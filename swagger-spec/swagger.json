@@ -127,6 +127,26 @@
         ]
       }
     },
+    "/api/users/stats": {
+      "get": {
+        "operationId": "UserController_getUserStats",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan ringkasan statistik jumlah pengguna",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/api/users/me/pin": {
       "post": {
         "operationId": "UserController_setPin",
@@ -247,11 +267,35 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Daftar pengguna berhasil diambil"
+            "description": ""
           }
         },
         "security": [
@@ -259,7 +303,7 @@
             "bearer": []
           }
         ],
-        "summary": "Mendapatkan semua daftar pengguna (dengan Paginasi)",
+        "summary": "Mendapatkan semua daftar pengguna (dengan Paginasi, Filter & Role)",
         "tags": [
           "Users"
         ]
@@ -806,7 +850,7 @@
             "bearer": []
           }
         ],
-        "summary": "Tambah Region Baru (Superadmin Only)",
+        "summary": "Tambah Region Baru dengan Batas Spasial/Peta (Superadmin Only)",
         "tags": [
           "Wilayah & Kota"
         ]
@@ -814,6 +858,24 @@
       "get": {
         "operationId": "RegionController_findAllRegions",
         "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 1,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "example": 10,
+              "type": "string"
+            }
+          },
           {
             "name": "onlyActive",
             "required": false,
@@ -828,7 +890,7 @@
             "description": ""
           }
         },
-        "summary": "Melihat seluruh daftar Region beserta Admin Penanggung Jawab",
+        "summary": "Melihat seluruh daftar Region dengan Paginasi & Batas Spasial",
         "tags": [
           "Wilayah & Kota"
         ]
@@ -855,7 +917,7 @@
             "description": "Region tidak ditemukan"
           }
         },
-        "summary": "Melihat detail Region & daftar Admin Wilayah",
+        "summary": "Melihat detail Region, Koordinat, dan Titik Pos Terikat",
         "tags": [
           "Wilayah & Kota"
         ]
@@ -895,7 +957,7 @@
             "bearer": []
           }
         ],
-        "summary": "Update/Deaktivasi Region (Superadmin Only)",
+        "summary": "Update/Deaktivasi Region & Koordinat Spasial (Superadmin Only)",
         "tags": [
           "Wilayah & Kota"
         ]
@@ -2790,12 +2852,45 @@
           "name": {
             "type": "string",
             "example": "Wilayah Yogyakarta",
-            "description": "nama Wilayah"
+            "description": "Nama Wilayah"
           },
           "code": {
             "type": "string",
             "example": "REG-DIY",
             "description": "Kode unik wilayah"
+          },
+          "latitude": {
+            "type": "number",
+            "example": -7.7956,
+            "description": "Titik pusat Latitude wilayah"
+          },
+          "longitude": {
+            "type": "number",
+            "example": 110.3695,
+            "description": "Titik pusat Longitude wilayah"
+          },
+          "radiusKm": {
+            "type": "number",
+            "example": 25.5,
+            "description": "Radius operasional wilayah dalam Kilometer"
+          },
+          "boundaryPolygon": {
+            "type": "object",
+            "example": [
+              [
+                -7.7,
+                110.3
+              ],
+              [
+                -7.8,
+                110.4
+              ],
+              [
+                -7.9,
+                110.3
+              ]
+            ],
+            "description": "Array koordinat poligon batas wilayah (GeoJSON coordinates)"
           }
         },
         "required": [
@@ -2817,6 +2912,31 @@
           "isActive": {
             "type": "boolean",
             "example": true
+          },
+          "latitude": {
+            "type": "number",
+            "example": -7.7956
+          },
+          "longitude": {
+            "type": "number",
+            "example": 110.3695
+          },
+          "radiusKm": {
+            "type": "number",
+            "example": 25.5
+          },
+          "boundaryPolygon": {
+            "type": "object",
+            "example": [
+              [
+                -7.7,
+                110.3
+              ],
+              [
+                -7.8,
+                110.4
+              ]
+            ]
           }
         }
       },

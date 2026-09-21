@@ -82,6 +82,13 @@ export class UserController {
     return this.userService.remove(String(userId));
   }
 
+  @Get('stats')
+  @Roles(Role.admin, Role.regional, Role.operator)
+  @ApiOperation({ summary: 'Mendapatkan ringkasan statistik jumlah pengguna' })
+  async getUserStats() {
+    return this.userService.getUserStats();
+  }
+
   @Post('me/pin')
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -132,26 +139,34 @@ export class UserController {
   @Get()
   @Roles(Role.admin, Role.regional, Role.operator)
   @ApiOperation({
-    summary: 'Mendapatkan semua daftar pengguna (dengan Paginasi)',
+    summary:
+      'Mendapatkan semua daftar pengguna (dengan Paginasi, Filter & Role)',
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Daftar pengguna berhasil diambil',
-  })
-  async findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('role') role?: string,
+  ) {
     const parsedPage = page ? parseInt(page, 10) : 1;
-    const parsedLimit = limit ? parseInt(limit, 10) : 50;
+    const parsedLimit = limit ? parseInt(limit, 10) : 15;
 
-    return this.userService.findAll(parsedPage, parsedLimit);
+    return this.userService.findAll(
+      parsedPage,
+      parsedLimit,
+      search,
+      status,
+      role,
+    );
   }
 
   @Post('me/avatar')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: 2 * 1024 * 1024 }, // Batasi maksimal ukuran file 2MB di server
+      limits: { fileSize: 2 * 1024 * 1024 },
       fileFilter: (req, file, callback) => {
-        // Validasi ketat ekstensi file gambar yang diizinkan
         if (!file.originalname.match(/\.(jpg|jpeg|png)$/i)) {
           return callback(
             new BadRequestException(
