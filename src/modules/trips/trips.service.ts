@@ -303,7 +303,11 @@ export class TripsService {
       mitraId: parsedMitraId,
     };
 
-    if (query.status) {
+    if (query.activeEscrow === 'true') {
+      filters.status = {
+        in: ['scheduled', 'in_origin_pos', 'in_transit', 'arrived_dest_pos'],
+      };
+    } else if (query.status) {
       filters.status = query.status;
     } else {
       filters.status = {

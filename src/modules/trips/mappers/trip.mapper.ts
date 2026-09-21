@@ -23,6 +23,14 @@ export class TripMapper {
       qrCodeTrip: trip.qrCodeTrip,
       status: trip.status,
       mapsPolyline: trip.mapsPolyline ?? null,
+      totalEscrow: trip.orders
+        ? trip.orders.reduce((sum: number, order: any) => {
+            if (order.status !== 'cancelled') {
+              return sum + Number(order.totalPrice || 0);
+            }
+            return sum;
+          }, 0)
+        : undefined,
       createdAt: trip.createdAt,
       updatedAt: trip.updatedAt,
       mitra: trip.mitra

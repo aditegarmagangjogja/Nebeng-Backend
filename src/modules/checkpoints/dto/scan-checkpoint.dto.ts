@@ -54,4 +54,12 @@ export class ScanCheckpointDto {
   @IsOptional()
   @IsString()
   photoUrl?: string;
+
+  @ApiPropertyOptional({
+    example: 'Siti Rahma',
+    description: 'Nama Penerima',
+  })
+  @IsOptional()
+  @IsString()
+  recipientName?: string;
 }

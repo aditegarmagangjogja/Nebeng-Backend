@@ -34,6 +34,11 @@ export class QueryTripDto {
   @IsEnum(TripStatus)
   status?: TripStatus;
 
+  @ApiPropertyOptional({ description: 'Filter Escrow Aktif (true/false)' })
+  @IsOptional()
+  @IsString()
+  activeEscrow?: string;
+
   @ApiPropertyOptional({
     enum: VehicleType,
     description: 'Filter Tipe Kendaraan',

@@ -66,6 +66,7 @@ export class TripsRepository {
           vehicle: true,
           originPoint: { include: { region: true } },
           destinationPoint: { include: { region: true } },
+          orders: true,
         },
         orderBy: [{ departureDate: 'asc' }, { departureTime: 'asc' }],
       }),

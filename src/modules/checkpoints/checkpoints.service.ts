@@ -202,6 +202,7 @@ export class CheckpointsService {
           order.customerId,
           totalPriceNum,
           adminFeePercentage,
+          dto.recipientName,
         );
 
       // Siarkan pembaruan real-time ke Customer & Regional Admin via WebSocket

@@ -4,7 +4,6 @@ import {
   EscrowStatus,
   OrderStatus,
   RewardType,
-  Role,
   ScanType,
   ServiceType,
   TransactionType,
@@ -117,6 +116,7 @@ export class CheckpointsRepository {
     customerId: bigint,
     totalPrice: number,
     adminFeePercentage: number = 10,
+    recipientName?: string,
   ) {
     const parsedPosId = this.safeParseBigInt(posIdStr);
     const parsedUserId = this.safeParseBigInt(scannedByUserIdStr);
@@ -142,6 +142,13 @@ export class CheckpointsRepository {
         },
       });
 
+      if (recipientName) {
+        await tx.itemOrder.updateMany({
+          where: { orderId },
+          data: { recipientName },
+        });
+      }
+
       let mitraWallet = await tx.wallet.findUnique({
         where: { userId: mitraUserId },
       });
@@ -155,7 +162,7 @@ export class CheckpointsRepository {
       await tx.wallet.update({
         where: { id: mitraWallet.id },
         data: {
-          heldEscrowBalance: { decrement: totalPrice },
+          heldEscrowBalance: { decrement: mitraEarnings },
           balance: { increment: mitraEarnings },
         },
       });
@@ -170,36 +177,7 @@ export class CheckpointsRepository {
         },
       });
 
-      const superadmin = await tx.user.findFirst({
-        where: { role: Role.admin },
-      });
-
-      if (superadmin) {
-        let superadminWallet = await tx.wallet.findUnique({
-          where: { userId: superadmin.id },
-        });
-
-        if (!superadminWallet) {
-          superadminWallet = await tx.wallet.create({
-            data: { userId: superadmin.id, balance: 0, heldEscrowBalance: 0 },
-          });
-        }
-
-        await tx.wallet.update({
-          where: { id: superadminWallet.id },
-          data: { balance: { increment: platformFee } },
-        });
-
-        await tx.walletTransaction.create({
-          data: {
-            walletId: superadminWallet.id,
-            orderId,
-            amount: platformFee,
-            type: TransactionType.credit,
-            description: `Pendapatan komisi platform ${adminFeePercentage}% dari order #${orderId}`,
-          },
-        });
-      }
+      // Admin fee is already credited at checkout in payments.repository.ts
 
       const rewardSetting = await tx.pricingSetting.findFirst({
         where: { serviceType: ServiceType.barang },
@@ -282,7 +260,7 @@ export class CheckpointsRepository {
       await tx.wallet.update({
         where: { id: mitraWallet.id },
         data: {
-          heldEscrowBalance: { decrement: totalPrice },
+          heldEscrowBalance: { decrement: mitraEarnings },
           balance: { increment: mitraEarnings },
         },
       });
@@ -297,36 +275,7 @@ export class CheckpointsRepository {
         },
       });
 
-      const superadmin = await tx.user.findFirst({
-        where: { role: Role.admin },
-      });
-
-      if (superadmin) {
-        let superadminWallet = await tx.wallet.findUnique({
-          where: { userId: superadmin.id },
-        });
-
-        if (!superadminWallet) {
-          superadminWallet = await tx.wallet.create({
-            data: { userId: superadmin.id, balance: 0, heldEscrowBalance: 0 },
-          });
-        }
-
-        await tx.wallet.update({
-          where: { id: superadminWallet.id },
-          data: { balance: { increment: platformFee } },
-        });
-
-        await tx.walletTransaction.create({
-          data: {
-            walletId: superadminWallet.id,
-            orderId,
-            amount: platformFee,
-            type: TransactionType.credit,
-            description: `Komisi platform ${adminFeePercentage}% (Manual Operator Pos) dari order #${orderId}`,
-          },
-        });
-      }
+      // Admin fee is already credited at checkout in payments.repository.ts
 
       return tx.checkpointsLog.create({
         data: {

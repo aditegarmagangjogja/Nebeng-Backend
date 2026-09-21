@@ -1513,6 +1513,15 @@
             }
           },
           {
+            "name": "activeEscrow",
+            "required": false,
+            "in": "query",
+            "description": "Filter Escrow Aktif (true/false)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "vehicleType",
             "required": false,
             "in": "query",
@@ -1636,6 +1645,15 @@
                 "completed",
                 "cancelled"
               ]
+            }
+          },
+          {
+            "name": "activeEscrow",
+            "required": false,
+            "in": "query",
+            "description": "Filter Escrow Aktif (true/false)",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -4083,6 +4101,11 @@
             "type": "string",
             "example": "https://cdn.example.com/item.jpg",
             "description": "URL foto kondisi barang"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "Siti Rahma",
+            "description": "Nama Penerima"
           }
         },
         "required": [

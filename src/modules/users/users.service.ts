@@ -50,6 +50,11 @@ export class UsersService {
 
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
+    const internalRoles: Role[] = [Role.admin, Role.regional, Role.operator];
+    const statusVerification = internalRoles.includes(createUserDto.role)
+      ? 'approved'
+      : 'unverified';
+
     const newUser = await this.userRepository.create({
       name: createUserDto.name,
       email: cleanEmail,
@@ -57,6 +62,7 @@ export class UsersService {
       password: hashedPassword,
       role: createUserDto.role,
       status: createUserDto.status,
+      statusVerification,
       region: createUserDto.regionId
         ? { connect: { id: BigInt(createUserDto.regionId) } }
         : undefined,
@@ -114,10 +120,7 @@ export class UsersService {
       throw new NotFoundException(`User dengan id ${id} tidak ditemukan`);
     }
 
-    if (
-      actingUser?.role === Role.regional ||
-      actingUser?.role === 'regional'
-    ) {
+    if (actingUser?.role === Role.regional || actingUser?.role === 'regional') {
       if (
         !targetUser.regionId ||
         targetUser.regionId.toString() !== actingUser.regionId?.toString()
@@ -240,11 +243,8 @@ export class UsersService {
     actingUser?: any,
   ): Promise<UserResponseDto> {
     const targetUser = await this.findOne(id);
-    
-    if (
-      actingUser?.role === Role.regional ||
-      actingUser?.role === 'regional'
-    ) {
+
+    if (actingUser?.role === Role.regional || actingUser?.role === 'regional') {
       if (
         !targetUser.regionId ||
         targetUser.regionId.toString() !== actingUser.regionId?.toString()

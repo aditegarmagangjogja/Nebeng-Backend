@@ -122,7 +122,7 @@ export class UserRepository {
         where,
         skip,
         take: limitNum,
-        include: { profile: true, region: true },
+        include: { profile: true, region: true, assignedPickupPoints: true },
         orderBy: { createdAt: 'desc' },
       }),
       this.prisma.user.count({ where }),
