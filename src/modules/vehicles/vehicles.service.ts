@@ -60,14 +60,6 @@ export class VehicleService {
     return vehicles.map(VehicleMapper.toResponse);
   }
 
-<<<<<<< HEAD
-  async getAllVehicles(regionId?: string) {
-    const vehicles = await this.vehiclesRepository.findAll(regionId);
-    return vehicles.map(VehicleMapper.toResponse);
-  }
-
-  async getVehicleById(idStr: string) {
-=======
   async getAllVehicles(
     regionId?: string,
     page: number = 1,
@@ -90,7 +82,6 @@ export class VehicleService {
   }
 
   async getVehicleById(idStr: string, currentUser?: any) {
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     const vehicle = await this.vehiclesRepository.findById(idStr);
     if (!vehicle) {
       throw new NotFoundException('Data kendaraan tidak ditemukan.');

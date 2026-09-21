@@ -15,14 +15,7 @@ import {
 } from '@nestjs/swagger';
 import { PaymentsService } from './payments.service';
 import { CheckoutPaymentDto } from './dto/checkout-payment.dto';
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
 import { GetOperatorSummaryQueryDto } from './dto/operator-summary.dto';
->>>>>>> Stashed changes
-=======
-import { GetOperatorSummaryQueryDto } from './dto/operator-summary.dto';
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';

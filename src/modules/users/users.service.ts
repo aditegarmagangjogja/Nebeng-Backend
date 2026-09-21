@@ -75,10 +75,7 @@ export class UsersService {
     search?: string,
     status?: string,
     role?: string,
-<<<<<<< HEAD
-=======
     regionId?: string,
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   ): Promise<{ data: UserResponseDto[]; meta: any }> {
     const { users, total } = await this.userRepository.findAll(
       page,
@@ -86,10 +83,7 @@ export class UsersService {
       search,
       status,
       role,
-<<<<<<< HEAD
-=======
       regionId,
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     );
     return {
       data: UserMapper.toResponseList(users),

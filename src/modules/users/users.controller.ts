@@ -161,32 +161,23 @@ export class UserController {
     @Query('search') search?: string,
     @Query('status') status?: string,
     @Query('role') role?: string,
-<<<<<<< HEAD
-=======
     @Query('regionId') regionId?: string,
     @GetUser() currentUser?: any,
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   ) {
     const parsedPage = page ? parseInt(page, 10) : 1;
     const parsedLimit = limit ? parseInt(limit, 10) : 15;
 
-<<<<<<< HEAD
-=======
     const targetRegionId =
       currentUser?.role === Role.regional || currentUser?.role === 'regional'
         ? currentUser.regionId?.toString()
         : regionId;
 
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     return this.userService.findAll(
       parsedPage,
       parsedLimit,
       search,
       status,
       role,
-<<<<<<< HEAD
-    );
-=======
       targetRegionId,
     );
   }
@@ -197,7 +188,6 @@ export class UserController {
   async getMyProfile(@Request() req: any): Promise<UserResponseDto> {
     const userId = req.user.id || req.user.sub;
     return this.userService.findOne(String(userId));
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   }
 
   @Post('me/avatar')

@@ -63,13 +63,6 @@ export class VehiclesController {
   @Roles(Role.admin, Role.regional)
   @ApiOperation({
     summary:
-<<<<<<< HEAD
-      'Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah',
-  })
-  @ApiResponse({ status: 200, description: 'Daftar kendaraan ditemukan' })
-  async getAllVehicles(@Query('regionId') regionId?: string) {
-    return this.vehiclesService.getAllVehicles(regionId);
-=======
       'Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah & paginasi',
   })
   @ApiResponse({ status: 200, description: 'Daftar kendaraan ditemukan' })
@@ -92,7 +85,6 @@ export class VehiclesController {
       parsedPage,
       parsedLimit,
     );
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   }
 
   @Get(':id')

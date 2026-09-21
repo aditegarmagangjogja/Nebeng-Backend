@@ -40,19 +40,6 @@ export class VehiclesRepository {
     });
   }
 
-<<<<<<< HEAD
-  async findAll(regionId?: string) {
-    const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
-
-    // Kalau regionId dikirim tapi formatnya tidak valid, jangan diam-diam
-    // mengembalikan semua kendaraan lintas wilayah — lebih aman kembalikan kosong.
-    if (regionId && !parsedRegionId) return [];
-
-    return this.prisma.vehicle.findMany({
-      where: parsedRegionId ? { user: { regionId: parsedRegionId } } : undefined,
-      orderBy: { createdAt: 'desc' },
-    });
-=======
   async findAll(regionId?: string, page: number = 1, limit: number = 30) {
     const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
     if (regionId && !parsedRegionId) return { vehicles: [], total: 0 };
@@ -74,7 +61,6 @@ export class VehiclesRepository {
     ]);
 
     return { vehicles, total };
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   }
 
   async findById(id: string) {

@@ -71,15 +71,7 @@ export class PaymentsRepository {
         },
       });
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-      let wallet = await tx.wallet.findUnique({
-=======
       let mitraWallet = await tx.wallet.findUnique({
->>>>>>> Stashed changes
-=======
-      let mitraWallet = await tx.wallet.findUnique({
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         where: { userId: parsedMitraId },
       });
 
@@ -110,11 +102,6 @@ export class PaymentsRepository {
         },
       });
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const systemAdminIdEnv = process.env.SYSTEM_ADMIN_USER_ID;
       const parsedSystemAdminId = systemAdminIdEnv
         ? this.safeParseBigInt(systemAdminIdEnv)
@@ -154,10 +141,6 @@ export class PaymentsRepository {
         });
       }
 
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       return { payment, order };
     });
   }
@@ -172,27 +155,6 @@ export class PaymentsRepository {
       throw new BadRequestException('Format ID Operator tidak valid');
     }
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    // Mencari pembayaran dari trip yang berasal dari PickupPoint yang dikelola operator ini
-    return this.prisma.payment.findMany({
-      where: {
-        order: {
-          trip: {
-            originPoint: {
-              operatorId: parsedOperatorId,
-            },
-          },
-        },
-      },
-      include: {
-        order: {
-          include: {
-            customer: true,
-            trip: {
-              include: {
-                originPoint: true,
-=======
     const assignedPos = await this.prisma.pickupPoint.findFirst({
       where: { operatorId: parsedOperatorId },
     });
@@ -207,22 +169,6 @@ export class PaymentsRepository {
           },
         },
       },
-=======
-    const assignedPos = await this.prisma.pickupPoint.findFirst({
-      where: { operatorId: parsedOperatorId },
-    });
-
-    const skip = (page - 1) * limit;
-
-    const whereCondition = {
-      order: {
-        trip: {
-          originPoint: {
-            operatorId: parsedOperatorId,
-          },
-        },
-      },
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     };
 
     const [payments, totalItems] = await Promise.all([
@@ -238,10 +184,6 @@ export class PaymentsRepository {
                 include: {
                   originPoint: true,
                 },
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
               },
             },
           },

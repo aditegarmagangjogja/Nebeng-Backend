@@ -86,28 +86,11 @@ export class VerificationRepository {
         },
       });
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-      await tx.user.update({
-        where: { id: data.userId },
-        data: {
-          statusVerification: VerificationStatus.pending,
-        },
-      });
-
-=======
       const allUserVerifications = await tx.verification.findMany({
         where: { userId: data.userId },
         orderBy: { createdAt: 'desc' },
       });
 
-=======
-      const allUserVerifications = await tx.verification.findMany({
-        where: { userId: data.userId },
-        orderBy: { createdAt: 'desc' },
-      });
-
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const latestVerificationsMap = new Map<string, VerificationStatus>();
       for (const v of allUserVerifications) {
         if (!latestVerificationsMap.has(v.type)) {
@@ -128,10 +111,6 @@ export class VerificationRepository {
         });
       }
 
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       return verification;
     });
   }
@@ -239,27 +218,10 @@ export class VerificationRepository {
         });
       }
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-        // Opsi 1: Ubah status user langsung jadi approved saat salah satu verifikasi di-approve,
-        // atau pastikan mengecek apakah SEMUA verifikasi milik user ini sudah tidak ada yang pending.
-        const remainingPending = await tx.verification.count({
-          where: {
-            userId: updatedVerfication.userId,
-            status: VerificationStatus.pending,
-          },
-        });
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const allUserVerifications = await tx.verification.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
       });
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
 
       const latestVerificationsMap = new Map<string, VerificationStatus>();
       for (const v of allUserVerifications) {
@@ -268,12 +230,6 @@ export class VerificationRepository {
         }
       }
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-      return updatedVerfication;
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const latestStatuses = Array.from(latestVerificationsMap.values());
       const hasRejected = latestStatuses.some(
         (st) => st === VerificationStatus.rejected,
@@ -311,10 +267,6 @@ export class VerificationRepository {
       });
 
       return updatedVerification;
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     });
   }
 

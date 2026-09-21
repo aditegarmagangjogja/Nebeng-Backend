@@ -96,22 +96,11 @@ export class WalletsRepository {
     const netAmount = amount - platformFee;
 
     return this.prisma.$transaction(async (tx) => {
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-      const wallet = await tx.wallet.update({
-        where: { id: walletId },
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const updateResult = await tx.wallet.updateMany({
         where: {
           id: walletId,
           heldEscrowBalance: { gte: amount },
         },
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         data: {
           heldEscrowBalance: { decrement: amount },
           balance: { increment: netAmount },
@@ -149,22 +138,11 @@ export class WalletsRepository {
     bankDetails: string,
   ) {
     return this.prisma.$transaction(async (tx) => {
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-      const wallet = await tx.wallet.update({
-        where: { id: walletId },
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const updateResult = await tx.wallet.updateMany({
         where: {
           id: walletId,
           balance: { gte: amount },
         },
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         data: {
           balance: { decrement: amount },
         },

@@ -42,13 +42,6 @@ export class UserMapper {
       assignedPickupPointId: assignedPos,
       assignedPickupPointName: assignedPosName,
       statusVerification: user.statusVerification,
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-      avatar: user.avatar,
-      rewardPoints: user.rewardPoints,
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       nik: user.profile?.ktpNumber || user.nik || null,
       avatar: user.avatar || null,
       rewardPoints: Number(user.rewardPoints || 0),
@@ -58,10 +51,6 @@ export class UserMapper {
       bankAccountNumber: user.profile?.bankAccountNumber || null,
       bankAccountHolder: user.profile?.bankAccountHolder || null,
       hasPin: Boolean(user.pinHash),
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

@@ -32,18 +32,6 @@ export class OrdersRepository {
     }
 
     return this.prisma.$transaction(async (tx) => {
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-      const trip = await tx.trip.findUnique({
-        where: { id: parseTripId },
-        select: {
-          id: true,
-          seatAvailable: true,
-          remainingWeightCapacityKg: true,
-          status: true,
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const updateTripResult = await tx.trip.updateMany({
         where: {
           id: parseTripId,
@@ -54,10 +42,6 @@ export class OrdersRepository {
         data: {
           seatAvailable: { decrement: seatsToDeduct },
           remainingWeightCapacityKg: { decrement: weightToDeduct },
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         },
       });
 

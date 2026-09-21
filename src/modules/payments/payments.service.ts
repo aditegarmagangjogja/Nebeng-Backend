@@ -73,12 +73,6 @@ export class PaymentsService {
     }
 
     const transactionId = `TRX-${randomBytes(4).toString('hex').toUpperCase()}`;
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-    const amount = Number(order.totalPrice);
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     const totalPrice = Number(order.totalPrice);
 
     let adminFeePercentage = order.adminFeePercentage
@@ -105,10 +99,6 @@ export class PaymentsService {
     const adminFeeAmount = Math.round((totalPrice * adminFeePercentage) / 100);
     const netMitraAmount = totalPrice - adminFeeAmount;
 
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     const mitraUserId = order.trip.mitraId.toString();
 
     const { payment } =
@@ -136,13 +126,6 @@ export class PaymentsService {
     };
   }
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-  async getPaymentsByRegion(regionId?: string) {
-    const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
-=======
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   async getPaymentsByRegion(
     currentUser: any,
     regionId?: string,
@@ -150,10 +133,6 @@ export class PaymentsService {
     limit: number = 10,
   ) {
     let parsedRegionId: bigint | null = null;
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
 
     if (currentUser.role === Role.regional) {
       if (!currentUser.regionId) {
