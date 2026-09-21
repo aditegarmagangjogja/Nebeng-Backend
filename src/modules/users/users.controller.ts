@@ -161,9 +161,16 @@ export class UserController {
     @Query('search') search?: string,
     @Query('status') status?: string,
     @Query('role') role?: string,
+    @Query('regionId') regionId?: string,
+    @GetUser() currentUser?: any,
   ) {
     const parsedPage = page ? parseInt(page, 10) : 1;
     const parsedLimit = limit ? parseInt(limit, 10) : 15;
+
+    const targetRegionId =
+      currentUser?.role === Role.regional || currentUser?.role === 'regional'
+        ? currentUser.regionId?.toString()
+        : regionId;
 
     return this.userService.findAll(
       parsedPage,
@@ -171,6 +178,7 @@ export class UserController {
       search,
       status,
       role,
+      targetRegionId,
     );
   }
 
@@ -247,9 +255,10 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User tidak ditemukan' })
   update(
     @Param('id') id: string,
+    @GetUser() currentUser: any,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return this.userService.update(id, updateUserDto);
+    return this.userService.update(id, updateUserDto, currentUser);
   }
 
   @Patch(':id/status')
@@ -260,9 +269,10 @@ export class UserController {
   @ApiResponse({ status: 200, type: UserResponseDto })
   updateStatus(
     @Param('id') id: string,
+    @GetUser() currentUser: any,
     @Body() updateUserStatusDto: UpdateUserStatusDto,
   ): Promise<UserResponseDto> {
-    return this.userService.updateStatus(id, updateUserStatusDto);
+    return this.userService.updateStatus(id, updateUserStatusDto, currentUser);
   }
 
   @Delete(':id')

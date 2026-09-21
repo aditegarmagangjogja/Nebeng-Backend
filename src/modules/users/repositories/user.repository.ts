@@ -79,6 +79,7 @@ export class UserRepository {
     search?: string,
     status?: string,
     role?: string,
+    regionId?: string,
   ): Promise<{ users: any[]; total: number }> {
     const pageNum = Math.max(1, page);
     const limitNum = Math.min(100, Math.max(1, limit));
@@ -89,6 +90,13 @@ export class UserRepository {
         not: UserStatus.deleted,
       },
     };
+
+    if (regionId) {
+      const parsedRegion = this.safeParseBigInt(regionId);
+      if (parsedRegion) {
+        where.regionId = parsedRegion;
+      }
+    }
 
     if (status && status !== 'All') {
       where.status = status.toLowerCase() as UserStatus;

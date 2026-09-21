@@ -10,6 +10,7 @@ import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { VehicleMapper } from './mappers/vehicle.mapper';
 import { VehicleType } from '../../generated/prisma/enums';
+import { Role } from '../../generated/prisma/enums';
 
 @Injectable()
 export class VehicleService {
@@ -80,11 +81,26 @@ export class VehicleService {
     };
   }
 
-  async getVehicleById(idStr: string) {
+  async getVehicleById(idStr: string, currentUser?: any) {
     const vehicle = await this.vehiclesRepository.findById(idStr);
     if (!vehicle) {
       throw new NotFoundException('Data kendaraan tidak ditemukan.');
     }
+
+    if (
+      currentUser?.role === Role.regional ||
+      currentUser?.role === 'regional'
+    ) {
+      const userRegionId = currentUser.regionId?.toString();
+      const vehicleRegionId = vehicle.user?.regionId?.toString();
+
+      if (!userRegionId || userRegionId !== vehicleRegionId) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki akses ke kendaraan di wilayah ini.',
+        );
+      }
+    }
+
     return VehicleMapper.toResponse(vehicle);
   }
 

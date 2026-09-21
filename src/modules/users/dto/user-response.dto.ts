@@ -54,6 +54,9 @@ export class UserResponseDto {
   @ApiPropertyOptional({ example: '10' })
   assignedPickupPointId?: string | null;
 
+  @ApiPropertyOptional({ example: 'Pos Malioboro' })
+  assignedPickupPointName?: string | null;
+
   @ApiProperty()
   createdAt!: Date;
 

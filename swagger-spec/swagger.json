@@ -344,6 +344,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -3150,6 +3158,10 @@
             "type": "object",
             "example": "10"
           },
+          "assignedPickupPointName": {
+            "type": "object",
+            "example": "Pos Malioboro"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
@@ -4066,6 +4078,11 @@
             "type": "string",
             "example": "SEAL-2981312",
             "description": "Nomor stiker segel QR"
+          },
+          "photoUrl": {
+            "type": "string",
+            "example": "https://cdn.example.com/item.jpg",
+            "description": "URL foto kondisi barang"
           }
         },
         "required": [

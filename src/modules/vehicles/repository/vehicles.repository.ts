@@ -75,6 +75,7 @@ export class VehiclesRepository {
             name: true,
             phone: true,
             statusVerification: true,
+            regionId: true,
           },
         },
       },

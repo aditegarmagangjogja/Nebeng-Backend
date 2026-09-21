@@ -46,4 +46,12 @@ export class ScanCheckpointDto {
   @IsOptional()
   @IsString()
   securitySealQr?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://cdn.example.com/item.jpg',
+    description: 'URL foto kondisi barang',
+  })
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 }

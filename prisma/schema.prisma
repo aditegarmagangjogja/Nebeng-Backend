@@ -586,7 +586,7 @@ model MerchandiseItem {
   description    String?  @db.Text
   pointsRequired Int      @map("points_required")
   stock          Int      @default(0)
-  imageUrl       String?  @map("image_url")
+  imageUrl       String?  @map("image_url") @db.LongText
   isActive       Boolean  @default(true) @map("is_active")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")

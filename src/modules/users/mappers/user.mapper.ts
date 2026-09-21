@@ -11,6 +11,11 @@ export class UserMapper {
       user.assignedPickupPoints && user.assignedPickupPoints.length > 0
         ? user.assignedPickupPoints[0].id.toString()
         : null;
+        
+    const assignedPosName =
+      user.assignedPickupPoints && user.assignedPickupPoints.length > 0
+        ? user.assignedPickupPoints[0].name
+        : null;
 
     if (
       user.reviewsReceived &&
@@ -35,6 +40,7 @@ export class UserMapper {
       role: user.role,
       status: user.status,
       assignedPickupPointId: assignedPos,
+      assignedPickupPointName: assignedPosName,
       statusVerification: user.statusVerification,
       nik: user.profile?.ktpNumber || user.nik || null,
       avatar: user.avatar || null,

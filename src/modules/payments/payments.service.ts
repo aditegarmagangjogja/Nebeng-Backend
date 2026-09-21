@@ -303,6 +303,38 @@ export class PaymentsService {
     const amount = Number(order.totalPrice);
     const externalId = `ORDER-${order.id.toString()}`;
 
+    // Mock for local testing with dummy key
+    if (secretKey.includes('dummy')) {
+      const invoiceId = `dummy_inv_${Date.now()}`;
+
+      // Catat record pembayaran status 'pending' di database
+      await this.prisma.payment.create({
+        data: {
+          orderId: order.id,
+          paymentGateway: 'XENDIT_DUMMY',
+          transactionId: invoiceId,
+          amount: amount,
+          status: 'pending',
+        },
+      });
+
+      // Langsung simulasikan webhook Xendit untuk memproses Escrow & mengubah status tiket
+      await this.handleXenditWebhook(process.env.XENDIT_CALLBACK_TOKEN || '', {
+        status: 'PAID',
+        external_id: externalId,
+        payment_method: 'DUMMY',
+        id: invoiceId,
+      });
+
+      return {
+        message: 'Pembayaran simulasi berhasil (Dummy Mode).',
+        invoiceUrl: '/customer/tickets', // Frontend akan redirect ke sini
+        invoiceId: invoiceId,
+        expiryDate: new Date(Date.now() + 86400000).toISOString(),
+        amount: amount,
+      };
+    }
+
     // Basic Auth Xendit: format "SECRET_KEY:" di-encode base64
     const basicAuth = Buffer.from(`${secretKey}:`).toString('base64');
 
@@ -352,7 +384,6 @@ export class PaymentsService {
         amount: amount,
       };
     } catch (error: any) {
-      // Fallback ramah jika key sandbox belum diisi
       console.error('Xendit Invoice Creation Error:', error);
       throw new BadRequestException(
         `Gagal membuat tagihan Xendit: ${error.message}`,

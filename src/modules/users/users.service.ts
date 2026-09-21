@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -74,6 +75,7 @@ export class UsersService {
     search?: string,
     status?: string,
     role?: string,
+    regionId?: string,
   ): Promise<{ data: UserResponseDto[]; meta: any }> {
     const { users, total } = await this.userRepository.findAll(
       page,
@@ -81,6 +83,7 @@ export class UsersService {
       search,
       status,
       role,
+      regionId,
     );
     return {
       data: UserMapper.toResponseList(users),
@@ -104,10 +107,25 @@ export class UsersService {
   async update(
     id: string,
     updateUserDto: UpdateUserDto,
+    actingUser?: any,
   ): Promise<UserResponseDto> {
-    const currentUser = await this.userRepository.findById(id);
-    if (!currentUser) {
+    const targetUser = await this.userRepository.findById(id);
+    if (!targetUser) {
       throw new NotFoundException(`User dengan id ${id} tidak ditemukan`);
+    }
+
+    if (
+      actingUser?.role === Role.regional ||
+      actingUser?.role === 'regional'
+    ) {
+      if (
+        !targetUser.regionId ||
+        targetUser.regionId.toString() !== actingUser.regionId?.toString()
+      ) {
+        throw new ForbiddenException(
+          'Anda hanya berhak memperbarui pengguna di wilayah Anda sendiri.',
+        );
+      }
     }
 
     if (updateUserDto.email) {
@@ -128,11 +146,11 @@ export class UsersService {
       }
     }
 
-    const resultingRole = updateUserDto.role ?? currentUser.role;
+    const resultingRole = updateUserDto.role ?? targetUser.role;
     const resultingRegionId =
       updateUserDto.regionId !== undefined
         ? updateUserDto.regionId
-        : currentUser.regionId;
+        : targetUser.regionId;
 
     if (resultingRole === Role.regional && !resultingRegionId) {
       throw new BadRequestException('regionId wajib diisi untuk role regional');
@@ -219,8 +237,24 @@ export class UsersService {
   async updateStatus(
     id: string,
     updateUserStatusDto: UpdateUserStatusDto,
+    actingUser?: any,
   ): Promise<UserResponseDto> {
-    await this.findOne(id);
+    const targetUser = await this.findOne(id);
+    
+    if (
+      actingUser?.role === Role.regional ||
+      actingUser?.role === 'regional'
+    ) {
+      if (
+        !targetUser.regionId ||
+        targetUser.regionId.toString() !== actingUser.regionId?.toString()
+      ) {
+        throw new ForbiddenException(
+          'Anda hanya berhak memperbarui pengguna di wilayah Anda sendiri.',
+        );
+      }
+    }
+
     const updatedUser = await this.userRepository.update(id, {
       status: updateUserStatusDto.status,
     });

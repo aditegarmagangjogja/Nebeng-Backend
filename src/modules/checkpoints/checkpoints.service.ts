@@ -121,6 +121,7 @@ export class CheckpointsService {
         targetPosId,
         operatorUserIdStr,
         dto.securitySealQr,
+        dto.photoUrl,
       );
 
       // Siarkan pembaruan real-time ke Customer & Regional Admin via WebSocket

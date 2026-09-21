@@ -44,6 +44,7 @@ export class CheckpointsRepository {
     posIdStr: string,
     scannedByUserIdStr: string,
     securitySealQr?: string,
+    photoUrl?: string,
   ) {
     const parsedPosId = this.safeParseBigInt(posIdStr);
     const parsedUserId = this.safeParseBigInt(scannedByUserIdStr);
@@ -84,10 +85,13 @@ export class CheckpointsRepository {
         },
       });
       // 5. Simpan segel fisik jika pengiriman paket barang
-      if (securitySealQr) {
+      if (securitySealQr || photoUrl) {
         await tx.itemOrder.updateMany({
           where: { orderId },
-          data: { securitySealQr },
+          data: {
+            ...(securitySealQr && { securitySealQr }),
+            ...(photoUrl && { photoUrl }),
+          },
         });
       }
       // 6. Catat riwayat log checkpoint
