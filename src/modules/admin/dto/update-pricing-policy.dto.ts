@@ -18,7 +18,7 @@ class ParcelMatrixDto {
   @ApiProperty({ example: 1 })
   @IsNumber()
   @Min(0)
-  maxWeightKg!: number; // Disesuaikan dengan skema database baru
+  maxWeightKg!: number;
 
   @ApiProperty({ example: 6000 })
   @IsNumber()

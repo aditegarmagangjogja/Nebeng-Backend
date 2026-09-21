@@ -6,6 +6,7 @@ import {
   Patch,
   Request,
   Param,
+  Put,
   Delete,
   HttpCode,
   HttpStatus,
@@ -69,6 +70,18 @@ export class UserController {
   ): Promise<UserResponseDto> {
     const userId = req.user.id || req.user.sub;
     return this.userService.updateProfileDetail(String(userId), dto);
+  }
+
+  @Put('me')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Memperbarui profil dasar akun sendiri (PUT)' })
+  @ApiResponse({ status: 200, type: UserResponseDto })
+  updateMyProfilePut(
+    @Request() req: any,
+    @Body() updateUserMeDto: UpdateUserMeDto,
+  ): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.update(String(userId), updateUserMeDto);
   }
 
   @Delete('me')
@@ -148,17 +161,43 @@ export class UserController {
     @Query('search') search?: string,
     @Query('status') status?: string,
     @Query('role') role?: string,
+<<<<<<< HEAD
+=======
+    @Query('regionId') regionId?: string,
+    @GetUser() currentUser?: any,
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   ) {
     const parsedPage = page ? parseInt(page, 10) : 1;
     const parsedLimit = limit ? parseInt(limit, 10) : 15;
 
+<<<<<<< HEAD
+=======
+    const targetRegionId =
+      currentUser?.role === Role.regional || currentUser?.role === 'regional'
+        ? currentUser.regionId?.toString()
+        : regionId;
+
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     return this.userService.findAll(
       parsedPage,
       parsedLimit,
       search,
       status,
       role,
+<<<<<<< HEAD
     );
+=======
+      targetRegionId,
+    );
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Mendapatkan profil akun yang sedang login' })
+  async getMyProfile(@Request() req: any): Promise<UserResponseDto> {
+    const userId = req.user.id || req.user.sub;
+    return this.userService.findOne(String(userId));
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   }
 
   @Post('me/avatar')
@@ -226,9 +265,10 @@ export class UserController {
   @ApiResponse({ status: 404, description: 'User tidak ditemukan' })
   update(
     @Param('id') id: string,
+    @GetUser() currentUser: any,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<UserResponseDto> {
-    return this.userService.update(id, updateUserDto);
+    return this.userService.update(id, updateUserDto, currentUser);
   }
 
   @Patch(':id/status')
@@ -239,9 +279,10 @@ export class UserController {
   @ApiResponse({ status: 200, type: UserResponseDto })
   updateStatus(
     @Param('id') id: string,
+    @GetUser() currentUser: any,
     @Body() updateUserStatusDto: UpdateUserStatusDto,
   ): Promise<UserResponseDto> {
-    return this.userService.updateStatus(id, updateUserStatusDto);
+    return this.userService.updateStatus(id, updateUserStatusDto, currentUser);
   }
 
   @Delete(':id')

@@ -82,12 +82,12 @@ describe('Sistem Trajek & Logistik (Full E2E Integration Test)', () => {
         email: `admin.e2e.${timestamp}@example.com`,
         phone: `0811${Math.floor(10000000 + Math.random() * 90000000)}`,
         password: 'hashedpassword',
-        role: Role.superadmin,
+        role: Role.admin,
         status: UserStatus.active,
       },
     });
     adminId = adminUser.id.toString();
-    adminToken = `Bearer ${jwtService.sign({ id: adminId, sub: adminId, role: Role.superadmin })}`;
+    adminToken = `Bearer ${jwtService.sign({ id: adminId, sub: adminId, role: Role.admin })}`;
 
     // 3. Seed Operator Pos User
     const operatorUser = await prisma.user.create({
@@ -96,7 +96,7 @@ describe('Sistem Trajek & Logistik (Full E2E Integration Test)', () => {
         email: `operator.e2e.${timestamp}@example.com`,
         phone: `0815${Math.floor(10000000 + Math.random() * 90000000)}`,
         password: 'hashedpassword',
-        role: Role.operator_pos,
+        role: Role.operator,
         status: UserStatus.active,
       },
     });
@@ -104,7 +104,7 @@ describe('Sistem Trajek & Logistik (Full E2E Integration Test)', () => {
     operatorToken = `Bearer ${jwtService.sign({
       id: operatorId,
       sub: operatorId,
-      role: Role.operator_pos,
+      role: Role.operator,
     })}`;
 
     // 4. Seed Pos Asal & Pos Tujuan Master Data

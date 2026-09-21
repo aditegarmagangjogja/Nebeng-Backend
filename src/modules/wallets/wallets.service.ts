@@ -56,28 +56,30 @@ export class WalletsService {
 
     if (Number(wallet.heldEscrowBalance) < amount) {
       throw new BadRequestException(
-        'Saldo Escrow tidak mencukupi untuk dicairkan',
+        'Saldo Escrow tidak mencukupi untuk dicairkan.',
       );
     }
 
-    return this.walletRepository.processEscrowRelease(
+    const updatedWallet = await this.walletRepository.processEscrowRelease(
       wallet.id,
       orderIdStr,
       amount,
       platformFee,
     );
+
+    return WalletMapper.toResponse(updatedWallet);
   }
 
   async requestWithdrawal(userIdStr: string, amount: number) {
     if (amount <= 0) {
       throw new BadRequestException(
-        'Jumlah penarikan saldo harus lebih besar dari 0',
+        'Jumlah penarikan saldo harus lebih besar dari 0.',
       );
     }
 
     const parsedUserId = this.safeParseBigInt(userIdStr);
     if (!parsedUserId) {
-      throw new BadRequestException('Format ID User tidak valid');
+      throw new BadRequestException('Format ID User tidak valid.');
     }
 
     const profile = await this.prisma.userProfile.findUnique({
@@ -101,7 +103,9 @@ export class WalletsService {
       );
     }
 
-    const bankDetails = `${profile.bankName} - ${profile.bankAccountNumber} a.n ${profile.bankAccountHolder || profile.fullNameKtp}`;
+    const bankDetails = `${profile.bankName} - ${profile.bankAccountNumber} a.n ${
+      profile.bankAccountHolder || profile.fullNameKtp || 'Pemilik Rekening'
+    }`;
 
     const { wallet: updatedWallet } =
       await this.walletRepository.processWithdrawal(
@@ -111,7 +115,7 @@ export class WalletsService {
       );
 
     return {
-      message: `Penarikan saldo sebesar Rp ${amount.toLocaleString()} berhasil diproses ke rekening ${bankDetails}.`,
+      message: `Penarikan saldo sebesar Rp ${amount.toLocaleString('id-ID')} berhasil diproses ke rekening ${bankDetails}.`,
       wallet: WalletMapper.toResponse(updatedWallet),
     };
   }

@@ -24,8 +24,8 @@ export class ScanCheckpointDto {
     description: 'ID pos resmi tempat operator bertugas',
   })
   @IsString()
-  @IsNotEmpty()
-  posId!: string;
+  @IsOptional()
+  posId?: string;
 
   @ApiProperty({ enum: ScanType, example: ScanType.checkin_origin })
   @IsEnum(ScanType)
@@ -46,4 +46,12 @@ export class ScanCheckpointDto {
   @IsOptional()
   @IsString()
   securitySealQr?: string;
+
+  @ApiPropertyOptional({
+    example: 'https://cdn.example.com/item.jpg',
+    description: 'URL foto kondisi barang',
+  })
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 }

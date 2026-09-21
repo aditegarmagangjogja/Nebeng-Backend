@@ -43,7 +43,7 @@ export class ReviewMapper {
   }) {
     return {
       averageRating: Number(data.averageRating.toFixed(1)),
-      totalReviewa: data.totalReviews,
+      totalReviews: data.totalReviews,
       reviews: data.reviews
         ? data.reviews.map((rev) => this.toReviewResponse(rev))
         : [],

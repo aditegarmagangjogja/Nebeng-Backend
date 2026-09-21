@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ServiceType } from '../../../generated/prisma/enums';
 import {
   IsDateString,
   IsNotEmpty,
@@ -6,6 +7,7 @@ import {
   IsOptional,
   IsString,
   Min,
+  IsEnum,
 } from 'class-validator';
 
 export class CreateTripDto {
@@ -63,4 +65,13 @@ export class CreateTripDto {
   @IsNumber()
   @Min(0)
   maxWeightCapacityKg?: number;
+
+  @ApiProperty({
+    enum: ServiceType,
+    example: 'mobil',
+    description: 'Tipe layanan (motor, mobil, barang)',
+  })
+  @IsEnum(ServiceType)
+  @IsNotEmpty()
+  serviceType!: ServiceType;
 }

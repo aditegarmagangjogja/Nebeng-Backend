@@ -4,6 +4,7 @@ import {
   VerificationStatus,
   VerificationType,
 } from '../../../generated/prisma/enums';
+import { Role } from '../../../generated/prisma/enums';
 
 @Injectable()
 export class VerificationRepository {
@@ -33,8 +34,41 @@ export class VerificationRepository {
     userId: bigint;
     type: VerificationType;
     files: { filePath: string; fileType: string }[];
+    profileData?: {
+      ktpNumber?: string;
+      fullNameKtp?: string;
+      addressKtp?: string;
+      faceImageUrl?: string;
+    };
   }) {
     return this.prisma.$transaction(async (tx) => {
+      if (data.profileData && Object.keys(data.profileData).length > 0) {
+        await tx.userProfile.upsert({
+          where: { userId: data.userId },
+          update: {
+            ...(data.profileData.ktpNumber
+              ? { ktpNumber: data.profileData.ktpNumber }
+              : {}),
+            ...(data.profileData.fullNameKtp
+              ? { fullNameKtp: data.profileData.fullNameKtp }
+              : {}),
+            ...(data.profileData.addressKtp
+              ? { addressKtp: data.profileData.addressKtp }
+              : {}),
+            ...(data.profileData.faceImageUrl
+              ? { faceImageUrl: data.profileData.faceImageUrl }
+              : {}),
+          },
+          create: {
+            userId: data.userId,
+            ktpNumber: data.profileData.ktpNumber || null,
+            fullNameKtp: data.profileData.fullNameKtp || null,
+            addressKtp: data.profileData.addressKtp || null,
+            faceImageUrl: data.profileData.faceImageUrl || null,
+          },
+        });
+      }
+
       const verification = await tx.verification.create({
         data: {
           userId: data.userId,
@@ -52,6 +86,7 @@ export class VerificationRepository {
         },
       });
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
       await tx.user.update({
         where: { id: data.userId },
@@ -66,6 +101,13 @@ export class VerificationRepository {
         orderBy: { createdAt: 'desc' },
       });
 
+=======
+      const allUserVerifications = await tx.verification.findMany({
+        where: { userId: data.userId },
+        orderBy: { createdAt: 'desc' },
+      });
+
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const latestVerificationsMap = new Map<string, VerificationStatus>();
       for (const v of allUserVerifications) {
         if (!latestVerificationsMap.has(v.type)) {
@@ -86,7 +128,10 @@ export class VerificationRepository {
         });
       }
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       return verification;
     });
   }
@@ -150,7 +195,7 @@ export class VerificationRepository {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const updatedVerfication = await tx.verification.update({
+      const updatedVerification = await tx.verification.update({
         where: { id: parseid },
         data: {
           status,
@@ -166,14 +211,11 @@ export class VerificationRepository {
         },
       });
 
-      if (status === VerificationStatus.rejected) {
-        await tx.user.update({
-          where: { id: updatedVerfication.userId },
-          data: { statusVerification: VerificationStatus.rejected },
-        });
-      } else if (status === VerificationStatus.approved) {
+      const userId = updatedVerification.userId;
+
+      if (status === VerificationStatus.approved) {
         const currentUserData = await tx.user.findUnique({
-          where: { id: updatedVerfication.userId },
+          where: { id: userId },
         });
         if (currentUserData && !currentUserData.regionId && parseAdminId) {
           const adminUser = await tx.user.findUnique({
@@ -181,21 +223,23 @@ export class VerificationRepository {
           });
           if (adminUser?.regionId) {
             await tx.user.update({
-              where: { id: updatedVerfication.userId },
+              where: { id: userId },
               data: { regionId: adminUser.regionId },
             });
           }
         }
 
         await tx.userProfile.upsert({
-          where: { userId: updatedVerfication.userId },
+          where: { userId },
           update: { isFaceVerified: true },
           create: {
-            userId: updatedVerfication.userId,
+            userId,
             isFaceVerified: true,
           },
         });
+      }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
         // Opsi 1: Ubah status user langsung jadi approved saat salah satu verifikasi di-approve,
         // atau pastikan mengecek apakah SEMUA verifikasi milik user ini sudah tidak ada yang pending.
@@ -206,24 +250,30 @@ export class VerificationRepository {
           },
         });
 =======
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const allUserVerifications = await tx.verification.findMany({
         where: { userId },
         orderBy: { createdAt: 'desc' },
       });
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
 
-        // Jika sudah tidak ada lagi yang pending (semua sudah di-approve/reject), aktifkan user
-        if (remainingPending === 0) {
-          await tx.user.update({
-            where: { id: updatedVerfication.userId },
-            data: { statusVerification: VerificationStatus.approved },
-          });
+      const latestVerificationsMap = new Map<string, VerificationStatus>();
+      for (const v of allUserVerifications) {
+        if (!latestVerificationsMap.has(v.type)) {
+          latestVerificationsMap.set(v.type, v.status);
         }
       }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
       return updatedVerfication;
 =======
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const latestStatuses = Array.from(latestVerificationsMap.values());
       const hasRejected = latestStatuses.some(
         (st) => st === VerificationStatus.rejected,
@@ -261,7 +311,10 @@ export class VerificationRepository {
       });
 
       return updatedVerification;
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     });
   }
 

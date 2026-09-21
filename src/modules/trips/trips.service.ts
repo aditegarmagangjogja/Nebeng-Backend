@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { TripsRepository } from './repository/trips.repository';
@@ -16,36 +17,62 @@ import {
   VerificationStatus,
 } from '../../generated/prisma/enums';
 import { randomBytes } from 'crypto';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class TripsService {
   constructor(
     private readonly tripsRepository: TripsRepository,
     private readonly vehiclesRepository: VehiclesRepository,
+    private readonly prisma: PrismaService,
   ) {}
 
   private async generateUniqueTripQr(): Promise<string> {
-    let qrCodeTrip = '';
-    let isUnique = false;
-
-    while (!isUnique) {
+    const maxRetries = 10;
+    for (let i = 0; i < maxRetries; i++) {
       const hex = randomBytes(4).toString('hex').toUpperCase();
-      qrCodeTrip = `TRIP-${hex}`;
+      const qrCodeTrip = `TRIP-${hex}`;
       const existing = await this.tripsRepository.findByQrCode(qrCodeTrip);
       if (!existing) {
-        isUnique = true;
+        return qrCodeTrip;
       }
     }
-
-    return qrCodeTrip;
+    throw new InternalServerErrorException(
+      'Gagal menghasilkan Kode QR Trip unik. Silakan coba kembali.',
+    );
   }
 
   private safeParseBigInt(id: string): bigint {
     try {
       return BigInt(id);
     } catch {
-      throw new BadRequestException('Format ID tidak valid');
+      throw new BadRequestException(`Format ID '${id}' tidak valid`);
     }
+  }
+
+  private combineDateAndTime(
+    departureDateStr: string,
+    departureTimeStr: string,
+  ): Date {
+    const datePart = new Date(departureDateStr).toISOString().split('T')[0];
+    let timePart = departureTimeStr;
+
+    if (departureTimeStr.includes('T')) {
+      timePart = new Date(departureTimeStr)
+        .toISOString()
+        .split('T')[1]
+        .substring(0, 8);
+    } else if (departureTimeStr.endsWith('Z')) {
+      timePart = departureTimeStr.replace('Z', '');
+    }
+
+    const combined = new Date(`${datePart}T${timePart}`);
+    if (isNaN(combined.getTime())) {
+      throw new BadRequestException(
+        'Format tanggal atau jam keberangkatan tidak valid.',
+      );
+    }
+    return combined;
   }
 
   async createTrip(userIdStr: string, dto: CreateTripDto) {
@@ -86,6 +113,18 @@ export class TripsService {
       );
     }
 
+    const departureCombinedDate = this.combineDateAndTime(
+      dto.departureDate,
+      dto.departureTime,
+    );
+    const now = new Date();
+
+    if (departureCombinedDate < now) {
+      throw new BadRequestException(
+        'Waktu keberangkatan tidak boleh di masa lalu.',
+      );
+    }
+
     const parsedVehicleId = this.safeParseBigInt(dto.vehicleId);
     const targetDepartureDate = new Date(dto.departureDate);
 
@@ -96,7 +135,7 @@ export class TripsService {
 
     if (conflictingTrip) {
       throw new BadRequestException(
-        'Kendaraan ini sudah dijadwalkan pada trip lain di tanggal yang sama. Satu kendaraan tidak dapat digunakan untuk dua perjalanan bersamaan.',
+        'Kendaraan ini sedang aktif dalam trip lain atau sudah dijadwalkan pada tanggal yang sama.',
       );
     }
 
@@ -109,9 +148,27 @@ export class TripsService {
       if (maxWeightKg > 15) {
         maxWeightKg = 15.0;
       }
+    } else {
+      if (seatTotal > vehicle.capacitySeats) {
+        throw new BadRequestException(
+          `Jumlah kursi (${seatTotal}) melebihi kapasitas maksimal kendaraan (${vehicle.capacitySeats} kursi).`,
+        );
+      }
+      if (maxWeightKg > Number(vehicle.maxWeightCapacityKg)) {
+        throw new BadRequestException(
+          `Kapasitas berat bagasi (${maxWeightKg} kg) melebihi batas kendaraan (${vehicle.maxWeightCapacityKg} kg).`,
+        );
+      }
     }
 
     const qrCodeTrip = await this.generateUniqueTripQr();
+
+    let parsedDepartureTime: Date;
+    if (dto.departureTime.includes('T')) {
+      parsedDepartureTime = new Date(dto.departureTime);
+    } else {
+      parsedDepartureTime = new Date(`1970-01-01T${dto.departureTime}Z`);
+    }
 
     const tripData = {
       mitraId: this.safeParseBigInt(parsedUserId),
@@ -120,13 +177,14 @@ export class TripsService {
       destinationPointId: this.safeParseBigInt(dto.destinationPointId),
       vehicleType: vehicle.type,
       departureDate: targetDepartureDate,
-      departureTime: new Date(dto.departureTime),
+      departureTime: parsedDepartureTime,
       price: dto.price,
       seatTotal,
       seatAvailable: seatTotal,
       maxWeightCapacityKg: maxWeightKg,
       remainingWeightCapacityKg: maxWeightKg,
       qrCodeTrip,
+      serviceType: dto.serviceType,
       status: TripStatus.scheduled,
     };
 
@@ -134,8 +192,50 @@ export class TripsService {
     return TripMapper.toResponse(trip);
   }
 
-  async getTrips(query: QueryTripDto) {
+  async getTrips(query: QueryTripDto, currentUserIdStr?: string) {
     const filters: any = {};
+
+    filters.status = query.status ?? TripStatus.scheduled;
+
+    if (query.date) {
+      const cleanDateStr = query.date.split('T')[0];
+      const startOfDay = new Date(`${cleanDateStr}T00:00:00.000Z`);
+      const endOfDay = new Date(`${cleanDateStr}T23:59:59.999Z`);
+
+      filters.departureDate = {
+        gte: startOfDay,
+        lte: endOfDay,
+      };
+    } else {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const startOfToday = new Date(`${todayStr}T00:00:00.000Z`);
+      filters.departureDate = { gte: startOfToday };
+    }
+
+    if (query.search) {
+      filters.OR = [
+        {
+          originPoint: {
+            name: { contains: query.search, mode: 'insensitive' },
+          },
+        },
+        {
+          destinationPoint: {
+            name: { contains: query.search, mode: 'insensitive' },
+          },
+        },
+        {
+          originPoint: {
+            region: { name: { contains: query.search, mode: 'insensitive' } },
+          },
+        },
+        {
+          destinationPoint: {
+            region: { name: { contains: query.search, mode: 'insensitive' } },
+          },
+        },
+      ];
+    }
 
     if (query.originPointId) {
       filters.originPointId = this.safeParseBigInt(query.originPointId);
@@ -145,18 +245,90 @@ export class TripsService {
         query.destinationPointId,
       );
     }
-    if (query.status) {
-      filters.status = query.status;
+
+    if (query.posId) {
+      const posIdBigInt = this.safeParseBigInt(query.posId);
+      filters.OR = [
+        { originPointId: posIdBigInt },
+        { destinationPointId: posIdBigInt },
+      ];
     }
+
     if (query.vehicleType) {
       filters.vehicleType = query.vehicleType;
     }
-    if (query.date) {
-      filters.departureDate = new Date(query.date);
+
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+
+    const { data: trips, total } = await this.tripsRepository.findAll(
+      filters,
+      page,
+      limit,
+    );
+    const bookedTripIds = new Set<string>();
+
+    if (currentUserIdStr) {
+      const userOrders = await this.prisma.order.findMany({
+        where: {
+          customerId: this.safeParseBigInt(currentUserIdStr),
+          status: { notIn: ['cancelled'] },
+        },
+        select: { tripId: true },
+      });
+      userOrders.forEach((o) => bookedTripIds.add(o.tripId.toString()));
     }
 
-    const trips = await this.tripsRepository.findAll(filters);
-    return TripMapper.toResponseList(trips);
+    const mappedTrips = TripMapper.toResponseList(trips) as any[];
+    const responseList = mappedTrips.map((trip) => ({
+      ...trip,
+      isBookedByMe: bookedTripIds.has(trip.id),
+    }));
+
+    return {
+      data: responseList,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getTripsByMitra(mitraIdStr: string, query: QueryTripDto) {
+    const parsedMitraId = this.safeParseBigInt(mitraIdStr);
+
+    const filters: any = {
+      mitraId: parsedMitraId,
+    };
+
+    if (query.status) {
+      filters.status = query.status;
+    } else {
+      filters.status = {
+        in: ['scheduled', 'in_transit', 'completed'],
+      };
+    }
+
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+
+    const { data: trips, total } = await this.tripsRepository.findAll(
+      filters,
+      page,
+      limit,
+    );
+
+    return {
+      data: TripMapper.toResponseList(trips),
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async getTripById(idStr: string) {
@@ -191,7 +363,39 @@ export class TripsService {
           'Perubahan status Trip menjadi In-Transit atau Completed hanya dapat dilakukan via QR Checkpoint Scanner Operator Pos.',
         );
       }
+
+      if (dto.status === TripStatus.cancelled) {
+        const activeOrdersCount = await this.prisma.order.count({
+          where: {
+            tripId: this.safeParseBigInt(idStr),
+            status: { notIn: ['cancelled'] },
+          },
+        });
+
+        if (activeOrdersCount > 0) {
+          throw new BadRequestException(
+            `Tidak dapat membatalkan trip ini karena sudah ada ${activeOrdersCount} pesanan aktif dari penumpang/pengirim barang.`,
+          );
+        }
+      }
+
       updateData.status = dto.status;
+    }
+
+    const targetDateStr =
+      dto.departureDate ?? trip.departureDate.toISOString().split('T')[0];
+    const targetTimeStr = dto.departureTime ?? trip.departureTime.toISOString();
+
+    if (dto.departureDate || dto.departureTime) {
+      const combinedDate = this.combineDateAndTime(
+        targetDateStr,
+        targetTimeStr,
+      );
+      if (combinedDate < new Date()) {
+        throw new BadRequestException(
+          'Waktu keberangkatan tidak boleh diubah ke masa lalu.',
+        );
+      }
     }
 
     if (dto.departureDate) {

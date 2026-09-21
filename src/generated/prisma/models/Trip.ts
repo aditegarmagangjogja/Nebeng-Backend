@@ -68,6 +68,7 @@ export type TripMinAggregateOutputType = {
   remainingWeightCapacityKg: runtime.Decimal | null
   qrCodeTrip: string | null
   status: $Enums.TripStatus | null
+  serviceType: $Enums.ServiceType | null
   mapsPolyline: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -89,6 +90,7 @@ export type TripMaxAggregateOutputType = {
   remainingWeightCapacityKg: runtime.Decimal | null
   qrCodeTrip: string | null
   status: $Enums.TripStatus | null
+  serviceType: $Enums.ServiceType | null
   mapsPolyline: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -110,6 +112,7 @@ export type TripCountAggregateOutputType = {
   remainingWeightCapacityKg: number
   qrCodeTrip: number
   status: number
+  serviceType: number
   mapsPolyline: number
   createdAt: number
   updatedAt: number
@@ -159,6 +162,7 @@ export type TripMinAggregateInputType = {
   remainingWeightCapacityKg?: true
   qrCodeTrip?: true
   status?: true
+  serviceType?: true
   mapsPolyline?: true
   createdAt?: true
   updatedAt?: true
@@ -180,6 +184,7 @@ export type TripMaxAggregateInputType = {
   remainingWeightCapacityKg?: true
   qrCodeTrip?: true
   status?: true
+  serviceType?: true
   mapsPolyline?: true
   createdAt?: true
   updatedAt?: true
@@ -201,6 +206,7 @@ export type TripCountAggregateInputType = {
   remainingWeightCapacityKg?: true
   qrCodeTrip?: true
   status?: true
+  serviceType?: true
   mapsPolyline?: true
   createdAt?: true
   updatedAt?: true
@@ -309,6 +315,7 @@ export type TripGroupByOutputType = {
   remainingWeightCapacityKg: runtime.Decimal
   qrCodeTrip: string
   status: $Enums.TripStatus
+  serviceType: $Enums.ServiceType
   mapsPolyline: string | null
   createdAt: Date
   updatedAt: Date
@@ -353,6 +360,7 @@ export type TripWhereInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFilter<"Trip"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFilter<"Trip"> | string
   status?: Prisma.EnumTripStatusFilter<"Trip"> | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFilter<"Trip"> | $Enums.ServiceType
   mapsPolyline?: Prisma.StringNullableFilter<"Trip"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Trip"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Trip"> | Date | string
@@ -384,6 +392,7 @@ export type TripOrderByWithRelationInput = {
   remainingWeightCapacityKg?: Prisma.SortOrder
   qrCodeTrip?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   mapsPolyline?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -419,6 +428,7 @@ export type TripWhereUniqueInput = Prisma.AtLeast<{
   maxWeightCapacityKg?: Prisma.DecimalFilter<"Trip"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   remainingWeightCapacityKg?: Prisma.DecimalFilter<"Trip"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   status?: Prisma.EnumTripStatusFilter<"Trip"> | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFilter<"Trip"> | $Enums.ServiceType
   mapsPolyline?: Prisma.StringNullableFilter<"Trip"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Trip"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Trip"> | Date | string
@@ -450,6 +460,7 @@ export type TripOrderByWithAggregationInput = {
   remainingWeightCapacityKg?: Prisma.SortOrder
   qrCodeTrip?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   mapsPolyline?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -479,6 +490,7 @@ export type TripScalarWhereWithAggregatesInput = {
   remainingWeightCapacityKg?: Prisma.DecimalWithAggregatesFilter<"Trip"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringWithAggregatesFilter<"Trip"> | string
   status?: Prisma.EnumTripStatusWithAggregatesFilter<"Trip"> | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeWithAggregatesFilter<"Trip"> | $Enums.ServiceType
   mapsPolyline?: Prisma.StringNullableWithAggregatesFilter<"Trip"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Trip"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Trip"> | Date | string
@@ -496,6 +508,7 @@ export type TripCreateInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -527,6 +540,7 @@ export type TripUncheckedCreateInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -550,6 +564,7 @@ export type TripUpdateInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -581,6 +596,7 @@ export type TripUncheckedUpdateInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -608,6 +624,7 @@ export type TripCreateManyInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -625,6 +642,7 @@ export type TripUpdateManyMutationInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -646,6 +664,7 @@ export type TripUncheckedUpdateManyInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -683,6 +702,7 @@ export type TripCountOrderByAggregateInput = {
   remainingWeightCapacityKg?: Prisma.SortOrder
   qrCodeTrip?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   mapsPolyline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -717,6 +737,7 @@ export type TripMaxOrderByAggregateInput = {
   remainingWeightCapacityKg?: Prisma.SortOrder
   qrCodeTrip?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   mapsPolyline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -738,6 +759,7 @@ export type TripMinOrderByAggregateInput = {
   remainingWeightCapacityKg?: Prisma.SortOrder
   qrCodeTrip?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  serviceType?: Prisma.SortOrder
   mapsPolyline?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -1033,6 +1055,7 @@ export type TripCreateWithoutMitraInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1062,6 +1085,7 @@ export type TripUncheckedCreateWithoutMitraInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1118,6 +1142,7 @@ export type TripScalarWhereInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFilter<"Trip"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFilter<"Trip"> | string
   status?: Prisma.EnumTripStatusFilter<"Trip"> | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFilter<"Trip"> | $Enums.ServiceType
   mapsPolyline?: Prisma.StringNullableFilter<"Trip"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Trip"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Trip"> | Date | string
@@ -1135,6 +1160,7 @@ export type TripCreateWithoutOriginPointInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1164,6 +1190,7 @@ export type TripUncheckedCreateWithoutOriginPointInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1197,6 +1224,7 @@ export type TripCreateWithoutDestinationPointInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1226,6 +1254,7 @@ export type TripUncheckedCreateWithoutDestinationPointInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1291,6 +1320,7 @@ export type TripCreateWithoutOrdersInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1321,6 +1351,7 @@ export type TripUncheckedCreateWithoutOrdersInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1359,6 +1390,7 @@ export type TripUpdateWithoutOrdersInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1389,6 +1421,7 @@ export type TripUncheckedUpdateWithoutOrdersInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1411,6 +1444,7 @@ export type TripCreateWithoutCheckpointsLogsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1441,6 +1475,7 @@ export type TripUncheckedCreateWithoutCheckpointsLogsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1479,6 +1514,7 @@ export type TripUpdateWithoutCheckpointsLogsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1509,6 +1545,7 @@ export type TripUncheckedUpdateWithoutCheckpointsLogsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1531,6 +1568,7 @@ export type TripCreateWithoutQrSessionsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1561,6 +1599,7 @@ export type TripUncheckedCreateWithoutQrSessionsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1599,6 +1638,7 @@ export type TripUpdateWithoutQrSessionsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1629,6 +1669,7 @@ export type TripUncheckedUpdateWithoutQrSessionsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1651,6 +1692,7 @@ export type TripCreateWithoutTrackingsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1681,6 +1723,7 @@ export type TripUncheckedCreateWithoutTrackingsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1719,6 +1762,7 @@ export type TripUpdateWithoutTrackingsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1749,6 +1793,7 @@ export type TripUncheckedUpdateWithoutTrackingsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1771,6 +1816,7 @@ export type TripCreateWithoutConversationsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1801,6 +1847,7 @@ export type TripUncheckedCreateWithoutConversationsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1839,6 +1886,7 @@ export type TripUpdateWithoutConversationsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1869,6 +1917,7 @@ export type TripUncheckedUpdateWithoutConversationsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1891,6 +1940,7 @@ export type TripCreateWithoutReviewsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1921,6 +1971,7 @@ export type TripUncheckedCreateWithoutReviewsInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -1959,6 +2010,7 @@ export type TripUpdateWithoutReviewsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1989,6 +2041,7 @@ export type TripUncheckedUpdateWithoutReviewsInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2011,6 +2064,7 @@ export type TripCreateWithoutVehicleInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2040,6 +2094,7 @@ export type TripUncheckedCreateWithoutVehicleInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2092,6 +2147,7 @@ export type TripCreateManyMitraInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2109,6 +2165,7 @@ export type TripUpdateWithoutMitraInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2138,6 +2195,7 @@ export type TripUncheckedUpdateWithoutMitraInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2164,6 +2222,7 @@ export type TripUncheckedUpdateManyWithoutMitraInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2184,6 +2243,7 @@ export type TripCreateManyOriginPointInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2204,6 +2264,7 @@ export type TripCreateManyDestinationPointInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2221,6 +2282,7 @@ export type TripUpdateWithoutOriginPointInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2250,6 +2312,7 @@ export type TripUncheckedUpdateWithoutOriginPointInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2276,6 +2339,7 @@ export type TripUncheckedUpdateManyWithoutOriginPointInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2293,6 +2357,7 @@ export type TripUpdateWithoutDestinationPointInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2322,6 +2387,7 @@ export type TripUncheckedUpdateWithoutDestinationPointInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2348,6 +2414,7 @@ export type TripUncheckedUpdateManyWithoutDestinationPointInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2368,6 +2435,7 @@ export type TripCreateManyVehicleInput = {
   remainingWeightCapacityKg: runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip: string
   status?: $Enums.TripStatus
+  serviceType?: $Enums.ServiceType
   mapsPolyline?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -2385,6 +2453,7 @@ export type TripUpdateWithoutVehicleInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2414,6 +2483,7 @@ export type TripUncheckedUpdateWithoutVehicleInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2440,6 +2510,7 @@ export type TripUncheckedUpdateManyWithoutVehicleInput = {
   remainingWeightCapacityKg?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   qrCodeTrip?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumTripStatusFieldUpdateOperationsInput | $Enums.TripStatus
+  serviceType?: Prisma.EnumServiceTypeFieldUpdateOperationsInput | $Enums.ServiceType
   mapsPolyline?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2537,6 +2608,7 @@ export type TripSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   remainingWeightCapacityKg?: boolean
   qrCodeTrip?: boolean
   status?: boolean
+  serviceType?: boolean
   mapsPolyline?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -2571,12 +2643,13 @@ export type TripSelectScalar = {
   remainingWeightCapacityKg?: boolean
   qrCodeTrip?: boolean
   status?: boolean
+  serviceType?: boolean
   mapsPolyline?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type TripOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mitraId" | "vehicleId" | "originPointId" | "destinationPointId" | "vehicleType" | "departureDate" | "departureTime" | "price" | "seatTotal" | "seatAvailable" | "maxWeightCapacityKg" | "remainingWeightCapacityKg" | "qrCodeTrip" | "status" | "mapsPolyline" | "createdAt" | "updatedAt", ExtArgs["result"]["trip"]>
+export type TripOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mitraId" | "vehicleId" | "originPointId" | "destinationPointId" | "vehicleType" | "departureDate" | "departureTime" | "price" | "seatTotal" | "seatAvailable" | "maxWeightCapacityKg" | "remainingWeightCapacityKg" | "qrCodeTrip" | "status" | "serviceType" | "mapsPolyline" | "createdAt" | "updatedAt", ExtArgs["result"]["trip"]>
 export type TripInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   mitra?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   vehicle?: boolean | Prisma.VehicleDefaultArgs<ExtArgs>
@@ -2621,6 +2694,7 @@ export type $TripPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     remainingWeightCapacityKg: runtime.Decimal
     qrCodeTrip: string
     status: $Enums.TripStatus
+    serviceType: $Enums.ServiceType
     mapsPolyline: string | null
     createdAt: Date
     updatedAt: Date
@@ -3018,6 +3092,7 @@ export interface TripFieldRefs {
   readonly remainingWeightCapacityKg: Prisma.FieldRef<"Trip", 'Decimal'>
   readonly qrCodeTrip: Prisma.FieldRef<"Trip", 'String'>
   readonly status: Prisma.FieldRef<"Trip", 'TripStatus'>
+  readonly serviceType: Prisma.FieldRef<"Trip", 'ServiceType'>
   readonly mapsPolyline: Prisma.FieldRef<"Trip", 'String'>
   readonly createdAt: Prisma.FieldRef<"Trip", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Trip", 'DateTime'>

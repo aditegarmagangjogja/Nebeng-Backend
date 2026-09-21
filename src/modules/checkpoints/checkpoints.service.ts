@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -12,19 +11,23 @@ import {
   EscrowStatus,
   OrderStatus,
   OrderType,
-  Role,
   ScanType,
   ServiceType,
 } from '../../generated/prisma/enums';
+import { TrackingGateway } from '../tracking/tracking.gateway';
 
 @Injectable()
 export class CheckpointsService {
   constructor(
     private readonly checkpointsRepository: CheckpointsRepository,
     private readonly prisma: PrismaService,
+    private readonly trackingGateway: TrackingGateway, // <-- Injeksi WebSocket Gateway
   ) {}
 
-  private safeParseBigInt(id: string): bigint | null {
+  private safeParseBigInt(
+    id: string | number | undefined | null,
+  ): bigint | null {
+    if (!id) return null;
     try {
       return BigInt(id);
     } catch {
@@ -32,25 +35,47 @@ export class CheckpointsService {
     }
   }
 
-  async scanCheckpoint(currentUser: any, dto: ScanCheckpointDto) {
+  private async resolvePosId(
+    currentUser: any,
+    providedPosId?: string,
+  ): Promise<string> {
     const operatorUserIdStr = String(currentUser.id);
-    if (currentUser.role === Role.regional || currentUser.role === 'regional') {
-      const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
-      if (parsedOperatorId) {
-        const assignedPos = await this.prisma.pickupPoint.findFirst({
-          where: {
-            id: this.safeParseBigInt(dto.posId) || BigInt(0),
-            operatorId: parsedOperatorId,
-          },
-        });
+    const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
 
-        if (!assignedPos) {
-          throw new ForbiddenException(
-            'Anda tidak memiliki otoritas bertugas di Pos Checkpoint ini.',
-          );
-        }
+    const assignedPos = await this.prisma.pickupPoint.findFirst({
+      where: { operatorId: parsedOperatorId },
+    });
+
+    if (assignedPos) {
+      return assignedPos.id.toString();
+    }
+
+    const fallbackPos = await this.prisma.pickupPoint.findFirst({
+      where: { isActive: true },
+      orderBy: { id: 'asc' },
+    });
+
+    if (fallbackPos) {
+      return fallbackPos.id.toString();
+    }
+
+    if (providedPosId) {
+      const targetPos = await this.prisma.pickupPoint.findUnique({
+        where: { id: BigInt(providedPosId) },
+      });
+      if (targetPos) {
+        return targetPos.id.toString();
       }
     }
+
+    throw new BadRequestException(
+      'ID Pos tidak ditemukan. Belum ada Pos Checkpoint aktif yang terdaftar di database.',
+    );
+  }
+
+  async scanCheckpoint(currentUser: any, dto: ScanCheckpointDto) {
+    const targetPosId = await this.resolvePosId(currentUser, dto.posId);
+    const operatorUserIdStr = String(currentUser.id);
 
     const trip = await this.checkpointsRepository.findTripByQr(dto.qrCodeTrip);
     if (!trip) {
@@ -74,6 +99,9 @@ export class CheckpointsService {
       );
     }
 
+    // =========================================================================
+    // 1. CHECK-IN POS ASAL (ORIGIN)
+    // =========================================================================
     if (dto.scanType === ScanType.checkin_origin) {
       if (order.status !== OrderStatus.paid) {
         throw new BadRequestException(
@@ -81,7 +109,7 @@ export class CheckpointsService {
         );
       }
 
-      if (trip.originPointId.toString() !== dto.posId) {
+      if (trip.originPointId.toString() !== targetPosId) {
         throw new BadRequestException(
           'Proses Check-in Origin harus dilakukan di Pos Asal yang sesuai.',
         );
@@ -90,9 +118,29 @@ export class CheckpointsService {
       const log = await this.checkpointsRepository.processCheckinOrigin(
         trip.id,
         order.id,
-        dto.posId,
+        targetPosId,
         operatorUserIdStr,
         dto.securitySealQr,
+        dto.photoUrl,
+      );
+
+      // Siarkan pembaruan real-time ke Customer & Regional Admin via WebSocket
+      const originRegionId = trip.originPoint?.regionId
+        ? trip.originPoint.regionId.toString()
+        : '';
+
+      this.trackingGateway.emitCheckpointScanned(
+        trip.id.toString(),
+        originRegionId,
+        {
+          orderId: order.id.toString(),
+          tripId: trip.id.toString(),
+          scanType: 'checkin_origin',
+          status: 'in_transit',
+          newQrCode: log.order?.qrCodeTicket, // Kode QR fase Pos Tujuan yang baru dirotasi
+          message: 'Check-in Pos Asal selesai. Armada sedang dalam perjalanan.',
+          checkpoint: CheckpointMapper.toResponse(log),
+        },
       );
 
       return {
@@ -102,6 +150,9 @@ export class CheckpointsService {
       };
     }
 
+    // =========================================================================
+    // 2. CHECK-IN POS TUJUAN (DESTINATION) & PENCAIRAN ESCROW
+    // =========================================================================
     if (dto.scanType === ScanType.checkin_destination) {
       if (order.escrowStatus !== EscrowStatus.held) {
         throw new BadRequestException(
@@ -109,7 +160,7 @@ export class CheckpointsService {
         );
       }
 
-      if (trip.destinationPointId.toString() !== dto.posId) {
+      if (trip.destinationPointId.toString() !== targetPosId) {
         throw new BadRequestException(
           'Proses Check-in Destination harus dilakukan di Pos Tujuan yang sesuai.',
         );
@@ -145,7 +196,7 @@ export class CheckpointsService {
         await this.checkpointsRepository.processCheckinDestinationAndReleaseEscrow(
           trip.id,
           order.id,
-          dto.posId,
+          targetPosId,
           operatorUserIdStr,
           trip.mitraId,
           order.customerId,
@@ -153,40 +204,48 @@ export class CheckpointsService {
           adminFeePercentage,
         );
 
+      // Siarkan pembaruan real-time ke Customer & Regional Admin via WebSocket
+      const destRegionId = trip.destinationPoint?.regionId
+        ? trip.destinationPoint.regionId.toString()
+        : '';
+
+      this.trackingGateway.emitCheckpointScanned(
+        trip.id.toString(),
+        destRegionId,
+        {
+          orderId: order.id.toString(),
+          tripId: trip.id.toString(),
+          scanType: 'checkin_destination',
+          status: 'completed',
+          message:
+            order.type === OrderType.parcel
+              ? 'Barang telah berhasil diserah-terimakan di Pos Tujuan.'
+              : 'Penumpang telah tiba di Pos Tujuan. Perjalanan selesai.',
+          checkpoint: CheckpointMapper.toResponse(log),
+        },
+      );
+
       return {
         message:
-          'Check-in Pos Tujuan & Penyerahan berhasil. Transaksi Selesai, Dana Escrow telah dicairkan ke Wallet Mitra, dan Poin Reward berhasil ditambahkan.',
+          order.type === OrderType.parcel
+            ? 'Check-in Pos Tujuan & Penyerahan Barang berhasil. Dana Escrow dicairkan.'
+            : 'Check-in Pos Tujuan Penumpang berhasil. Transaksi Selesai & Dana Escrow dicairkan ke Wallet Mitra.',
         checkpoint: CheckpointMapper.toResponse(log),
       };
     }
-
-    throw new BadRequestException('Jenis Scan Type tidak valid.');
   }
 
+  // =========================================================================
+  // 3. FORCE RELEASE MANUAL OLEH OPERATOR POS
+  // =========================================================================
   async manualForceReleaseByOperator(
     currentUser: any,
     qrCodeTicket: string,
-    posId: string,
+    posId?: string,
     otpClaim?: string,
   ) {
+    const targetPosId = await this.resolvePosId(currentUser, posId);
     const operatorUserIdStr = String(currentUser.id);
-
-    const assignedPos = await this.prisma.pickupPoint.findFirst({
-      where: {
-        id: this.safeParseBigInt(posId) || BigInt(0),
-        operatorId: this.safeParseBigInt(operatorUserIdStr),
-      },
-    });
-
-    if (
-      !assignedPos &&
-      currentUser.role !== Role.admin &&
-      currentUser.role !== Role.regional
-    ) {
-      throw new ForbiddenException(
-        'Anda tidak memiliki otoritas bertugas di Pos ini.',
-      );
-    }
 
     const order = await this.checkpointsRepository.findOrderByQr(qrCodeTicket);
     if (!order) {
@@ -201,6 +260,7 @@ export class CheckpointsService {
 
     const trip = await this.prisma.trip.findUnique({
       where: { id: order.tripId },
+      include: { originPoint: true, destinationPoint: true },
     });
 
     if (!trip) {
@@ -232,13 +292,31 @@ export class CheckpointsService {
       await this.checkpointsRepository.processManualForceCompleteAndRelease(
         trip.id,
         order.id,
-        posId,
+        targetPosId,
         operatorUserIdStr,
         trip.mitraId,
         order.customerId,
         totalPriceNum,
         adminFeePercentage,
       );
+
+    // Siarkan pembaruan status force release via WebSocket
+    const destRegionId = trip.destinationPoint?.regionId
+      ? trip.destinationPoint.regionId.toString()
+      : '';
+
+    this.trackingGateway.emitCheckpointScanned(
+      trip.id.toString(),
+      destRegionId,
+      {
+        orderId: order.id.toString(),
+        tripId: trip.id.toString(),
+        scanType: 'checkin_destination',
+        status: 'completed',
+        message: 'Force Check-in manual oleh Operator Pos telah selesai.',
+        checkpoint: CheckpointMapper.toResponse(log),
+      },
+    );
 
     return {
       message:

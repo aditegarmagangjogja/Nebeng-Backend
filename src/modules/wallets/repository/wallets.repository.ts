@@ -96,21 +96,33 @@ export class WalletsRepository {
     const netAmount = amount - platformFee;
 
     return this.prisma.$transaction(async (tx) => {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
       const wallet = await tx.wallet.update({
         where: { id: walletId },
 =======
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const updateResult = await tx.wallet.updateMany({
         where: {
           id: walletId,
           heldEscrowBalance: { gte: amount },
         },
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         data: {
           heldEscrowBalance: { decrement: amount },
           balance: { increment: netAmount },
         },
       });
+
+      if (updateResult.count === 0) {
+        throw new BadRequestException(
+          'Gagal mencairkan Escrow: Saldo Escrow ditahan tidak mencukupi.',
+        );
+      }
 
       await tx.walletTransaction.create({
         data: {
@@ -118,11 +130,16 @@ export class WalletsRepository {
           orderId: parseOrderId,
           amount: netAmount,
           type: TransactionType.escrow_release,
-          description: `Pencairan dana Escrow untuk order #${orderIdStr} (setelah dipotong komisi)`,
+          description: `Pencairan dana Escrow untuk order #${orderIdStr} (net mitra)`,
         },
       });
 
-      return wallet;
+      return tx.wallet.findUnique({
+        where: { id: walletId },
+        include: {
+          transactions: { orderBy: { createdAt: 'desc' }, take: 20 },
+        },
+      });
     });
   }
 
@@ -132,20 +149,32 @@ export class WalletsRepository {
     bankDetails: string,
   ) {
     return this.prisma.$transaction(async (tx) => {
+<<<<<<< HEAD
 <<<<<<< Updated upstream
       const wallet = await tx.wallet.update({
         where: { id: walletId },
 =======
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const updateResult = await tx.wallet.updateMany({
         where: {
           id: walletId,
           balance: { gte: amount },
         },
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         data: {
           balance: { decrement: amount },
         },
       });
+
+      if (updateResult.count === 0) {
+        throw new BadRequestException(
+          'Gagal melakukan penarikan: Saldo utama tidak mencukupi.',
+        );
+      }
 
       const transaction = await tx.walletTransaction.create({
         data: {
@@ -153,6 +182,13 @@ export class WalletsRepository {
           amount,
           type: TransactionType.debit,
           description: `Penarikan saldo (Withdrawal) ke ${bankDetails}`,
+        },
+      });
+
+      const wallet = await tx.wallet.findUnique({
+        where: { id: walletId },
+        include: {
+          transactions: { orderBy: { createdAt: 'desc' }, take: 20 },
         },
       });
 

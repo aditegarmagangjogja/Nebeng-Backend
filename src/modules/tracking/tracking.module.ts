@@ -33,6 +33,6 @@ import { WsJwtAuthGuard } from '../auth/guards/ws-jwt.guard';
     TrackingRepository,
     WsJwtAuthGuard,
   ],
-  exports: [TrackingService],
+  exports: [TrackingService, TrackingGateway],
 })
 export class TrackingModule {}

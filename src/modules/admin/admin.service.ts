@@ -48,7 +48,12 @@ export class AdminService {
   }
 
   async getEscrowLedger(page?: number, limit?: number) {
-    const ledger = await this.adminRepository.getEscrowLedger(page, limit);
+    const validPage = page && page > 0 ? page : 1;
+    const validLimit = limit && limit > 0 ? Math.min(limit, 100) : 29;
+    const ledger = await this.adminRepository.getEscrowLedger(
+      validPage,
+      validLimit,
+    );
     return AdminMapper.toEscrowLedgerResponse(ledger);
   }
 

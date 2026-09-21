@@ -71,6 +71,41 @@
           "Users"
         ]
       },
+      "put": {
+        "operationId": "UserController_updateMyProfilePut",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUserMeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Memperbarui profil dasar akun sendiri (PUT)",
+        "tags": [
+          "Users"
+        ]
+      },
       "delete": {
         "operationId": "UserController_removeMyAccount",
         "parameters": [],
@@ -85,6 +120,24 @@
           }
         ],
         "summary": "Menghapus akun sendiri (Soft Delete & Anonimisasi)",
+        "tags": [
+          "Users"
+        ]
+      },
+      "get": {
+        "operationId": "UserController_getMyProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mendapatkan profil akun yang sedang login",
         "tags": [
           "Users"
         ]
@@ -291,6 +344,17 @@
             "schema": {
               "type": "string"
             }
+<<<<<<< HEAD
+=======
+          },
+          {
+            "name": "regionId",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
           }
         ],
         "responses": {
@@ -1198,6 +1262,25 @@
             "schema": {
               "type": "string"
             }
+<<<<<<< HEAD
+=======
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
           }
         ],
         "responses": {
@@ -1210,7 +1293,11 @@
             "bearer": []
           }
         ],
+<<<<<<< HEAD
         "summary": "Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah",
+=======
+        "summary": "Daftar semua kendaraan mitra (Admin/Regional Only), opsional difilter per wilayah & paginasi",
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         "tags": [
           "Kendaraan"
         ]
@@ -1383,11 +1470,20 @@
         "operationId": "TripsController_getTrips",
         "parameters": [
           {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (Nama Pos / Wilayah / Region)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "originPointId",
             "required": false,
             "in": "query",
+            "description": "Filter ID Pos Asal",
             "schema": {
-              "example": "10",
               "type": "string"
             }
           },
@@ -1395,36 +1491,25 @@
             "name": "destinationPointId",
             "required": false,
             "in": "query",
+            "description": "Filter ID Pos Tujuan",
             "schema": {
-              "example": "20",
               "type": "string"
             }
           },
           {
-            "name": "date",
+            "name": "posId",
             "required": false,
             "in": "query",
+            "description": "Filter ID Pos (Asal atau Tujuan)",
             "schema": {
-              "example": "2026-08-25",
               "type": "string"
-            }
-          },
-          {
-            "name": "vehicleType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "motor",
-                "mobil"
-              ]
             }
           },
           {
             "name": "status",
             "required": false,
             "in": "query",
+            "description": "Filter Status Trip",
             "schema": {
               "type": "string",
               "enum": [
@@ -1436,6 +1521,63 @@
                 "cancelled"
               ]
             }
+          },
+          {
+            "name": "vehicleType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Kendaraan",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tanggal Keberangkatan (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-08-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman data (default: 1)",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (default: 10)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "serviceType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Layanan (motor, mobil, barang)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil",
+                "barang"
+              ]
+            }
           }
         ],
         "responses": {
@@ -1444,6 +1586,137 @@
           }
         },
         "summary": "Pencarian & Listing Trip (Publik / Customer)",
+        "tags": [
+          "Trips"
+        ]
+      }
+    },
+    "/api/trips/me": {
+      "get": {
+        "operationId": "TripsController_getMyTrips",
+        "parameters": [
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Kata kunci pencarian (Nama Pos / Wilayah / Region)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "originPointId",
+            "required": false,
+            "in": "query",
+            "description": "Filter ID Pos Asal",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "destinationPointId",
+            "required": false,
+            "in": "query",
+            "description": "Filter ID Pos Tujuan",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "posId",
+            "required": false,
+            "in": "query",
+            "description": "Filter ID Pos (Asal atau Tujuan)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Filter Status Trip",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "scheduled",
+                "in_origin_pos",
+                "in_transit",
+                "arrived_dest_pos",
+                "completed",
+                "cancelled"
+              ]
+            }
+          },
+          {
+            "name": "vehicleType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Kendaraan",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tanggal Keberangkatan (YYYY-MM-DD)",
+            "schema": {
+              "example": "2026-08-25",
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Halaman data (default: 1)",
+            "schema": {
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Jumlah data per halaman (default: 10)",
+            "schema": {
+              "example": 10,
+              "type": "number"
+            }
+          },
+          {
+            "name": "serviceType",
+            "required": false,
+            "in": "query",
+            "description": "Filter Tipe Layanan (motor, mobil, barang)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "motor",
+                "mobil",
+                "barang"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar trip mitra berhasil diambil"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daftar Trip milik Mitra yang sedang login",
         "tags": [
           "Trips"
         ]
@@ -1672,6 +1945,16 @@
       "post": {
         "operationId": "WalletsController_withdraw",
         "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawWalletDto"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "Permintaan penarikan saldo berhasil"
@@ -1708,12 +1991,6 @@
         "responses": {
           "201": {
             "description": "Pembayaran berhasil dikonfirmasi"
-          },
-          "400": {
-            "description": "Order bukan milik Anda, PIN salah, atau status order tidak valid"
-          },
-          "404": {
-            "description": "Order tidak ditemukan"
           }
         },
         "security": [
@@ -1721,7 +1998,61 @@
             "bearer": []
           }
         ],
-        "summary": "Simulasi checkout pembayaran order (Customer Only)",
+        "summary": "Checkout pembayaran order (Customer Only)",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/payments/xendit/create-invoice": {
+      "post": {
+        "operationId": "PaymentsController_createXenditInvoice",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateXenditInvoiceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Membuat link pembayaran Xendit Invoice / QRIS (Customer Only)",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
+    "/api/payments/xendit-webhook": {
+      "post": {
+        "operationId": "PaymentsController_handleXenditWebhook",
+        "parameters": [
+          {
+            "name": "x-callback-token",
+            "required": true,
+            "in": "header",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Webhook callback penerima konfirmasi bayar dari Xendit",
         "tags": [
           "Payments"
         ]
@@ -1733,17 +2064,32 @@
         "parameters": [
           {
             "name": "regionId",
-            "required": false,
+            "required": true,
             "in": "query",
-            "description": "Opsional untuk superadmin",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "number"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Daftar transaksi berhasil diambil"
+            "description": ""
           }
         },
         "security": [
@@ -1751,7 +2097,7 @@
             "bearer": []
           }
         ],
-        "summary": "Melihat daftar transaksi wilayah (admin & regional) ",
+        "summary": "Melihat daftar transaksi wilayah (Admin & Regional)",
         "tags": [
           "Payments"
         ]
@@ -1760,7 +2106,28 @@
     "/api/payments/operator-summary": {
       "get": {
         "operationId": "PaymentsController_getOperatorSummary",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 1,
+              "example": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": 10,
+              "example": 10,
+              "type": "number"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": ""
@@ -1978,6 +2345,26 @@
           }
         ],
         "summary": "Memberikan ulasan/rating untuk trip yang sudah selesai",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/api/reviews/me": {
+      "get": {
+        "operationId": "ReviewsController_getMyRatingSummary",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Ringkasan ulasan mitra ditemukan"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat ringkasan dan daftar ulasan mitra yang sedang login",
         "tags": [
           "Reviews"
         ]
@@ -2365,6 +2752,267 @@
           "Admin Governance"
         ]
       }
+    },
+    "/api/merchandises": {
+      "get": {
+        "operationId": "MerchandiseController_getCatalog",
+        "parameters": [
+          {
+            "name": "all",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat katalog merchandise yang tersedia",
+        "tags": [
+          "Merchandises"
+        ]
+      },
+      "post": {
+        "operationId": "MerchandiseController_createItem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMerchandiseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Menambah item merchandise baru",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/item/{id}": {
+      "get": {
+        "operationId": "MerchandiseController_getItemDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat detail satu item merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/redeem": {
+      "post": {
+        "operationId": "MerchandiseController_redeem",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemMerchandiseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Customer menukarkan reward points dengan merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/my-redemptions": {
+      "get": {
+        "operationId": "MerchandiseController_getMyRedemptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Customer melihat riwayat klaim merchandise miliknya",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/{id}": {
+      "patch": {
+        "operationId": "MerchandiseController_updateItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMerchandiseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Mengupdate item merchandise / stok",
+        "tags": [
+          "Merchandises"
+        ]
+      },
+      "delete": {
+        "operationId": "MerchandiseController_deleteItem",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Menonaktifkan item merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/admin/redemptions": {
+      "get": {
+        "operationId": "MerchandiseController_getAllRedemptions",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Melihat seluruh antrean klaim merchandise",
+        "tags": [
+          "Merchandises"
+        ]
+      }
+    },
+    "/api/merchandises/admin/redemptions/{id}/status": {
+      "patch": {
+        "operationId": "MerchandiseController_updateRedemptionStatus",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRedemptionStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "[Superadmin] Mengupdate status klaim dan no resi pengiriman",
+        "tags": [
+          "Merchandises"
+        ]
+      }
     }
   },
   "info": {
@@ -2460,6 +3108,10 @@
             "type": "string",
             "example": "1029391032211"
           },
+          "nik": {
+            "type": "object",
+            "example": "3374123456789001"
+          },
           "role": {
             "type": "string",
             "enum": [
@@ -2497,9 +3149,38 @@
             "type": "number",
             "example": 0
           },
+          "bankName": {
+            "type": "object",
+            "example": "BCA"
+          },
+          "bankAccountNumber": {
+            "type": "object",
+            "example": "1234567890"
+          },
+          "bankAccountHolder": {
+            "type": "object",
+            "example": "Budi Santoso"
+          },
+          "hasPin": {
+            "type": "boolean"
+          },
+          "assignedPickupPointId": {
+            "type": "object",
+            "example": "10"
+          },
+          "assignedPickupPointName": {
+            "type": "object",
+            "example": "Pos Malioboro"
+          },
           "createdAt": {
             "format": "date-time",
             "type": "string"
+          },
+          "rating": {
+            "type": "object"
+          },
+          "totalReviews": {
+            "type": "number"
           },
           "updatedAt": {
             "format": "date-time",
@@ -2515,7 +3196,10 @@
           "status",
           "statusVerification",
           "rewardPoints",
+          "hasPin",
           "createdAt",
+          "rating",
+          "totalReviews",
           "updatedAt"
         ]
       },
@@ -2819,6 +3503,22 @@
             "items": {
               "$ref": "#/components/schemas/VerifiactionFileDto"
             }
+          },
+          "ktpNumber": {
+            "type": "string",
+            "example": "3374123456789001"
+          },
+          "fullNameKtp": {
+            "type": "string",
+            "example": "Budi Santoso"
+          },
+          "addressKtp": {
+            "type": "string",
+            "example": "Jl. Merdeka No. 12, Yogyakarta"
+          },
+          "faceImageUrl": {
+            "type": "string",
+            "example": "/uploads/verifications/face-123.jpg"
           }
         },
         "required": [
@@ -3164,6 +3864,16 @@
             "type": "number",
             "example": 50,
             "description": "Custom max berat bagasi kg (Opsional override untuk mobil)"
+          },
+          "serviceType": {
+            "type": "string",
+            "enum": [
+              "motor",
+              "mobil",
+              "barang"
+            ],
+            "example": "mobil",
+            "description": "Tipe layanan (motor, mobil, barang)"
           }
         },
         "required": [
@@ -3174,7 +3884,8 @@
           "departureTime",
           "price",
           "totalSeats",
-          "maxWeightCapacityKg"
+          "maxWeightCapacityKg",
+          "serviceType"
         ]
       },
       "UpdateTripDto": {
@@ -3292,6 +4003,19 @@
           "type"
         ]
       },
+      "WithdrawWalletDto": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": "number",
+            "example": 50000,
+            "description": "Jumlah saldo yang ingin ditarik"
+          }
+        },
+        "required": [
+          "amount"
+        ]
+      },
       "CheckoutPaymentDto": {
         "type": "object",
         "properties": {
@@ -3312,7 +4036,21 @@
         },
         "required": [
           "orderId",
-          "paymentGateway"
+          "paymentGateway",
+          "pin"
+        ]
+      },
+      "CreateXenditInvoiceDto": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID Order yang akan dibayar"
+          }
+        },
+        "required": [
+          "orderId"
         ]
       },
       "ScanCheckpointDto": {
@@ -3350,6 +4088,11 @@
             "type": "string",
             "example": "SEAL-2981312",
             "description": "Nomor stiker segel QR"
+          },
+          "photoUrl": {
+            "type": "string",
+            "example": "https://cdn.example.com/item.jpg",
+            "description": "URL foto kondisi barang"
           }
         },
         "required": [
@@ -3590,6 +4333,131 @@
         },
         "required": [
           "pricePerKm"
+        ]
+      },
+      "RedeemMerchandiseDto": {
+        "type": "object",
+        "properties": {
+          "merchandiseId": {
+            "type": "string",
+            "example": "1",
+            "description": "ID Merchandise yang ingin ditukarkan"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "Budi Santoso",
+            "description": "Nama penerima barang"
+          },
+          "recipientPhone": {
+            "type": "string",
+            "example": "081234567890",
+            "description": "Nomor telepon aktif penerima"
+          },
+          "shippingAddress": {
+            "type": "string",
+            "example": "Jl. Slamet Riyadi No. 12, Surakarta",
+            "description": "Alamat pengiriman fisik"
+          },
+          "pickupPosId": {
+            "type": "string",
+            "example": "2",
+            "description": "ID Pos Checkpoint jika memilih ambil mandiri di Pos"
+          }
+        },
+        "required": [
+          "merchandiseId",
+          "recipientName",
+          "recipientPhone"
+        ]
+      },
+      "CreateMerchandiseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Tumbler Eksklusif Nebeng",
+            "description": "Nama merchandise"
+          },
+          "description": {
+            "type": "string",
+            "example": "Tumbler stainless tahan panas/dingin 500ml",
+            "description": "Deskripsi merchandise"
+          },
+          "pointsRequired": {
+            "type": "number",
+            "example": 250,
+            "description": "Jumlah poin yang dibutuhkan"
+          },
+          "stock": {
+            "type": "number",
+            "example": 50,
+            "description": "Stok awal barang"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://cdn.nebeng.id/images/tumbler.png",
+            "description": "URL foto merchandise"
+          }
+        },
+        "required": [
+          "name",
+          "pointsRequired",
+          "stock"
+        ]
+      },
+      "UpdateMerchandiseDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Tumbler Eksklusif Nebeng",
+            "description": "Nama merchandise"
+          },
+          "description": {
+            "type": "string",
+            "example": "Tumbler stainless tahan panas/dingin 500ml",
+            "description": "Deskripsi merchandise"
+          },
+          "pointsRequired": {
+            "type": "number",
+            "example": 250,
+            "description": "Jumlah poin yang dibutuhkan"
+          },
+          "stock": {
+            "type": "number",
+            "example": 50,
+            "description": "Stok awal barang"
+          },
+          "imageUrl": {
+            "type": "string",
+            "example": "https://cdn.nebeng.id/images/tumbler.png",
+            "description": "URL foto merchandise"
+          }
+        }
+      },
+      "UpdateRedemptionStatusDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "processing",
+              "ready_at_pos",
+              "completed",
+              "cancelled",
+              "rejected"
+            ],
+            "example": "processing"
+          },
+          "trackingNumber": {
+            "type": "string",
+            "example": "JNE-REG-892182910",
+            "description": "Nomor resi kurir pengiriman jika dikirim via kurir"
+          }
+        },
+        "required": [
+          "status"
         ]
       }
     }

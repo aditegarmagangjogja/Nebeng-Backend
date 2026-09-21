@@ -3,7 +3,9 @@
 /node_modules
 /build
 
+# Uploaded files
 uploads/avatars/
+uploads/verifications/
 
 # Logs
 logs

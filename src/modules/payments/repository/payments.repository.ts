@@ -24,7 +24,9 @@ export class PaymentsRepository {
     mitraUserIdStr: string,
     paymentGateway: string,
     transactionId: string,
-    amount: number,
+    totalAmount: number,
+    adminFeeAmount: number,
+    netMitraAmount: number,
   ) {
     const parsedOrderId = this.safeParseBigInt(orderIdStr);
     const parsedMitraId = this.safeParseBigInt(mitraUserIdStr);
@@ -53,7 +55,7 @@ export class PaymentsRepository {
           orderId: parsedOrderId,
           paymentGateway,
           transactionId,
-          amount,
+          amount: totalAmount,
           status: PaymentStatus.success,
         },
       });
@@ -69,16 +71,20 @@ export class PaymentsRepository {
         },
       });
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
       let wallet = await tx.wallet.findUnique({
 =======
       let mitraWallet = await tx.wallet.findUnique({
 >>>>>>> Stashed changes
+=======
+      let mitraWallet = await tx.wallet.findUnique({
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
         where: { userId: parsedMitraId },
       });
 
-      if (!wallet) {
-        wallet = await tx.wallet.create({
+      if (!mitraWallet) {
+        mitraWallet = await tx.wallet.create({
           data: {
             userId: parsedMitraId,
             balance: 0,
@@ -88,9 +94,9 @@ export class PaymentsRepository {
       }
 
       const updatedWallet = await tx.wallet.update({
-        where: { id: wallet.id },
+        where: { id: mitraWallet.id },
         data: {
-          heldEscrowBalance: { increment: amount },
+          heldEscrowBalance: { increment: netMitraAmount },
         },
       });
 
@@ -98,14 +104,17 @@ export class PaymentsRepository {
         data: {
           walletId: updatedWallet.id,
           orderId: parsedOrderId,
-          amount,
+          amount: netMitraAmount,
           type: TransactionType.escrow_hold,
-          description: `Dana ditahan Escrow untuk Order #${orderIdStr}`,
+          description: `Dana ditahan Escrow Order #${orderIdStr} (Net Mitra setelah potongan admin)`,
         },
       });
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       const systemAdminIdEnv = process.env.SYSTEM_ADMIN_USER_ID;
       const parsedSystemAdminId = systemAdminIdEnv
         ? this.safeParseBigInt(systemAdminIdEnv)
@@ -145,17 +154,25 @@ export class PaymentsRepository {
         });
       }
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       return { payment, order };
     });
   }
 
-  async getPaymentsByOperator(operatorUserIdStr: string) {
+  async getPaymentsByOperator(
+    operatorUserIdStr: string,
+    page: number = 1,
+    limit: number = 10,
+  ) {
     const parsedOperatorId = this.safeParseBigInt(operatorUserIdStr);
     if (!parsedOperatorId) {
       throw new BadRequestException('Format ID Operator tidak valid');
     }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     // Mencari pembayaran dari trip yang berasal dari PickupPoint yang dikelola operator ini
     return this.prisma.payment.findMany({
@@ -190,6 +207,22 @@ export class PaymentsRepository {
           },
         },
       },
+=======
+    const assignedPos = await this.prisma.pickupPoint.findFirst({
+      where: { operatorId: parsedOperatorId },
+    });
+
+    const skip = (page - 1) * limit;
+
+    const whereCondition = {
+      order: {
+        trip: {
+          originPoint: {
+            operatorId: parsedOperatorId,
+          },
+        },
+      },
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     };
 
     const [payments, totalItems] = await Promise.all([
@@ -205,13 +238,19 @@ export class PaymentsRepository {
                 include: {
                   originPoint: true,
                 },
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
               },
             },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.payment.count({ where: whereCondition }),
+    ]);
+
+    return { payments, totalItems, assignedPos };
   }
 }

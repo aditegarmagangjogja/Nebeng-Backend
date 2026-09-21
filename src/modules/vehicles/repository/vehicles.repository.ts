@@ -40,6 +40,7 @@ export class VehiclesRepository {
     });
   }
 
+<<<<<<< HEAD
   async findAll(regionId?: string) {
     const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
 
@@ -51,6 +52,29 @@ export class VehiclesRepository {
       where: parsedRegionId ? { user: { regionId: parsedRegionId } } : undefined,
       orderBy: { createdAt: 'desc' },
     });
+=======
+  async findAll(regionId?: string, page: number = 1, limit: number = 30) {
+    const parsedRegionId = regionId ? this.safeParseBigInt(regionId) : null;
+    if (regionId && !parsedRegionId) return { vehicles: [], total: 0 };
+
+    const pageNum = Math.max(1, page);
+    const limitNum = Math.min(100, Math.max(1, limit));
+    const skip = (pageNum - 1) * limitNum;
+
+    const where = parsedRegionId ? { user: { regionId: parsedRegionId } } : {};
+
+    const [vehicles, total] = await Promise.all([
+      this.prisma.vehicle.findMany({
+        where,
+        skip,
+        take: limitNum,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.vehicle.count({ where }),
+    ]);
+
+    return { vehicles, total };
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   }
 
   async findById(id: string) {
@@ -65,6 +89,7 @@ export class VehiclesRepository {
             name: true,
             phone: true,
             statusVerification: true,
+            regionId: true,
           },
         },
       },

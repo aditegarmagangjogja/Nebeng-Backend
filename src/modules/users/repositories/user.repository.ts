@@ -29,17 +29,36 @@ export class UserRepository {
 
     return this.prisma.user.findUnique({
       where: { id: parseId },
+      include: {
+        profile: true,
+        region: true,
+        assignedPickupPoints: true,
+        reviewsReceived: { select: { rating: true } },
+      },
+    });
+  }
+
+  async update(id: string, data: Prisma.UserUpdateInput): Promise<any> {
+    const parseId = this.safeParseBigInt(id);
+    if (!parseId)
+      throw new BadRequestException('Format ID pengguna tidak valid');
+
+    return this.prisma.user.update({
+      where: { id: parseId },
+      data,
       include: { profile: true, region: true },
     });
   }
 
   async findByEmail(email: string): Promise<User | null> {
+    if (!email) return null;
     return this.prisma.user.findUnique({
       where: { email: email.toLocaleLowerCase().trim() },
     });
   }
 
   async findByPhone(phone: string): Promise<User | null> {
+    if (!phone) return null;
     return this.prisma.user.findUnique({
       where: { phone: phone.trim() },
     });
@@ -54,9 +73,9 @@ export class UserRepository {
     });
   }
 
-  // Diperbarui dengan Pagination untuk mencegah lag & beban memori berlebih
   async findAll(
     page: number = 1,
+<<<<<<< HEAD
 <<<<<<< Updated upstream
     limit: number = 50,
   ): Promise<{ users: any[]; total: number }> {
@@ -68,17 +87,38 @@ export class UserRepository {
     status?: string,
     role?: string,
   ): Promise<{ users: any[]; total: number }> {
+=======
+    limit: number = 15,
+    search?: string,
+    status?: string,
+    role?: string,
+    regionId?: string,
+  ): Promise<{ users: any[]; total: number }> {
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     const pageNum = Math.max(1, page);
     const limitNum = Math.min(100, Math.max(1, limit));
     const skip = (pageNum - 1) * limitNum;
 
     const where: Prisma.UserWhereInput = {
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
       status: {
         not: UserStatus.deleted,
       },
     };
 
+<<<<<<< HEAD
+=======
+    if (regionId) {
+      const parsedRegion = this.safeParseBigInt(regionId);
+      if (parsedRegion) {
+        where.regionId = parsedRegion;
+      }
+    }
+
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     if (status && status !== 'All') {
       where.status = status.toLowerCase() as UserStatus;
     }
@@ -102,7 +142,7 @@ export class UserRepository {
       this.prisma.user.findMany({
         where,
         skip,
-        take: limit,
+        take: limitNum,
         include: { profile: true, region: true },
         orderBy: { createdAt: 'desc' },
       }),
@@ -112,6 +152,7 @@ export class UserRepository {
     return { users, total };
   }
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
   async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
     const parseId = this.safeParseBigInt(id);
@@ -140,6 +181,24 @@ export class UserRepository {
 
     return { active, suspended, blocked, total };
 >>>>>>> Stashed changes
+=======
+  async countUsersByStatus(): Promise<{
+    active: number;
+    suspended: number;
+    blocked: number;
+    total: number;
+  }> {
+    const [active, suspended, blocked, total] = await Promise.all([
+      this.prisma.user.count({ where: { status: UserStatus.active } }),
+      this.prisma.user.count({ where: { status: UserStatus.suspended } }),
+      this.prisma.user.count({ where: { status: UserStatus.blocked } }),
+      this.prisma.user.count({
+        where: { status: { not: UserStatus.deleted } },
+      }),
+    ]);
+
+    return { active, suspended, blocked, total };
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
   }
 
   async upsertProfile(userIdStr: string, profileData: any) {
@@ -161,7 +220,7 @@ export class UserRepository {
     refreshToken: string | null,
   ): Promise<User> {
     const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
+    if (!parseId) throw new BadRequestException('Format ID tidak valid');
 
     return this.prisma.user.update({
       where: { id: parseId },
@@ -171,7 +230,7 @@ export class UserRepository {
 
   async updatePin(id: string, pinHash: string): Promise<User> {
     const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
+    if (!parseId) throw new BadRequestException('Format ID tidak valid');
 
     return this.prisma.user.update({
       where: { id: parseId },
@@ -211,7 +270,7 @@ export class UserRepository {
 
   async anonymize(id: string, anonymousId: string): Promise<User> {
     const parseId = this.safeParseBigInt(id);
-    if (!parseId) throw new Error('Invalid ID format');
+    if (!parseId) throw new BadRequestException('Format ID tidak valid');
 
     return this.prisma.$transaction(async (tx) => {
       await tx.userProfile.deleteMany({

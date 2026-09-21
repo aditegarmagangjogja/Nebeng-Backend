@@ -52,10 +52,12 @@ export class TripMapper {
             address: trip.destinationPoint.address,
           }
         : undefined,
+      serviceType: trip.serviceType,
     };
   }
 
-  static toResponseList(trips: any[]) {
+  static toResponseList(trips: any[]): any[] {
+    if (!Array.isArray(trips)) return [];
     return trips.map((t) => this.toResponse(t));
   }
 }

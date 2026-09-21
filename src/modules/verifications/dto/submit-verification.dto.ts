@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { VerificationType } from '../../../generated/prisma/enums';
 import { Type } from 'class-transformer';
 import {
@@ -6,6 +6,7 @@ import {
   IsEnum,
   IsIn,
   IsNotEmpty,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -22,12 +23,9 @@ export class VerifiactionFileDto {
   })
   @IsString()
   @IsNotEmpty()
-  @IsIn(
-    ['image/jpg', 'image/png', 'application/pdf', 'image/jpg', 'image/jpeg'],
-    {
-      message: 'Tipe file tidak valid. hanya diperbolehkan jpep, jpg, png, pdf',
-    },
-  )
+  @IsIn(['image/jpg', 'image/png', 'application/pdf', 'image/jpeg'], {
+    message: 'Tipe file tidak valid. hanya diperbolehkan jpep, jpg, png, pdf',
+  })
   fileType!: string;
 }
 
@@ -42,4 +40,24 @@ export class SumbitVerificationDto {
   @ValidateNested({ each: true })
   @Type(() => VerifiactionFileDto)
   files!: VerifiactionFileDto[];
+
+  @ApiPropertyOptional({ example: '3374123456789001' })
+  @IsOptional()
+  @IsString()
+  ktpNumber?: string;
+
+  @ApiPropertyOptional({ example: 'Budi Santoso' })
+  @IsOptional()
+  @IsString()
+  fullNameKtp?: string;
+
+  @ApiPropertyOptional({ example: 'Jl. Merdeka No. 12, Yogyakarta' })
+  @IsOptional()
+  @IsString()
+  addressKtp?: string;
+
+  @ApiPropertyOptional({ example: '/uploads/verifications/face-123.jpg' })
+  @IsOptional()
+  @IsString()
+  faceImageUrl?: string;
 }

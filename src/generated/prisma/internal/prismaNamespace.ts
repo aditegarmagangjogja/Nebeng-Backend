@@ -419,7 +419,9 @@ export const ModelName = {
   Conversation: 'Conversation',
   Message: 'Message',
   TripReview: 'TripReview',
-  Vehicle: 'Vehicle'
+  Vehicle: 'Vehicle',
+  MerchandiseItem: 'MerchandiseItem',
+  MerchandiseRedemption: 'MerchandiseRedemption'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -435,7 +437,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "region" | "city" | "user" | "userProfile" | "verification" | "verificationFile" | "pickupPoint" | "pricingSetting" | "trip" | "order" | "itemOrder" | "checkpointsLog" | "tripQrSession" | "orderQrSession" | "tripTracking" | "payment" | "wallet" | "walletTransaction" | "rewardTransaction" | "conversation" | "message" | "tripReview" | "vehicle"
+    modelProps: "region" | "city" | "user" | "userProfile" | "verification" | "verificationFile" | "pickupPoint" | "pricingSetting" | "trip" | "order" | "itemOrder" | "checkpointsLog" | "tripQrSession" | "orderQrSession" | "tripTracking" | "payment" | "wallet" | "walletTransaction" | "rewardTransaction" | "conversation" | "message" | "tripReview" | "vehicle" | "merchandiseItem" | "merchandiseRedemption"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1957,6 +1959,138 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    MerchandiseItem: {
+      payload: Prisma.$MerchandiseItemPayload<ExtArgs>
+      fields: Prisma.MerchandiseItemFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MerchandiseItemFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MerchandiseItemFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload>
+        }
+        findFirst: {
+          args: Prisma.MerchandiseItemFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MerchandiseItemFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload>
+        }
+        findMany: {
+          args: Prisma.MerchandiseItemFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload>[]
+        }
+        create: {
+          args: Prisma.MerchandiseItemCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload>
+        }
+        createMany: {
+          args: Prisma.MerchandiseItemCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.MerchandiseItemDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload>
+        }
+        update: {
+          args: Prisma.MerchandiseItemUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload>
+        }
+        deleteMany: {
+          args: Prisma.MerchandiseItemDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MerchandiseItemUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.MerchandiseItemUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseItemPayload>
+        }
+        aggregate: {
+          args: Prisma.MerchandiseItemAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMerchandiseItem>
+        }
+        groupBy: {
+          args: Prisma.MerchandiseItemGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MerchandiseItemGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MerchandiseItemCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MerchandiseItemCountAggregateOutputType> | number
+        }
+      }
+    }
+    MerchandiseRedemption: {
+      payload: Prisma.$MerchandiseRedemptionPayload<ExtArgs>
+      fields: Prisma.MerchandiseRedemptionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.MerchandiseRedemptionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.MerchandiseRedemptionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload>
+        }
+        findFirst: {
+          args: Prisma.MerchandiseRedemptionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.MerchandiseRedemptionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload>
+        }
+        findMany: {
+          args: Prisma.MerchandiseRedemptionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload>[]
+        }
+        create: {
+          args: Prisma.MerchandiseRedemptionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload>
+        }
+        createMany: {
+          args: Prisma.MerchandiseRedemptionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.MerchandiseRedemptionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload>
+        }
+        update: {
+          args: Prisma.MerchandiseRedemptionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload>
+        }
+        deleteMany: {
+          args: Prisma.MerchandiseRedemptionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.MerchandiseRedemptionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.MerchandiseRedemptionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$MerchandiseRedemptionPayload>
+        }
+        aggregate: {
+          args: Prisma.MerchandiseRedemptionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateMerchandiseRedemption>
+        }
+        groupBy: {
+          args: Prisma.MerchandiseRedemptionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MerchandiseRedemptionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.MerchandiseRedemptionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.MerchandiseRedemptionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2139,6 +2273,7 @@ export const TripScalarFieldEnum = {
   remainingWeightCapacityKg: 'remainingWeightCapacityKg',
   qrCodeTrip: 'qrCodeTrip',
   status: 'status',
+  serviceType: 'serviceType',
   mapsPolyline: 'mapsPolyline',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -2156,6 +2291,7 @@ export const OrderScalarFieldEnum = {
   totalItemsCount: 'totalItemsCount',
   totalWeightKg: 'totalWeightKg',
   totalPrice: 'totalPrice',
+  adminFeePercentage: 'adminFeePercentage',
   qrCodeTicket: 'qrCodeTicket',
   otpClaim: 'otpClaim',
   readinessStatus: 'readinessStatus',
@@ -2218,7 +2354,9 @@ export const OrderQrSessionScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   qrToken: 'qrToken',
+  scanPhase: 'scanPhase',
   isUsed: 'isUsed',
+  usedAt: 'usedAt',
   expiredAt: 'expiredAt',
   createdAt: 'createdAt'
 } as const
@@ -2340,6 +2478,39 @@ export const VehicleScalarFieldEnum = {
 } as const
 
 export type VehicleScalarFieldEnum = (typeof VehicleScalarFieldEnum)[keyof typeof VehicleScalarFieldEnum]
+
+
+export const MerchandiseItemScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  pointsRequired: 'pointsRequired',
+  stock: 'stock',
+  imageUrl: 'imageUrl',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MerchandiseItemScalarFieldEnum = (typeof MerchandiseItemScalarFieldEnum)[keyof typeof MerchandiseItemScalarFieldEnum]
+
+
+export const MerchandiseRedemptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  merchandiseId: 'merchandiseId',
+  pointsSpent: 'pointsSpent',
+  recipientName: 'recipientName',
+  recipientPhone: 'recipientPhone',
+  shippingAddress: 'shippingAddress',
+  pickupPosId: 'pickupPosId',
+  status: 'status',
+  trackingNumber: 'trackingNumber',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MerchandiseRedemptionScalarFieldEnum = (typeof MerchandiseRedemptionScalarFieldEnum)[keyof typeof MerchandiseRedemptionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -2514,6 +2685,25 @@ export const VehicleOrderByRelevanceFieldEnum = {
 export type VehicleOrderByRelevanceFieldEnum = (typeof VehicleOrderByRelevanceFieldEnum)[keyof typeof VehicleOrderByRelevanceFieldEnum]
 
 
+export const MerchandiseItemOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  imageUrl: 'imageUrl'
+} as const
+
+export type MerchandiseItemOrderByRelevanceFieldEnum = (typeof MerchandiseItemOrderByRelevanceFieldEnum)[keyof typeof MerchandiseItemOrderByRelevanceFieldEnum]
+
+
+export const MerchandiseRedemptionOrderByRelevanceFieldEnum = {
+  recipientName: 'recipientName',
+  recipientPhone: 'recipientPhone',
+  shippingAddress: 'shippingAddress',
+  trackingNumber: 'trackingNumber'
+} as const
+
+export type MerchandiseRedemptionOrderByRelevanceFieldEnum = (typeof MerchandiseRedemptionOrderByRelevanceFieldEnum)[keyof typeof MerchandiseRedemptionOrderByRelevanceFieldEnum]
+
+
 
 /**
  * Field references
@@ -2664,6 +2854,13 @@ export type EnumTransactionTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'RewardType'
  */
 export type EnumRewardTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RewardType'>
+    
+
+
+/**
+ * Reference to a field of type 'RedemptionStatus'
+ */
+export type EnumRedemptionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RedemptionStatus'>
     
 
 
@@ -2847,6 +3044,8 @@ export type GlobalOmitConfig = {
   message?: Prisma.MessageOmit
   tripReview?: Prisma.TripReviewOmit
   vehicle?: Prisma.VehicleOmit
+  merchandiseItem?: Prisma.MerchandiseItemOmit
+  merchandiseRedemption?: Prisma.MerchandiseRedemptionOmit
 }
 
 /* Types for Logging */

@@ -320,6 +320,7 @@ export type UserWhereInput = {
   reviewsGiven?: Prisma.TripReviewListRelationFilter
   reviewsReceived?: Prisma.TripReviewListRelationFilter
   vehicles?: Prisma.VehicleListRelationFilter
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -354,6 +355,7 @@ export type UserOrderByWithRelationInput = {
   reviewsGiven?: Prisma.TripReviewOrderByRelationAggregateInput
   reviewsReceived?: Prisma.TripReviewOrderByRelationAggregateInput
   vehicles?: Prisma.VehicleOrderByRelationAggregateInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionOrderByRelationAggregateInput
   _relevance?: Prisma.UserOrderByRelevanceInput
 }
 
@@ -392,6 +394,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   reviewsGiven?: Prisma.TripReviewListRelationFilter
   reviewsReceived?: Prisma.TripReviewListRelationFilter
   vehicles?: Prisma.VehicleListRelationFilter
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionListRelationFilter
 }, "id" | "email" | "phone">
 
 export type UserOrderByWithAggregationInput = {
@@ -469,6 +472,7 @@ export type UserCreateInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -502,6 +506,7 @@ export type UserUncheckedCreateInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -535,6 +540,7 @@ export type UserUpdateInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -568,6 +574,7 @@ export type UserUncheckedUpdateInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -1001,6 +1008,20 @@ export type UserUpdateOneRequiredWithoutVehiclesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutVehiclesInput, Prisma.UserUpdateWithoutVehiclesInput>, Prisma.UserUncheckedUpdateWithoutVehiclesInput>
 }
 
+export type UserCreateNestedOneWithoutMerchandiseRedemptionsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMerchandiseRedemptionsInput, Prisma.UserUncheckedCreateWithoutMerchandiseRedemptionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMerchandiseRedemptionsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutMerchandiseRedemptionsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMerchandiseRedemptionsInput, Prisma.UserUncheckedCreateWithoutMerchandiseRedemptionsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMerchandiseRedemptionsInput
+  upsert?: Prisma.UserUpsertWithoutMerchandiseRedemptionsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMerchandiseRedemptionsInput, Prisma.UserUpdateWithoutMerchandiseRedemptionsInput>, Prisma.UserUncheckedUpdateWithoutMerchandiseRedemptionsInput>
+}
+
 export type UserCreateWithoutRegionInput = {
   id?: bigint | number
   name: string
@@ -1031,6 +1052,7 @@ export type UserCreateWithoutRegionInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutRegionInput = {
@@ -1063,6 +1085,7 @@ export type UserUncheckedCreateWithoutRegionInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRegionInput = {
@@ -1142,6 +1165,7 @@ export type UserCreateWithoutProfileInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutProfileInput = {
@@ -1174,6 +1198,7 @@ export type UserUncheckedCreateWithoutProfileInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutProfileInput = {
@@ -1222,6 +1247,7 @@ export type UserUpdateWithoutProfileInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProfileInput = {
@@ -1254,6 +1280,7 @@ export type UserUncheckedUpdateWithoutProfileInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutVerificationsInput = {
@@ -1286,6 +1313,7 @@ export type UserCreateWithoutVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutVerificationsInput = {
@@ -1318,6 +1346,7 @@ export type UserUncheckedCreateWithoutVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutVerificationsInput = {
@@ -1355,6 +1384,7 @@ export type UserCreateWithoutApprovedVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutApprovedVerificationsInput = {
@@ -1387,6 +1417,7 @@ export type UserUncheckedCreateWithoutApprovedVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutApprovedVerificationsInput = {
@@ -1435,6 +1466,7 @@ export type UserUpdateWithoutVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVerificationsInput = {
@@ -1467,6 +1499,7 @@ export type UserUncheckedUpdateWithoutVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutApprovedVerificationsInput = {
@@ -1510,6 +1543,7 @@ export type UserUpdateWithoutApprovedVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutApprovedVerificationsInput = {
@@ -1542,6 +1576,7 @@ export type UserUncheckedUpdateWithoutApprovedVerificationsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAssignedPickupPointsInput = {
@@ -1574,6 +1609,7 @@ export type UserCreateWithoutAssignedPickupPointsInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedPickupPointsInput = {
@@ -1606,6 +1642,7 @@ export type UserUncheckedCreateWithoutAssignedPickupPointsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedPickupPointsInput = {
@@ -1654,6 +1691,7 @@ export type UserUpdateWithoutAssignedPickupPointsInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedPickupPointsInput = {
@@ -1686,6 +1724,7 @@ export type UserUncheckedUpdateWithoutAssignedPickupPointsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutTripsAsMitraInput = {
@@ -1718,6 +1757,7 @@ export type UserCreateWithoutTripsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutTripsAsMitraInput = {
@@ -1750,6 +1790,7 @@ export type UserUncheckedCreateWithoutTripsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutTripsAsMitraInput = {
@@ -1798,6 +1839,7 @@ export type UserUpdateWithoutTripsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutTripsAsMitraInput = {
@@ -1830,6 +1872,7 @@ export type UserUncheckedUpdateWithoutTripsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutOrdersAsCustomerInput = {
@@ -1862,6 +1905,7 @@ export type UserCreateWithoutOrdersAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutOrdersAsCustomerInput = {
@@ -1894,6 +1938,7 @@ export type UserUncheckedCreateWithoutOrdersAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutOrdersAsCustomerInput = {
@@ -1942,6 +1987,7 @@ export type UserUpdateWithoutOrdersAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrdersAsCustomerInput = {
@@ -1974,6 +2020,7 @@ export type UserUncheckedUpdateWithoutOrdersAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCheckpointsScannedInput = {
@@ -2006,6 +2053,7 @@ export type UserCreateWithoutCheckpointsScannedInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCheckpointsScannedInput = {
@@ -2038,6 +2086,7 @@ export type UserUncheckedCreateWithoutCheckpointsScannedInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCheckpointsScannedInput = {
@@ -2086,6 +2135,7 @@ export type UserUpdateWithoutCheckpointsScannedInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCheckpointsScannedInput = {
@@ -2118,6 +2168,7 @@ export type UserUncheckedUpdateWithoutCheckpointsScannedInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutWalletInput = {
@@ -2150,6 +2201,7 @@ export type UserCreateWithoutWalletInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutWalletInput = {
@@ -2182,6 +2234,7 @@ export type UserUncheckedCreateWithoutWalletInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutWalletInput = {
@@ -2230,6 +2283,7 @@ export type UserUpdateWithoutWalletInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWalletInput = {
@@ -2262,6 +2316,7 @@ export type UserUncheckedUpdateWithoutWalletInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutRewardTransactionsInput = {
@@ -2294,6 +2349,7 @@ export type UserCreateWithoutRewardTransactionsInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutRewardTransactionsInput = {
@@ -2326,6 +2382,7 @@ export type UserUncheckedCreateWithoutRewardTransactionsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutRewardTransactionsInput = {
@@ -2374,6 +2431,7 @@ export type UserUpdateWithoutRewardTransactionsInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRewardTransactionsInput = {
@@ -2406,6 +2464,7 @@ export type UserUncheckedUpdateWithoutRewardTransactionsInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutConversationsAsCustomerInput = {
@@ -2438,6 +2497,7 @@ export type UserCreateWithoutConversationsAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConversationsAsCustomerInput = {
@@ -2470,6 +2530,7 @@ export type UserUncheckedCreateWithoutConversationsAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConversationsAsCustomerInput = {
@@ -2507,6 +2568,7 @@ export type UserCreateWithoutConversationsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutConversationsAsMitraInput = {
@@ -2539,6 +2601,7 @@ export type UserUncheckedCreateWithoutConversationsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutConversationsAsMitraInput = {
@@ -2587,6 +2650,7 @@ export type UserUpdateWithoutConversationsAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConversationsAsCustomerInput = {
@@ -2619,6 +2683,7 @@ export type UserUncheckedUpdateWithoutConversationsAsCustomerInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutConversationsAsMitraInput = {
@@ -2662,6 +2727,7 @@ export type UserUpdateWithoutConversationsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutConversationsAsMitraInput = {
@@ -2694,6 +2760,7 @@ export type UserUncheckedUpdateWithoutConversationsAsMitraInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutSentMessagesInput = {
@@ -2726,6 +2793,7 @@ export type UserCreateWithoutSentMessagesInput = {
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutSentMessagesInput = {
@@ -2758,6 +2826,7 @@ export type UserUncheckedCreateWithoutSentMessagesInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutSentMessagesInput = {
@@ -2806,6 +2875,7 @@ export type UserUpdateWithoutSentMessagesInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentMessagesInput = {
@@ -2838,6 +2908,7 @@ export type UserUncheckedUpdateWithoutSentMessagesInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutReviewsGivenInput = {
@@ -2870,6 +2941,7 @@ export type UserCreateWithoutReviewsGivenInput = {
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewsGivenInput = {
@@ -2902,6 +2974,7 @@ export type UserUncheckedCreateWithoutReviewsGivenInput = {
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewsGivenInput = {
@@ -2939,6 +3012,7 @@ export type UserCreateWithoutReviewsReceivedInput = {
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutReviewsReceivedInput = {
@@ -2971,6 +3045,7 @@ export type UserUncheckedCreateWithoutReviewsReceivedInput = {
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutReviewsReceivedInput = {
@@ -3019,6 +3094,7 @@ export type UserUpdateWithoutReviewsGivenInput = {
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsGivenInput = {
@@ -3051,6 +3127,7 @@ export type UserUncheckedUpdateWithoutReviewsGivenInput = {
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUpsertWithoutReviewsReceivedInput = {
@@ -3094,6 +3171,7 @@ export type UserUpdateWithoutReviewsReceivedInput = {
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsReceivedInput = {
@@ -3126,6 +3204,7 @@ export type UserUncheckedUpdateWithoutReviewsReceivedInput = {
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutVehiclesInput = {
@@ -3158,6 +3237,7 @@ export type UserCreateWithoutVehiclesInput = {
   sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
   reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutVehiclesInput = {
@@ -3190,6 +3270,7 @@ export type UserUncheckedCreateWithoutVehiclesInput = {
   sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
   reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
   reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutVehiclesInput = {
@@ -3238,6 +3319,7 @@ export type UserUpdateWithoutVehiclesInput = {
   sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutVehiclesInput = {
@@ -3270,6 +3352,155 @@ export type UserUncheckedUpdateWithoutVehiclesInput = {
   sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
+}
+
+export type UserCreateWithoutMerchandiseRedemptionsInput = {
+  id?: bigint | number
+  name: string
+  email: string
+  phone: string
+  password: string
+  role: $Enums.Role
+  status?: $Enums.UserStatus
+  statusVerification?: $Enums.VerificationStatus
+  pinHash?: string | null
+  refreshToken?: string | null
+  avatar?: string | null
+  rewardPoints?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  region?: Prisma.RegionCreateNestedOneWithoutUsersInput
+  profile?: Prisma.UserProfileCreateNestedOneWithoutUserInput
+  wallet?: Prisma.WalletCreateNestedOneWithoutUserInput
+  assignedPickupPoints?: Prisma.PickupPointCreateNestedManyWithoutOperatorInput
+  verifications?: Prisma.VerificationCreateNestedManyWithoutUserInput
+  approvedVerifications?: Prisma.VerificationCreateNestedManyWithoutApprovedByUserInput
+  tripsAsMitra?: Prisma.TripCreateNestedManyWithoutMitraInput
+  ordersAsCustomer?: Prisma.OrderCreateNestedManyWithoutCustomerInput
+  checkpointsScanned?: Prisma.CheckpointsLogCreateNestedManyWithoutScannedByUserInput
+  rewardTransactions?: Prisma.RewardTransactionCreateNestedManyWithoutUserInput
+  conversationsAsCustomer?: Prisma.ConversationCreateNestedManyWithoutCustomerInput
+  conversationsAsMitra?: Prisma.ConversationCreateNestedManyWithoutMitraInput
+  sentMessages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+  reviewsGiven?: Prisma.TripReviewCreateNestedManyWithoutReviewerInput
+  reviewsReceived?: Prisma.TripReviewCreateNestedManyWithoutRevieweeInput
+  vehicles?: Prisma.VehicleCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutMerchandiseRedemptionsInput = {
+  id?: bigint | number
+  regionId?: bigint | number | null
+  name: string
+  email: string
+  phone: string
+  password: string
+  role: $Enums.Role
+  status?: $Enums.UserStatus
+  statusVerification?: $Enums.VerificationStatus
+  pinHash?: string | null
+  refreshToken?: string | null
+  avatar?: string | null
+  rewardPoints?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  profile?: Prisma.UserProfileUncheckedCreateNestedOneWithoutUserInput
+  wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput
+  assignedPickupPoints?: Prisma.PickupPointUncheckedCreateNestedManyWithoutOperatorInput
+  verifications?: Prisma.VerificationUncheckedCreateNestedManyWithoutUserInput
+  approvedVerifications?: Prisma.VerificationUncheckedCreateNestedManyWithoutApprovedByUserInput
+  tripsAsMitra?: Prisma.TripUncheckedCreateNestedManyWithoutMitraInput
+  ordersAsCustomer?: Prisma.OrderUncheckedCreateNestedManyWithoutCustomerInput
+  checkpointsScanned?: Prisma.CheckpointsLogUncheckedCreateNestedManyWithoutScannedByUserInput
+  rewardTransactions?: Prisma.RewardTransactionUncheckedCreateNestedManyWithoutUserInput
+  conversationsAsCustomer?: Prisma.ConversationUncheckedCreateNestedManyWithoutCustomerInput
+  conversationsAsMitra?: Prisma.ConversationUncheckedCreateNestedManyWithoutMitraInput
+  sentMessages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+  reviewsGiven?: Prisma.TripReviewUncheckedCreateNestedManyWithoutReviewerInput
+  reviewsReceived?: Prisma.TripReviewUncheckedCreateNestedManyWithoutRevieweeInput
+  vehicles?: Prisma.VehicleUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutMerchandiseRedemptionsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMerchandiseRedemptionsInput, Prisma.UserUncheckedCreateWithoutMerchandiseRedemptionsInput>
+}
+
+export type UserUpsertWithoutMerchandiseRedemptionsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMerchandiseRedemptionsInput, Prisma.UserUncheckedUpdateWithoutMerchandiseRedemptionsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMerchandiseRedemptionsInput, Prisma.UserUncheckedCreateWithoutMerchandiseRedemptionsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMerchandiseRedemptionsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMerchandiseRedemptionsInput, Prisma.UserUncheckedUpdateWithoutMerchandiseRedemptionsInput>
+}
+
+export type UserUpdateWithoutMerchandiseRedemptionsInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  statusVerification?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  pinHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rewardPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  region?: Prisma.RegionUpdateOneWithoutUsersNestedInput
+  profile?: Prisma.UserProfileUpdateOneWithoutUserNestedInput
+  wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput
+  assignedPickupPoints?: Prisma.PickupPointUpdateManyWithoutOperatorNestedInput
+  verifications?: Prisma.VerificationUpdateManyWithoutUserNestedInput
+  approvedVerifications?: Prisma.VerificationUpdateManyWithoutApprovedByUserNestedInput
+  tripsAsMitra?: Prisma.TripUpdateManyWithoutMitraNestedInput
+  ordersAsCustomer?: Prisma.OrderUpdateManyWithoutCustomerNestedInput
+  checkpointsScanned?: Prisma.CheckpointsLogUpdateManyWithoutScannedByUserNestedInput
+  rewardTransactions?: Prisma.RewardTransactionUpdateManyWithoutUserNestedInput
+  conversationsAsCustomer?: Prisma.ConversationUpdateManyWithoutCustomerNestedInput
+  conversationsAsMitra?: Prisma.ConversationUpdateManyWithoutMitraNestedInput
+  sentMessages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+  reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
+  reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
+  vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMerchandiseRedemptionsInput = {
+  id?: Prisma.BigIntFieldUpdateOperationsInput | bigint | number
+  regionId?: Prisma.NullableBigIntFieldUpdateOperationsInput | bigint | number | null
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  status?: Prisma.EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+  statusVerification?: Prisma.EnumVerificationStatusFieldUpdateOperationsInput | $Enums.VerificationStatus
+  pinHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  refreshToken?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatar?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rewardPoints?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  profile?: Prisma.UserProfileUncheckedUpdateOneWithoutUserNestedInput
+  wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput
+  assignedPickupPoints?: Prisma.PickupPointUncheckedUpdateManyWithoutOperatorNestedInput
+  verifications?: Prisma.VerificationUncheckedUpdateManyWithoutUserNestedInput
+  approvedVerifications?: Prisma.VerificationUncheckedUpdateManyWithoutApprovedByUserNestedInput
+  tripsAsMitra?: Prisma.TripUncheckedUpdateManyWithoutMitraNestedInput
+  ordersAsCustomer?: Prisma.OrderUncheckedUpdateManyWithoutCustomerNestedInput
+  checkpointsScanned?: Prisma.CheckpointsLogUncheckedUpdateManyWithoutScannedByUserNestedInput
+  rewardTransactions?: Prisma.RewardTransactionUncheckedUpdateManyWithoutUserNestedInput
+  conversationsAsCustomer?: Prisma.ConversationUncheckedUpdateManyWithoutCustomerNestedInput
+  conversationsAsMitra?: Prisma.ConversationUncheckedUpdateManyWithoutMitraNestedInput
+  sentMessages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+  reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
+  reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
+  vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyRegionInput = {
@@ -3319,6 +3550,7 @@ export type UserUpdateWithoutRegionInput = {
   reviewsGiven?: Prisma.TripReviewUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRegionInput = {
@@ -3351,6 +3583,7 @@ export type UserUncheckedUpdateWithoutRegionInput = {
   reviewsGiven?: Prisma.TripReviewUncheckedUpdateManyWithoutReviewerNestedInput
   reviewsReceived?: Prisma.TripReviewUncheckedUpdateManyWithoutRevieweeNestedInput
   vehicles?: Prisma.VehicleUncheckedUpdateManyWithoutUserNestedInput
+  merchandiseRedemptions?: Prisma.MerchandiseRedemptionUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateManyWithoutRegionInput = {
@@ -3389,6 +3622,7 @@ export type UserCountOutputType = {
   reviewsGiven: number
   reviewsReceived: number
   vehicles: number
+  merchandiseRedemptions: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -3405,6 +3639,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   reviewsGiven?: boolean | UserCountOutputTypeCountReviewsGivenArgs
   reviewsReceived?: boolean | UserCountOutputTypeCountReviewsReceivedArgs
   vehicles?: boolean | UserCountOutputTypeCountVehiclesArgs
+  merchandiseRedemptions?: boolean | UserCountOutputTypeCountMerchandiseRedemptionsArgs
 }
 
 /**
@@ -3508,6 +3743,13 @@ export type UserCountOutputTypeCountVehiclesArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.VehicleWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMerchandiseRedemptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MerchandiseRedemptionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -3541,6 +3783,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   reviewsGiven?: boolean | Prisma.User$reviewsGivenArgs<ExtArgs>
   reviewsReceived?: boolean | Prisma.User$reviewsReceivedArgs<ExtArgs>
   vehicles?: boolean | Prisma.User$vehiclesArgs<ExtArgs>
+  merchandiseRedemptions?: boolean | Prisma.User$merchandiseRedemptionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -3582,6 +3825,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   reviewsGiven?: boolean | Prisma.User$reviewsGivenArgs<ExtArgs>
   reviewsReceived?: boolean | Prisma.User$reviewsReceivedArgs<ExtArgs>
   vehicles?: boolean | Prisma.User$vehiclesArgs<ExtArgs>
+  merchandiseRedemptions?: boolean | Prisma.User$merchandiseRedemptionsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 
@@ -3604,6 +3848,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     reviewsGiven: Prisma.$TripReviewPayload<ExtArgs>[]
     reviewsReceived: Prisma.$TripReviewPayload<ExtArgs>[]
     vehicles: Prisma.$VehiclePayload<ExtArgs>[]
+    merchandiseRedemptions: Prisma.$MerchandiseRedemptionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: bigint
@@ -3977,6 +4222,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   reviewsGiven<T extends Prisma.User$reviewsGivenArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reviewsGivenArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TripReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   reviewsReceived<T extends Prisma.User$reviewsReceivedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$reviewsReceivedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TripReviewPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   vehicles<T extends Prisma.User$vehiclesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$vehiclesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VehiclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  merchandiseRedemptions<T extends Prisma.User$merchandiseRedemptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$merchandiseRedemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MerchandiseRedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4735,6 +4981,30 @@ export type User$vehiclesArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.VehicleScalarFieldEnum | Prisma.VehicleScalarFieldEnum[]
+}
+
+/**
+ * User.merchandiseRedemptions
+ */
+export type User$merchandiseRedemptionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the MerchandiseRedemption
+   */
+  select?: Prisma.MerchandiseRedemptionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the MerchandiseRedemption
+   */
+  omit?: Prisma.MerchandiseRedemptionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MerchandiseRedemptionInclude<ExtArgs> | null
+  where?: Prisma.MerchandiseRedemptionWhereInput
+  orderBy?: Prisma.MerchandiseRedemptionOrderByWithRelationInput | Prisma.MerchandiseRedemptionOrderByWithRelationInput[]
+  cursor?: Prisma.MerchandiseRedemptionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MerchandiseRedemptionScalarFieldEnum | Prisma.MerchandiseRedemptionScalarFieldEnum[]
 }
 
 /**

@@ -120,6 +120,15 @@ enum RewardType {
   redeem
 }
 
+enum RedemptionStatus {
+  pending
+  processing
+  ready_at_pos
+  completed
+  cancelled
+  rejected
+}
+
 // ------------------------------------------------------
 // 1. REGION & CITY MANAGEMENT
 // ------------------------------------------------------
@@ -192,6 +201,7 @@ model User {
   reviewsGiven              TripReview[]        @relation("ReviewsGiven")
   reviewsReceived           TripReview[]        @relation("ReviewsReceived")
   vehicles                  Vehicle[]
+  merchandiseRedemptions MerchandiseRedemption[]
 
   @@index([role])
   @@index([status])
@@ -269,6 +279,7 @@ model PickupPoint {
   originTrips     Trip[]           @relation("OriginPickupPoint")
   destTrips       Trip[]           @relation("DestPickupPoint")
   checkpointsLogs CheckpointsLog[]
+  merchandiseRedemptions MerchandiseRedemption[]
 
   @@map("pickup_points")
 }
@@ -313,6 +324,7 @@ model Trip {
   remainingWeightCapacityKg Decimal     @map("remaining_weight_capacity_kg") @db.Decimal(8, 2)
   qrCodeTrip                String      @unique @map("qr_code_trip")
   status                    TripStatus  @default(scheduled)
+  serviceType               ServiceType @default(mobil) @map("service_type")
   mapsPolyline              String?     @map("maps_polyline") @db.Text
   createdAt                 DateTime    @default(now()) @map("created_at")
   updatedAt                 DateTime    @updatedAt @map("updated_at")
@@ -340,6 +352,7 @@ model Order {
   totalItemsCount Int          @default(0) @map("total_items_count")
   totalWeightKg   Decimal      @default(0) @map("total_weight_kg") @db.Decimal(8, 2)
   totalPrice      Decimal      @map("total_price") @db.Decimal(10, 2)
+  adminFeePercentage Decimal      @default(10.00) @map("admin_fee_percentage") @db.Decimal(5, 2)
   qrCodeTicket    String       @unique @map("qr_code_ticket")
   otpClaim        String?      @map("otp_claim")
   readinessStatus String?      @map("readiness_status")
@@ -412,14 +425,17 @@ model TripQrSession {
 }
 
 model OrderQrSession {
-  id        BigInt   @id @default(autoincrement())
-  orderId   BigInt   @map("order_id")
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  qrToken   String   @map("qr_token")
-  isUsed    Boolean  @default(false) @map("is_used")
-  expiredAt DateTime @map("expired_at")
-  createdAt DateTime @default(now()) @map("created_at")
+  id        BigInt    @id @default(autoincrement())
+  orderId   BigInt    @map("order_id")
+  order     Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  qrToken   String    @map("qr_token")
+  scanPhase ScanType? @map("scan_phase")
+  isUsed    Boolean   @default(false) @map("is_used")
+  usedAt    DateTime? @map("used_at")
+  expiredAt DateTime  @map("expired_at")
+  createdAt DateTime  @default(now()) @map("created_at")
 
+  @@index([orderId, qrToken])
   @@map("order_qr_sessions")
 }
 
@@ -558,4 +574,45 @@ model Vehicle {
   trips Trip[]
 
   @@map("vehicles")
+}
+
+// ------------------------------------------------------
+// 8. MERCHANDISE & REWARD REDEMPTION
+// ------------------------------------------------------
+
+model MerchandiseItem {
+  id             BigInt   @id @default(autoincrement())
+  name           String
+  description    String?  @db.Text
+  pointsRequired Int      @map("points_required")
+  stock          Int      @default(0)
+  imageUrl       String?  @map("image_url") @db.LongText
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  redemptions    MerchandiseRedemption[]
+
+  @@map("merchandise_items")
+}
+
+model MerchandiseRedemption {
+  id              BigInt           @id @default(autoincrement())
+  userId          BigInt           @map("user_id")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchandiseId   BigInt           @map("merchandise_id")
+  merchandise     MerchandiseItem  @relation(fields: [merchandiseId], references: [id], onDelete: Cascade)
+  pointsSpent     Int              @map("points_spent")
+  recipientName   String           @map("recipient_name")
+  recipientPhone  String           @map("recipient_phone")
+  shippingAddress String?          @map("shipping_address") @db.Text
+  pickupPosId     BigInt?          @map("pickup_pos_id")
+  pickupPos       PickupPoint?     @relation(fields: [pickupPosId], references: [id], onDelete: SetNull)
+  status          RedemptionStatus @default(pending)
+  trackingNumber  String?          @map("tracking_number")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([userId, status])
+  @@map("merchandise_redemptions")
 }

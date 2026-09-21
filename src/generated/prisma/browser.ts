@@ -132,3 +132,13 @@ export type TripReview = Prisma.TripReviewModel
  * 
  */
 export type Vehicle = Prisma.VehicleModel
+/**
+ * Model MerchandiseItem
+ * 
+ */
+export type MerchandiseItem = Prisma.MerchandiseItemModel
+/**
+ * Model MerchandiseRedemption
+ * 
+ */
+export type MerchandiseRedemption = Prisma.MerchandiseRedemptionModel

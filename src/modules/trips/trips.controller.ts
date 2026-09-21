@@ -50,8 +50,27 @@ export class TripsController {
   @Get()
   @ApiOperation({ summary: 'Pencarian & Listing Trip (Publik / Customer)' })
   @ApiResponse({ status: 200, description: 'Daftar Trip ditemukan' })
-  async getTrips(@Query() query: QueryTripDto) {
-    return this.tripsService.getTrips(query);
+  async getTrips(@Query() query: QueryTripDto, @GetUser('id') userId?: string) {
+    return this.tripsService.getTrips(
+      query,
+      userId ? String(userId) : undefined,
+    );
+  }
+
+  @Get('me')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.mitra)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Daftar Trip milik Mitra yang sedang login' })
+  @ApiResponse({
+    status: 200,
+    description: 'Daftar trip mitra berhasil diambil',
+  })
+  async getMyTrips(
+    @GetUser('id') userId: string,
+    @Query() query: QueryTripDto,
+  ) {
+    return this.tripsService.getTripsByMitra(String(userId), query);
   }
 
   @Get(':id')

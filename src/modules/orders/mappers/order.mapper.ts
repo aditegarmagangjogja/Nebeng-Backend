@@ -13,6 +13,9 @@ export class OrderMapper {
       totalItemsCount: Number(order.totalItemsCount),
       totalWeightKg: Number(order.totalWeightKg),
       totalPrice: Number(order.totalPrice),
+      adminFeePercentage: order.adminFeePercentage
+        ? Number(order.adminFeePercentage)
+        : 10,
       qrCodeTicket: order.qrCodeTicket,
       otpClaim: order.otpClaim ?? null,
       readinessStatus: order.readinessStatus ?? null,
@@ -43,6 +46,16 @@ export class OrderMapper {
             securitySealQr: item.securitySealQr ?? null,
             recipientName: item.recipientName,
             recipientPhone: item.recipientPhone,
+          }))
+        : [],
+      checkpointsLogs: order.checkpointsLogs
+        ? order.checkpointsLogs.map((log: any) => ({
+            id: log.id.toString(),
+            scanType: log.scanType,
+            posName: log.pos?.name || 'Pos Checkpoint',
+            posAddress: log.pos?.address || '',
+            operatorName: log.scannedByUser?.name || 'Petugas Pos',
+            createdAt: log.createdAt,
           }))
         : [],
     };

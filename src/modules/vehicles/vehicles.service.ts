@@ -10,6 +10,7 @@ import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { VehicleMapper } from './mappers/vehicle.mapper';
 import { VehicleType } from '../../generated/prisma/enums';
+import { Role } from '../../generated/prisma/enums';
 
 @Injectable()
 export class VehicleService {
@@ -59,16 +60,56 @@ export class VehicleService {
     return vehicles.map(VehicleMapper.toResponse);
   }
 
+<<<<<<< HEAD
   async getAllVehicles(regionId?: string) {
     const vehicles = await this.vehiclesRepository.findAll(regionId);
     return vehicles.map(VehicleMapper.toResponse);
   }
 
   async getVehicleById(idStr: string) {
+=======
+  async getAllVehicles(
+    regionId?: string,
+    page: number = 1,
+    limit: number = 50,
+  ) {
+    const { vehicles, total } = await this.vehiclesRepository.findAll(
+      regionId,
+      page,
+      limit,
+    );
+    return {
+      data: vehicles.map(VehicleMapper.toResponse),
+      meta: {
+        totalData: total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit) || 1,
+        limit,
+      },
+    };
+  }
+
+  async getVehicleById(idStr: string, currentUser?: any) {
+>>>>>>> c35a26545b37948bacaf6b4b98309c967b67e74b
     const vehicle = await this.vehiclesRepository.findById(idStr);
     if (!vehicle) {
       throw new NotFoundException('Data kendaraan tidak ditemukan.');
     }
+
+    if (
+      currentUser?.role === Role.regional ||
+      currentUser?.role === 'regional'
+    ) {
+      const userRegionId = currentUser.regionId?.toString();
+      const vehicleRegionId = vehicle.user?.regionId?.toString();
+
+      if (!userRegionId || userRegionId !== vehicleRegionId) {
+        throw new ForbiddenException(
+          'Anda tidak memiliki akses ke kendaraan di wilayah ini.',
+        );
+      }
+    }
+
     return VehicleMapper.toResponse(vehicle);
   }
 

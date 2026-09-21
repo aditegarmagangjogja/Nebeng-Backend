@@ -44,6 +44,7 @@ export class AdminMapper {
   static toEscrowLedgerResponse(data: {
     totalHeldEscrow: number;
     totalReleasedEscrow: number;
+    pagination: any;
     recentTransactions: any[];
   }) {
     return {
@@ -51,6 +52,7 @@ export class AdminMapper {
         totalHeldEscrow: Number(data.totalHeldEscrow.toFixed(2)),
         totalReleasedEscrow: Number(data.totalReleasedEscrow.toFixed(2)),
       },
+      pagination: data.pagination,
       recentTransactions: data.recentTransactions.map((tx) => ({
         id: tx.id.toString(),
         walletId: tx.walletId.toString(),

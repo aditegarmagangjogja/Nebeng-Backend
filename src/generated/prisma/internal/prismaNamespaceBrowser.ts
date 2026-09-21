@@ -73,7 +73,9 @@ export const ModelName = {
   Conversation: 'Conversation',
   Message: 'Message',
   TripReview: 'TripReview',
-  Vehicle: 'Vehicle'
+  Vehicle: 'Vehicle',
+  MerchandiseItem: 'MerchandiseItem',
+  MerchandiseRedemption: 'MerchandiseRedemption'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -235,6 +237,7 @@ export const TripScalarFieldEnum = {
   remainingWeightCapacityKg: 'remainingWeightCapacityKg',
   qrCodeTrip: 'qrCodeTrip',
   status: 'status',
+  serviceType: 'serviceType',
   mapsPolyline: 'mapsPolyline',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -252,6 +255,7 @@ export const OrderScalarFieldEnum = {
   totalItemsCount: 'totalItemsCount',
   totalWeightKg: 'totalWeightKg',
   totalPrice: 'totalPrice',
+  adminFeePercentage: 'adminFeePercentage',
   qrCodeTicket: 'qrCodeTicket',
   otpClaim: 'otpClaim',
   readinessStatus: 'readinessStatus',
@@ -314,7 +318,9 @@ export const OrderQrSessionScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   qrToken: 'qrToken',
+  scanPhase: 'scanPhase',
   isUsed: 'isUsed',
+  usedAt: 'usedAt',
   expiredAt: 'expiredAt',
   createdAt: 'createdAt'
 } as const
@@ -436,6 +442,39 @@ export const VehicleScalarFieldEnum = {
 } as const
 
 export type VehicleScalarFieldEnum = (typeof VehicleScalarFieldEnum)[keyof typeof VehicleScalarFieldEnum]
+
+
+export const MerchandiseItemScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  pointsRequired: 'pointsRequired',
+  stock: 'stock',
+  imageUrl: 'imageUrl',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MerchandiseItemScalarFieldEnum = (typeof MerchandiseItemScalarFieldEnum)[keyof typeof MerchandiseItemScalarFieldEnum]
+
+
+export const MerchandiseRedemptionScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  merchandiseId: 'merchandiseId',
+  pointsSpent: 'pointsSpent',
+  recipientName: 'recipientName',
+  recipientPhone: 'recipientPhone',
+  shippingAddress: 'shippingAddress',
+  pickupPosId: 'pickupPosId',
+  status: 'status',
+  trackingNumber: 'trackingNumber',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type MerchandiseRedemptionScalarFieldEnum = (typeof MerchandiseRedemptionScalarFieldEnum)[keyof typeof MerchandiseRedemptionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -608,4 +647,23 @@ export const VehicleOrderByRelevanceFieldEnum = {
 } as const
 
 export type VehicleOrderByRelevanceFieldEnum = (typeof VehicleOrderByRelevanceFieldEnum)[keyof typeof VehicleOrderByRelevanceFieldEnum]
+
+
+export const MerchandiseItemOrderByRelevanceFieldEnum = {
+  name: 'name',
+  description: 'description',
+  imageUrl: 'imageUrl'
+} as const
+
+export type MerchandiseItemOrderByRelevanceFieldEnum = (typeof MerchandiseItemOrderByRelevanceFieldEnum)[keyof typeof MerchandiseItemOrderByRelevanceFieldEnum]
+
+
+export const MerchandiseRedemptionOrderByRelevanceFieldEnum = {
+  recipientName: 'recipientName',
+  recipientPhone: 'recipientPhone',
+  shippingAddress: 'shippingAddress',
+  trackingNumber: 'trackingNumber'
+} as const
+
+export type MerchandiseRedemptionOrderByRelevanceFieldEnum = (typeof MerchandiseRedemptionOrderByRelevanceFieldEnum)[keyof typeof MerchandiseRedemptionOrderByRelevanceFieldEnum]
 
