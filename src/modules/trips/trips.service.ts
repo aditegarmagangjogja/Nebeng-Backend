@@ -254,6 +254,17 @@ export class TripsService {
       ];
     }
 
+    if (query.regionId) {
+      const regionIdBigInt = this.safeParseBigInt(query.regionId);
+      filters.AND = filters.AND || [];
+      filters.AND.push({
+        OR: [
+          { originPoint: { regionId: regionIdBigInt } },
+          { destinationPoint: { regionId: regionIdBigInt } },
+        ],
+      });
+    }
+
     if (query.vehicleType) {
       filters.vehicleType = query.vehicleType;
     }

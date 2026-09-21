@@ -1496,6 +1496,15 @@
             }
           },
           {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Filter ID Region (Asal atau Tujuan)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "status",
             "required": false,
             "in": "query",
@@ -1626,6 +1635,15 @@
             "required": false,
             "in": "query",
             "description": "Filter ID Pos (Asal atau Tujuan)",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "regionId",
+            "required": false,
+            "in": "query",
+            "description": "Filter ID Region (Asal atau Tujuan)",
             "schema": {
               "type": "string"
             }

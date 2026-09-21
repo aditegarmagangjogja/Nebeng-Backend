@@ -29,6 +29,11 @@ export class QueryTripDto {
   @IsString()
   posId?: string;
 
+  @ApiPropertyOptional({ description: 'Filter ID Region (Asal atau Tujuan)' })
+  @IsOptional()
+  @IsString()
+  regionId?: string;
+
   @ApiPropertyOptional({ enum: TripStatus, description: 'Filter Status Trip' })
   @IsOptional()
   @IsEnum(TripStatus)
