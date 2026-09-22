@@ -2170,6 +2170,35 @@
         ]
       }
     },
+    "/api/payments/check-status/{orderId}": {
+      "get": {
+        "operationId": "PaymentsController_checkStatus",
+        "parameters": [
+          {
+            "name": "orderId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mengecek status invoice secara manual ke Xendit",
+        "tags": [
+          "Payments"
+        ]
+      }
+    },
     "/api/checkpoints/scan": {
       "post": {
         "operationId": "CheckpointsController_scanCheckpoint",

@@ -6,6 +6,7 @@ import {
   UseGuards,
   Query,
   Headers,
+  Param,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -124,5 +125,17 @@ export class PaymentsController {
       query.page,
       query.limit,
     );
+  }
+
+  @Get('check-status/:orderId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.customer)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Mengecek status invoice secara manual ke Xendit' })
+  async checkStatus(
+    @GetUser('id') userId: string,
+    @Param('orderId') orderId: string,
+  ) {
+    return this.paymentsService.checkInvoiceStatus(orderId);
   }
 }

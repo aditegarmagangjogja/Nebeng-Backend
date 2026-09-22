@@ -107,15 +107,54 @@ export class WalletsService {
       profile.bankAccountHolder || profile.fullNameKtp || 'Pemilik Rekening'
     }`;
 
+    let disbursementId = `WD-${Date.now()}`;
+    const secretKey = process.env.XENDIT_SECRET_KEY || '';
+
+    if (secretKey && !secretKey.includes('dummy')) {
+      const basicAuth = Buffer.from(`${secretKey}:`).toString('base64');
+      try {
+        const response = await fetch('https://api.xendit.co/disbursements', {
+          method: 'POST',
+          headers: {
+            Authorization: `Basic ${basicAuth}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            external_id: disbursementId,
+            bank_code: profile.bankName.toUpperCase(),
+            account_holder_name:
+              profile.bankAccountHolder ||
+              profile.fullNameKtp ||
+              'Pemilik Rekening',
+            account_number: profile.bankAccountNumber,
+            description: `Penarikan Dana Mitra Nebeng - ${profile.bankAccountHolder}`,
+            amount: amount,
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            data.message || 'Gagal terhubung ke Xendit Disbursement',
+          );
+        }
+        disbursementId = data.id;
+      } catch (error: any) {
+        throw new BadRequestException(
+          `Gagal mencairkan dana via Xendit: ${error.message}`,
+        );
+      }
+    }
+
     const { wallet: updatedWallet } =
       await this.walletRepository.processWithdrawal(
         wallet.id,
         amount,
-        bankDetails,
+        bankDetails + ` (TRX ID: ${disbursementId})`,
       );
 
     return {
-      message: `Penarikan saldo sebesar Rp ${amount.toLocaleString('id-ID')} berhasil diproses ke rekening ${bankDetails}.`,
+      message: `Penarikan saldo sebesar Rp ${amount.toLocaleString('id-ID')} berhasil diproses via Xendit ke rekening ${bankDetails}.`,
       wallet: WalletMapper.toResponse(updatedWallet),
     };
   }

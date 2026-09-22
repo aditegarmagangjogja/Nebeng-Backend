@@ -50,6 +50,12 @@ export class TripMapper {
             name: trip.originPoint.name,
             qrCodePos: trip.originPoint.qrCodePos,
             address: trip.originPoint.address,
+            lat: trip.originPoint.latitude
+              ? Number(trip.originPoint.latitude)
+              : null,
+            lng: trip.originPoint.longitude
+              ? Number(trip.originPoint.longitude)
+              : null,
           }
         : undefined,
       destinationPoint: trip.destinationPoint
@@ -58,6 +64,12 @@ export class TripMapper {
             name: trip.destinationPoint.name,
             qrCodePos: trip.destinationPoint.qrCodePos,
             address: trip.destinationPoint.address,
+            lat: trip.destinationPoint.latitude
+              ? Number(trip.destinationPoint.latitude)
+              : null,
+            lng: trip.destinationPoint.longitude
+              ? Number(trip.destinationPoint.longitude)
+              : null,
           }
         : undefined,
       serviceType: trip.serviceType,

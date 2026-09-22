@@ -195,7 +195,9 @@ export class TripsService {
   async getTrips(query: QueryTripDto, currentUserIdStr?: string) {
     const filters: any = {};
 
-    filters.status = query.status ?? TripStatus.scheduled;
+    if (query.status) {
+      filters.status = query.status;
+    }
 
     if (query.date) {
       const cleanDateStr = query.date.split('T')[0];
@@ -206,10 +208,6 @@ export class TripsService {
         gte: startOfDay,
         lte: endOfDay,
       };
-    } else {
-      const todayStr = new Date().toISOString().split('T')[0];
-      const startOfToday = new Date(`${todayStr}T00:00:00.000Z`);
-      filters.departureDate = { gte: startOfToday };
     }
 
     if (query.search) {

@@ -354,6 +354,8 @@ export class PaymentsService {
           invoice_duration: 86400, // Aktif selama 24 jam (dalam detik)
           currency: 'IDR',
           reminder_time: 1,
+          success_redirect_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/customer/tickets`,
+          failure_redirect_url: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/customer/booking`,
         }),
       });
 
@@ -468,5 +470,67 @@ export class PaymentsService {
       message: 'Webhook Xendit berhasil diproses. Saldo masuk ke Escrow Mitra.',
       orderId: orderIdStr,
     };
+  }
+
+  async checkInvoiceStatus(orderIdStr: string) {
+    const parsedOrderId = this.safeParseBigInt(orderIdStr);
+    if (!parsedOrderId) throw new BadRequestException('Invalid Order ID');
+
+    const order = await this.prisma.order.findUnique({
+      where: { id: parsedOrderId },
+    });
+
+    if (!order) throw new NotFoundException('Order tidak ditemukan');
+
+    if (order.status === OrderStatus.paid) {
+      return { status: 'PAID', message: 'Sudah dibayar' };
+    }
+
+    const payment = await this.prisma.payment.findFirst({
+      where: { orderId: parsedOrderId, status: 'pending' },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (
+      !payment ||
+      !payment.transactionId ||
+      payment.paymentGateway !== 'XENDIT'
+    ) {
+      return { status: 'PENDING', message: 'Menunggu pembayaran' };
+    }
+
+    const secretKey = process.env.XENDIT_SECRET_KEY || '';
+    const basicAuth = Buffer.from(`${secretKey}:`).toString('base64');
+
+    try {
+      const response = await fetch(
+        `https://api.xendit.co/v2/invoices/${payment.transactionId}`,
+        {
+          headers: { Authorization: `Basic ${basicAuth}` },
+        },
+      );
+      const data = await response.json();
+
+      if (data.status === 'PAID' || data.status === 'SETTLED') {
+        // Trigger manual sinkronisasi sama seperti Webhook
+        await this.handleXenditWebhook(
+          process.env.XENDIT_CALLBACK_TOKEN || '',
+          {
+            status: 'PAID',
+            external_id: `ORDER-${order.id.toString()}`,
+            payment_method: data.payment_method || 'MANUAL_SYNC',
+            id: data.id,
+          },
+        );
+        return {
+          status: 'PAID',
+          message: 'Sinkronisasi berhasil, tagihan lunas!',
+        };
+      }
+
+      return { status: data.status, message: 'Belum dibayar' };
+    } catch {
+      return { status: 'ERROR', message: 'Gagal mengecek status ke Xendit' };
+    }
   }
 }
