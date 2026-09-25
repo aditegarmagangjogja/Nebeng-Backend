@@ -75,7 +75,8 @@ export const ModelName = {
   TripReview: 'TripReview',
   Vehicle: 'Vehicle',
   MerchandiseItem: 'MerchandiseItem',
-  MerchandiseRedemption: 'MerchandiseRedemption'
+  MerchandiseRedemption: 'MerchandiseRedemption',
+  Banner: 'Banner'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -477,6 +478,20 @@ export const MerchandiseRedemptionScalarFieldEnum = {
 export type MerchandiseRedemptionScalarFieldEnum = (typeof MerchandiseRedemptionScalarFieldEnum)[keyof typeof MerchandiseRedemptionScalarFieldEnum]
 
 
+export const BannerScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  imageUrl: 'imageUrl',
+  linkUrl: 'linkUrl',
+  isActive: 'isActive',
+  targetRole: 'targetRole',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BannerScalarFieldEnum = (typeof BannerScalarFieldEnum)[keyof typeof BannerScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -666,4 +681,13 @@ export const MerchandiseRedemptionOrderByRelevanceFieldEnum = {
 } as const
 
 export type MerchandiseRedemptionOrderByRelevanceFieldEnum = (typeof MerchandiseRedemptionOrderByRelevanceFieldEnum)[keyof typeof MerchandiseRedemptionOrderByRelevanceFieldEnum]
+
+
+export const BannerOrderByRelevanceFieldEnum = {
+  title: 'title',
+  imageUrl: 'imageUrl',
+  linkUrl: 'linkUrl'
+} as const
+
+export type BannerOrderByRelevanceFieldEnum = (typeof BannerOrderByRelevanceFieldEnum)[keyof typeof BannerOrderByRelevanceFieldEnum]
 

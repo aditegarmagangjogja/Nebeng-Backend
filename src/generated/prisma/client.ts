@@ -164,3 +164,8 @@ export type MerchandiseItem = Prisma.MerchandiseItemModel
  * 
  */
 export type MerchandiseRedemption = Prisma.MerchandiseRedemptionModel
+/**
+ * Model Banner
+ * 
+ */
+export type Banner = Prisma.BannerModel

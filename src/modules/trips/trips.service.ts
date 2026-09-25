@@ -378,17 +378,87 @@ export class TripsService {
       }
 
       if (dto.status === TripStatus.cancelled) {
-        const activeOrdersCount = await this.prisma.order.count({
+        const tripIdBigInt = this.safeParseBigInt(idStr);
+        const activeOrders = await this.prisma.order.findMany({
           where: {
-            tripId: this.safeParseBigInt(idStr),
-            status: { notIn: ['cancelled'] },
+            tripId: tripIdBigInt,
+            status: { notIn: ['cancelled', 'completed'] },
           },
         });
 
-        if (activeOrdersCount > 0) {
-          throw new BadRequestException(
-            `Tidak dapat membatalkan trip ini karena sudah ada ${activeOrdersCount} pesanan aktif dari penumpang/pengirim barang.`,
-          );
+        if (activeOrders.length > 0) {
+          // Perform emergency cancellation and refund all passengers
+          await this.prisma.$transaction(async (tx) => {
+            for (const order of activeOrders) {
+              if (
+                order.status === 'paid' ||
+                order.status === 'checked_in_origin' ||
+                order.escrowStatus === 'held'
+              ) {
+                const totalPrice = Number(order.totalPrice);
+                const adminFeePercentage = Number(order.adminFeePercentage || 10);
+                const adminFeeAmount = Math.round((totalPrice * adminFeePercentage) / 100);
+                const netMitraAmount = totalPrice - adminFeeAmount;
+
+                // Refund Customer
+                let customerWallet = await tx.wallet.findUnique({ where: { userId: order.customerId } });
+                if (!customerWallet) {
+                  customerWallet = await tx.wallet.create({ data: { userId: order.customerId, balance: 0, heldEscrowBalance: 0 } });
+                }
+                await tx.wallet.update({
+                  where: { id: customerWallet.id },
+                  data: { balance: { increment: totalPrice } },
+                });
+                await tx.walletTransaction.create({
+                  data: {
+                    walletId: customerWallet.id, orderId: order.id, amount: totalPrice, type: 'credit',
+                    description: `Refund (Trip Dibatalkan Mitra) #${order.id}`,
+                  },
+                });
+
+                // Deduct Escrow
+                const mitraWallet = await tx.wallet.findUnique({ where: { userId: trip.mitraId } });
+                if (mitraWallet) {
+                  await tx.wallet.update({
+                    where: { id: mitraWallet.id },
+                    data: { heldEscrowBalance: { decrement: netMitraAmount } },
+                  });
+                  await tx.walletTransaction.create({
+                    data: {
+                      walletId: mitraWallet.id, orderId: order.id, amount: netMitraAmount, type: 'debit',
+                      description: `Pengembalian Dana Escrow (Trip Dibatalkan) #${order.id}`,
+                    },
+                  });
+                }
+
+                // Deduct Admin Fee
+                const sysAdminEnv = process.env.SYSTEM_ADMIN_USER_ID;
+                const adminId = sysAdminEnv ? BigInt(sysAdminEnv) : null;
+                const adminUser = adminId ? await tx.user.findUnique({ where: { id: adminId } }) : await tx.user.findFirst({ where: { role: 'admin' }, orderBy: { id: 'asc' } });
+                if (adminUser) {
+                  const adminWallet = await tx.wallet.findUnique({ where: { userId: adminUser.id } });
+                  if (adminWallet) {
+                    await tx.wallet.update({
+                      where: { id: adminWallet.id },
+                      data: { balance: { decrement: adminFeeAmount } },
+                    });
+                    await tx.walletTransaction.create({
+                      data: {
+                        walletId: adminWallet.id, orderId: order.id, amount: adminFeeAmount, type: 'debit',
+                        description: `Pengembalian Admin Fee (Trip Dibatalkan) #${order.id}`,
+                      },
+                    });
+                  }
+                }
+              }
+            }
+
+            // Update all active orders to cancelled
+            await tx.order.updateMany({
+              where: { tripId: tripIdBigInt, status: { notIn: ['cancelled', 'completed'] } },
+              data: { status: 'cancelled', escrowStatus: 'refunded' },
+            });
+          });
         }
       }
 

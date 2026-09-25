@@ -35,6 +35,55 @@
         ]
       }
     },
+    "/api/uploads/banners": {
+      "post": {
+        "operationId": "UploadController_uploadBanner",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload file gambar banner",
+        "tags": [
+          "Uploads"
+        ]
+      }
+    },
+    "/api/uploads/verifications/{filename}": {
+      "get": {
+        "operationId": "UploadController_getVerificationFile",
+        "parameters": [
+          {
+            "name": "filename",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Melihat file verifikasi secara aman",
+        "tags": [
+          "Uploads"
+        ]
+      }
+    },
     "/api/users/me": {
       "patch": {
         "operationId": "UserController_updateMyProfile",
@@ -3068,6 +3117,126 @@
           "Merchandises"
         ]
       }
+    },
+    "/api/banners": {
+      "post": {
+        "operationId": "BannersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateBannerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banners"
+        ]
+      },
+      "get": {
+        "operationId": "BannersController_findAll",
+        "parameters": [
+          {
+            "name": "role",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banners"
+        ]
+      }
+    },
+    "/api/banners/{id}": {
+      "get": {
+        "operationId": "BannersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banners"
+        ]
+      },
+      "patch": {
+        "operationId": "BannersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBannerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banners"
+        ]
+      },
+      "delete": {
+        "operationId": "BannersController_remove",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Banners"
+        ]
+      }
     }
   },
   "info": {
@@ -4519,6 +4688,14 @@
         "required": [
           "status"
         ]
+      },
+      "CreateBannerDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdateBannerDto": {
+        "type": "object",
+        "properties": {}
       }
     }
   }

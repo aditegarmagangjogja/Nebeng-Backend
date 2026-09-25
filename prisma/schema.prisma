@@ -134,17 +134,17 @@ enum RedemptionStatus {
 // ------------------------------------------------------
 
 model Region {
-  id          BigInt   @id @default(autoincrement())
-  name        String
-  code        String   @unique
-  pricePerKm  Decimal  @default(3000) @db.Decimal(12, 2)
-  isActive    Boolean  @default(true) @map("is_active")
-  latitude    Decimal? @db.Decimal(10, 8)
-  longitude   Decimal? @db.Decimal(11, 8)
-  radiusKm    Decimal? @default(20.00) @map("radius_km") @db.Decimal(8, 2)
-  boundaryPolygon String? @map("boundary_polygon") @db.LongText
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id              BigInt   @id @default(autoincrement())
+  name            String
+  code            String   @unique
+  pricePerKm      Decimal  @default(3000) @db.Decimal(12, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  latitude        Decimal? @db.Decimal(10, 8)
+  longitude       Decimal? @db.Decimal(11, 8)
+  radiusKm        Decimal? @default(20.00) @map("radius_km") @db.Decimal(8, 2)
+  boundaryPolygon String?  @map("boundary_polygon") @db.LongText
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
 
   users        User[]
   pickupPoints PickupPoint[]
@@ -186,22 +186,22 @@ model User {
   createdAt          DateTime           @default(now()) @map("created_at")
   updatedAt          DateTime           @updatedAt @map("updated_at")
 
-  profile                   UserProfile?
-  wallet                    Wallet?
-  assignedPickupPoints      PickupPoint[]       @relation("OperatorAssigned")
-  verifications             Verification[]      @relation("UserVerifications")
-  approvedVerifications     Verification[]      @relation("AdminApprovals")
-  tripsAsMitra              Trip[]              @relation("MitraTrips")
-  ordersAsCustomer          Order[]             @relation("CustomerOrders")
-  checkpointsScanned        CheckpointsLog[]    @relation("OperatorCheckpoints")
-  rewardTransactions        RewardTransaction[]
-  conversationsAsCustomer   Conversation[]      @relation("CustomerConversations")
-  conversationsAsMitra      Conversation[]      @relation("MitraConversations")
-  sentMessages              Message[]           @relation("SentMessages")
-  reviewsGiven              TripReview[]        @relation("ReviewsGiven")
-  reviewsReceived           TripReview[]        @relation("ReviewsReceived")
-  vehicles                  Vehicle[]
-  merchandiseRedemptions MerchandiseRedemption[]
+  profile                 UserProfile?
+  wallet                  Wallet?
+  assignedPickupPoints    PickupPoint[]           @relation("OperatorAssigned")
+  verifications           Verification[]          @relation("UserVerifications")
+  approvedVerifications   Verification[]          @relation("AdminApprovals")
+  tripsAsMitra            Trip[]                  @relation("MitraTrips")
+  ordersAsCustomer        Order[]                 @relation("CustomerOrders")
+  checkpointsScanned      CheckpointsLog[]        @relation("OperatorCheckpoints")
+  rewardTransactions      RewardTransaction[]
+  conversationsAsCustomer Conversation[]          @relation("CustomerConversations")
+  conversationsAsMitra    Conversation[]          @relation("MitraConversations")
+  sentMessages            Message[]               @relation("SentMessages")
+  reviewsGiven            TripReview[]            @relation("ReviewsGiven")
+  reviewsReceived         TripReview[]            @relation("ReviewsReceived")
+  vehicles                Vehicle[]
+  merchandiseRedemptions  MerchandiseRedemption[]
 
   @@index([role])
   @@index([status])
@@ -276,9 +276,9 @@ model PickupPoint {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
-  originTrips     Trip[]           @relation("OriginPickupPoint")
-  destTrips       Trip[]           @relation("DestPickupPoint")
-  checkpointsLogs CheckpointsLog[]
+  originTrips            Trip[]                  @relation("OriginPickupPoint")
+  destTrips              Trip[]                  @relation("DestPickupPoint")
+  checkpointsLogs        CheckpointsLog[]
   merchandiseRedemptions MerchandiseRedemption[]
 
   @@map("pickup_points")
@@ -342,24 +342,24 @@ model Trip {
 }
 
 model Order {
-  id              BigInt       @id @default(autoincrement())
-  tripId          BigInt       @map("trip_id")
-  trip            Trip         @relation(fields: [tripId], references: [id])
-  customerId      BigInt       @map("customer_id")
-  customer        User         @relation("CustomerOrders", fields: [customerId], references: [id])
-  type            OrderType
-  seatsBooked     Int          @default(0) @map("seats_booked")
-  totalItemsCount Int          @default(0) @map("total_items_count")
-  totalWeightKg   Decimal      @default(0) @map("total_weight_kg") @db.Decimal(8, 2)
-  totalPrice      Decimal      @map("total_price") @db.Decimal(10, 2)
+  id                 BigInt       @id @default(autoincrement())
+  tripId             BigInt       @map("trip_id")
+  trip               Trip         @relation(fields: [tripId], references: [id])
+  customerId         BigInt       @map("customer_id")
+  customer           User         @relation("CustomerOrders", fields: [customerId], references: [id])
+  type               OrderType
+  seatsBooked        Int          @default(0) @map("seats_booked")
+  totalItemsCount    Int          @default(0) @map("total_items_count")
+  totalWeightKg      Decimal      @default(0) @map("total_weight_kg") @db.Decimal(8, 2)
+  totalPrice         Decimal      @map("total_price") @db.Decimal(10, 2)
   adminFeePercentage Decimal      @default(10.00) @map("admin_fee_percentage") @db.Decimal(5, 2)
-  qrCodeTicket    String       @unique @map("qr_code_ticket")
-  otpClaim        String?      @map("otp_claim")
-  readinessStatus String?      @map("readiness_status")
-  status          OrderStatus  @default(pending_payment)
-  escrowStatus    EscrowStatus @default(pending) @map("escrow_status")
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
+  qrCodeTicket       String       @unique @map("qr_code_ticket")
+  otpClaim           String?      @map("otp_claim")
+  readinessStatus    String?      @map("readiness_status")
+  status             OrderStatus  @default(pending_payment)
+  escrowStatus       EscrowStatus @default(pending) @map("escrow_status")
+  createdAt          DateTime     @default(now()) @map("created_at")
+  updatedAt          DateTime     @updatedAt @map("updated_at")
 
   itemOrders         ItemOrder[]
   checkpointsLogs    CheckpointsLog[]
@@ -591,7 +591,7 @@ model MerchandiseItem {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  redemptions    MerchandiseRedemption[]
+  redemptions MerchandiseRedemption[]
 
   @@map("merchandise_items")
 }
@@ -615,4 +615,21 @@ model MerchandiseRedemption {
 
   @@index([userId, status])
   @@map("merchandise_redemptions")
+}
+
+// ------------------------------------------------------
+// 9. BANNERS / ADS
+// ------------------------------------------------------
+
+model Banner {
+  id         BigInt   @id @default(autoincrement())
+  title      String
+  imageUrl   String   @map("image_url") @db.LongText
+  linkUrl    String?  @map("link_url") @db.LongText
+  isActive   Boolean  @default(true) @map("is_active")
+  targetRole Role?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("banners")
 }

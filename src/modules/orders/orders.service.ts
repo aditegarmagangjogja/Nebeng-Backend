@@ -282,6 +282,95 @@ export class OrdersService {
     const weightToRestore = Number(order.totalWeightKg) || 0;
 
     return this.prisma.$transaction(async (tx) => {
+      // 1. Process Refund for Paid/Escrow Orders
+      if (
+        order.status === 'paid' ||
+        order.status === 'checked_in_origin' ||
+        order.escrowStatus === 'held'
+      ) {
+        const totalPrice = Number(order.totalPrice);
+        const adminFeePercentage = Number(order.adminFeePercentage || 10);
+        const adminFeeAmount = Math.round((totalPrice * adminFeePercentage) / 100);
+        const netMitraAmount = totalPrice - adminFeeAmount;
+
+        // a. Refund Customer
+        let customerWallet = await tx.wallet.findUnique({
+          where: { userId: order.customerId },
+        });
+        if (!customerWallet) {
+          customerWallet = await tx.wallet.create({
+            data: { userId: order.customerId, balance: 0, heldEscrowBalance: 0 },
+          });
+        }
+        await tx.wallet.update({
+          where: { id: customerWallet.id },
+          data: { balance: { increment: totalPrice } },
+        });
+        await tx.walletTransaction.create({
+          data: {
+            walletId: customerWallet.id,
+            orderId: order.id,
+            amount: totalPrice,
+            type: 'credit', // Credit back to customer
+            description: `Refund Order Dibatalkan #${order.id}`,
+          },
+        });
+
+        // b. Deduct Escrow from Mitra
+        const mitraWallet = await tx.wallet.findUnique({
+          where: { userId: order.trip.mitraId },
+        });
+        if (mitraWallet) {
+          await tx.wallet.update({
+            where: { id: mitraWallet.id },
+            data: { heldEscrowBalance: { decrement: netMitraAmount } },
+          });
+          await tx.walletTransaction.create({
+            data: {
+              walletId: mitraWallet.id,
+              orderId: order.id,
+              amount: netMitraAmount,
+              type: 'debit',
+              description: `Pengembalian Dana Escrow (Order Dibatalkan) #${order.id}`,
+            },
+          });
+        }
+
+        // c. Deduct Admin Fee from System Admin
+        const systemAdminIdEnv = process.env.SYSTEM_ADMIN_USER_ID;
+        const parsedSystemAdminId = systemAdminIdEnv
+          ? BigInt(systemAdminIdEnv)
+          : null;
+        const adminUser = parsedSystemAdminId
+          ? await tx.user.findUnique({ where: { id: parsedSystemAdminId } })
+          : await tx.user.findFirst({
+              where: { role: 'admin' },
+              orderBy: { id: 'asc' },
+            });
+
+        if (adminUser) {
+          const adminWallet = await tx.wallet.findUnique({
+            where: { userId: adminUser.id },
+          });
+          if (adminWallet) {
+            await tx.wallet.update({
+              where: { id: adminWallet.id },
+              data: { balance: { decrement: adminFeeAmount } },
+            });
+            await tx.walletTransaction.create({
+              data: {
+                walletId: adminWallet.id,
+                orderId: order.id,
+                amount: adminFeeAmount,
+                type: 'debit',
+                description: `Pengembalian Admin Fee (Order Dibatalkan) #${order.id}`,
+              },
+            });
+          }
+        }
+      }
+
+      // 2. Update Order Status
       const updatedCount = await tx.order.updateMany({
         where: {
           id: order.id,
@@ -299,6 +388,7 @@ export class OrdersService {
         );
       }
 
+      // 3. Restore Quota
       await tx.trip.update({
         where: { id: order.tripId },
         data: {
@@ -370,3 +460,4 @@ export class OrdersService {
     return OrderMapper.toResponse(order);
   }
 }
+

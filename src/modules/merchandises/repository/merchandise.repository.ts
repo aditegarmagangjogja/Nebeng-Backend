@@ -149,13 +149,53 @@ export class MerchandiseRepository {
     status: any,
     trackingNumber?: string,
   ) {
-    return this.prisma.merchandiseRedemption.update({
-      where: { id: this.safeBigInt(idStr) },
-      data: {
-        status,
-        ...(trackingNumber ? { trackingNumber } : {}),
-      },
-      include: { merchandise: true, user: true, pickupPos: true },
+    return this.prisma.$transaction(async (tx) => {
+      const redemption = await tx.merchandiseRedemption.findUnique({
+        where: { id: this.safeBigInt(idStr) },
+        include: { merchandise: true },
+      });
+
+      if (!redemption) {
+        throw new BadRequestException('Redemption tidak ditemukan');
+      }
+
+      // Check if transitioning to a terminal failure state
+      if (
+        (status === 'cancelled' || status === 'rejected') &&
+        redemption.status !== 'cancelled' &&
+        redemption.status !== 'rejected'
+      ) {
+        // Restore points
+        await tx.user.update({
+          where: { id: redemption.userId },
+          data: { rewardPoints: { increment: redemption.pointsSpent } },
+        });
+
+        // Log the points restoration
+        await tx.rewardTransaction.create({
+          data: {
+            userId: redemption.userId,
+            points: redemption.pointsSpent,
+            type: RewardType.earn,
+            description: `Pengembalian Poin (Klaim ${status}): ${redemption.merchandise.name}`,
+          },
+        });
+
+        // Restore stock
+        await tx.merchandiseItem.update({
+          where: { id: redemption.merchandiseId },
+          data: { stock: { increment: 1 } },
+        });
+      }
+
+      return tx.merchandiseRedemption.update({
+        where: { id: this.safeBigInt(idStr) },
+        data: {
+          status,
+          ...(trackingNumber ? { trackingNumber } : {}),
+        },
+        include: { merchandise: true, user: true, pickupPos: true },
+      });
     });
   }
 }

@@ -26,6 +26,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { TrackingModule } from './modules/tracking/tracking.module';
 import { UploadController } from './upload.controller';
 import { MerchandiseModule } from './modules/merchandises/merchandise.module';
+import { BannersModule } from './modules/banners/banners.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -55,6 +56,7 @@ import { MerchandiseModule } from './modules/merchandises/merchandise.module';
     AdminModule,
     TrackingModule,
     MerchandiseModule,
+    BannersModule,
   ],
   controllers: [AppController, UploadController],
   providers: [AppService, { provide: APP_GUARD, useClass: ThrottlerGuard }],

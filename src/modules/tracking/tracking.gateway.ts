@@ -29,6 +29,7 @@ export class TrackingGateway {
    * 1. Customer & Mitra bergabung ke Kamar Trip
    * Kamar ini mendengarkan posisi GPS langsung dan update Checkpoint pos
    */
+  @UseGuards(WsJwtAuthGuard)
   @SubscribeMessage('joinTripRoom')
   handleJoinTripRoom(
     @MessageBody('tripId') tripId: string,
@@ -47,6 +48,7 @@ export class TrackingGateway {
    * 2. Admin Regional bergabung ke Kamar Wilayah
    * Kamar ini mendengarkan seluruh pergerakan armada di wilayah tersebut
    */
+  @UseGuards(WsJwtAuthGuard)
   @SubscribeMessage('joinRegionRoom')
   handleJoinRegionRoom(
     @MessageBody('regionId') regionId: string,

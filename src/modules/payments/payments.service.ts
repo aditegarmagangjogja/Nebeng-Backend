@@ -4,6 +4,7 @@ import {
   NotFoundException,
   UnauthorizedException,
   ForbiddenException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { PaymentsRepository } from './repository/payments.repository';
 import { OrdersRepository } from '../orders/repository/orders.repository';
@@ -399,8 +400,13 @@ export class PaymentsService {
   async handleXenditWebhook(callbackToken: string, payload: any) {
     const expectedToken = process.env.XENDIT_CALLBACK_TOKEN;
 
-    // A. Verifikasi keamanan: pastikan request benar-benar dari Xendit
-    if (expectedToken && callbackToken !== expectedToken) {
+    if (!expectedToken) {
+      throw new InternalServerErrorException(
+        'Konfigurasi XENDIT_CALLBACK_TOKEN belum diatur di server.',
+      );
+    }
+
+    if (callbackToken !== expectedToken) {
       throw new UnauthorizedException('Token verifikasi callback tidak valid.');
     }
 

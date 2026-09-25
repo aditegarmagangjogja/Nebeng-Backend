@@ -16,6 +16,7 @@ import {
   BadRequestException,
   Query,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
   ApiOperation,
@@ -113,6 +114,7 @@ export class UserController {
 
   @Post('me/pin/verify')
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Memverifikasi PIN keamanan untuk transaksi' })
   verifyPin(@Request() req: any, @Body() verifyPinDto: VerifyPinDto) {

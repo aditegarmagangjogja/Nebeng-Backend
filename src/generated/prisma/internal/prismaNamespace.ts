@@ -421,7 +421,8 @@ export const ModelName = {
   TripReview: 'TripReview',
   Vehicle: 'Vehicle',
   MerchandiseItem: 'MerchandiseItem',
-  MerchandiseRedemption: 'MerchandiseRedemption'
+  MerchandiseRedemption: 'MerchandiseRedemption',
+  Banner: 'Banner'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -437,7 +438,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "region" | "city" | "user" | "userProfile" | "verification" | "verificationFile" | "pickupPoint" | "pricingSetting" | "trip" | "order" | "itemOrder" | "checkpointsLog" | "tripQrSession" | "orderQrSession" | "tripTracking" | "payment" | "wallet" | "walletTransaction" | "rewardTransaction" | "conversation" | "message" | "tripReview" | "vehicle" | "merchandiseItem" | "merchandiseRedemption"
+    modelProps: "region" | "city" | "user" | "userProfile" | "verification" | "verificationFile" | "pickupPoint" | "pricingSetting" | "trip" | "order" | "itemOrder" | "checkpointsLog" | "tripQrSession" | "orderQrSession" | "tripTracking" | "payment" | "wallet" | "walletTransaction" | "rewardTransaction" | "conversation" | "message" | "tripReview" | "vehicle" | "merchandiseItem" | "merchandiseRedemption" | "banner"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2091,6 +2092,72 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Banner: {
+      payload: Prisma.$BannerPayload<ExtArgs>
+      fields: Prisma.BannerFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BannerFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BannerFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload>
+        }
+        findFirst: {
+          args: Prisma.BannerFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BannerFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload>
+        }
+        findMany: {
+          args: Prisma.BannerFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload>[]
+        }
+        create: {
+          args: Prisma.BannerCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload>
+        }
+        createMany: {
+          args: Prisma.BannerCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        delete: {
+          args: Prisma.BannerDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload>
+        }
+        update: {
+          args: Prisma.BannerUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload>
+        }
+        deleteMany: {
+          args: Prisma.BannerDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BannerUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        upsert: {
+          args: Prisma.BannerUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BannerPayload>
+        }
+        aggregate: {
+          args: Prisma.BannerAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBanner>
+        }
+        groupBy: {
+          args: Prisma.BannerGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BannerGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BannerCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BannerCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -2513,6 +2580,20 @@ export const MerchandiseRedemptionScalarFieldEnum = {
 export type MerchandiseRedemptionScalarFieldEnum = (typeof MerchandiseRedemptionScalarFieldEnum)[keyof typeof MerchandiseRedemptionScalarFieldEnum]
 
 
+export const BannerScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  imageUrl: 'imageUrl',
+  linkUrl: 'linkUrl',
+  isActive: 'isActive',
+  targetRole: 'targetRole',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BannerScalarFieldEnum = (typeof BannerScalarFieldEnum)[keyof typeof BannerScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -2702,6 +2783,15 @@ export const MerchandiseRedemptionOrderByRelevanceFieldEnum = {
 } as const
 
 export type MerchandiseRedemptionOrderByRelevanceFieldEnum = (typeof MerchandiseRedemptionOrderByRelevanceFieldEnum)[keyof typeof MerchandiseRedemptionOrderByRelevanceFieldEnum]
+
+
+export const BannerOrderByRelevanceFieldEnum = {
+  title: 'title',
+  imageUrl: 'imageUrl',
+  linkUrl: 'linkUrl'
+} as const
+
+export type BannerOrderByRelevanceFieldEnum = (typeof BannerOrderByRelevanceFieldEnum)[keyof typeof BannerOrderByRelevanceFieldEnum]
 
 
 
@@ -3046,6 +3136,7 @@ export type GlobalOmitConfig = {
   vehicle?: Prisma.VehicleOmit
   merchandiseItem?: Prisma.MerchandiseItemOmit
   merchandiseRedemption?: Prisma.MerchandiseRedemptionOmit
+  banner?: Prisma.BannerOmit
 }
 
 /* Types for Logging */
