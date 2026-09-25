@@ -24,6 +24,7 @@ export class RegisterDto {
   @ApiProperty({ example: 'jhons@gmail.com' })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsEmail()
+  @Matches(/^(?!.*@gmil\.com$).*$/, { message: 'Domain email @gmil.com tidak diperbolehkan, mungkin maksud Anda @gmail.com?' })
   @IsNotEmpty()
   email!: string;
 
@@ -54,3 +55,4 @@ export class RegisterDto {
   @IsOptional()
   regionId?: string;
 }
+

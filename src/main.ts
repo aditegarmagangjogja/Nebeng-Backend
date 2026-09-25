@@ -19,14 +19,12 @@ async function bootstrap() {
   app.enableCors();
   app.setGlobalPrefix('api');
 
-  const uploadDir = path.join(process.cwd(), 'uploads', 'avatars');
+  const uploadDir = path.join(process.cwd(), 'uploads');
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  app.useStaticAssets(path.join(process.cwd(), 'uploads', 'avatars'), {
-    prefix: '/uploads/avatars',
-  });
+  app.useStaticAssets(path.join(process.cwd(), 'uploads'), { prefix: '/uploads' });
 
   app.useGlobalPipes(
     new ValidationPipe({
